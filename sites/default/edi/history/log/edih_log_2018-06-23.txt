@@ -1,0 +1,9 @@
+20180623:070622 _GET request 
+ csvtbllist => yes 
+20180623:070622 _GET request 
+ srvinfo => yes 
+20180623:070623 _GET request 
+ loglist => yes 
+20180623:070623 _GET request 
+ archlist => yes 
+20180623:070623 csv_archive_select_list: using C:/xampp/htdocs/altavision/sites/default\edi\history\archive

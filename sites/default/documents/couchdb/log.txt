@@ -1,0 +1,90 @@
+2018-07-19 15:00:10 ==> URL: PARRAGA_MOLINAT_005.jpg
+2018-07-19 15:00:10 ==> CouchDB Document Id: 1parraga_molinat_005.jpg316_2018-_07-_19_14_56_50
+2018-07-19 15:00:10 ==> CouchDB Revision Id: 1-c41932d9c65cbcc91467cc6709c8f0cb
+2018-07-19 15:00:10 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:10 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:19 ==> URL: PARRAGA_MOLINAT_006.jpg
+2018-07-19 15:00:19 ==> CouchDB Document Id: 1parraga_molinat_006.jpg316_2018-_07-_19_14_56_52
+2018-07-19 15:00:19 ==> CouchDB Revision Id: 1-793a2bcbd32eaecf32307949de585194
+2018-07-19 15:00:19 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:19 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:27 ==> URL: PARRAGA_MOLINAT_007.jpg
+2018-07-19 15:00:27 ==> CouchDB Document Id: 1parraga_molinat_007.jpg316_2018-_07-_19_14_56_54
+2018-07-19 15:00:27 ==> CouchDB Revision Id: 1-d9a1fc7769bad6484194d9d71209a091
+2018-07-19 15:00:27 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:27 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:35 ==> URL: PARRAGA_MOLINAT_008.jpg
+2018-07-19 15:00:35 ==> CouchDB Document Id: 1parraga_molinat_008.jpg316_2018-_07-_19_14_56_56
+2018-07-19 15:00:35 ==> CouchDB Revision Id: 1-e5c4847bcaf70dce6190a9a8d5d9cc7f
+2018-07-19 15:00:35 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:35 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:42 ==> URL: PARRAGA_MOLINAT_009.jpg
+2018-07-19 15:00:42 ==> CouchDB Document Id: 1parraga_molinat_009.jpg316_2018-_07-_19_14_56_59
+2018-07-19 15:00:42 ==> CouchDB Revision Id: 1-7e6115b7dc3d51d60696f50a7571107d
+2018-07-19 15:00:42 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:42 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:50 ==> URL: PARRAGA_MOLINAT_010.jpg
+2018-07-19 15:00:50 ==> CouchDB Document Id: 1parraga_molinat_010.jpg316_2018-_07-_19_14_57_01
+2018-07-19 15:00:50 ==> CouchDB Revision Id: 1-66f82fe4f43c13c5a7ae484891673b48
+2018-07-19 15:00:50 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:50 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:00:59 ==> URL: PARRAGA_MOLINAT_011.jpg
+2018-07-19 15:00:59 ==> CouchDB Document Id: 1parraga_molinat_011.jpg316_2018-_07-_19_14_57_03
+2018-07-19 15:00:59 ==> CouchDB Revision Id: 1-6e81eb00acfc2771d9b08a369cbfd492
+2018-07-19 15:00:59 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:00:59 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:06 ==> URL: PARRAGA_MOLINAT_012.jpg
+2018-07-19 15:01:06 ==> CouchDB Document Id: 1parraga_molinat_012.jpg316_2018-_07-_19_14_57_05
+2018-07-19 15:01:06 ==> CouchDB Revision Id: 1-4d7eb4b370f4683604c3e6c7e5212538
+2018-07-19 15:01:06 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:06 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:14 ==> URL: PARRAGA_MOLINAT_013.jpg
+2018-07-19 15:01:14 ==> CouchDB Document Id: 1parraga_molinat_013.jpg316_2018-_07-_19_14_57_07
+2018-07-19 15:01:14 ==> CouchDB Revision Id: 1-371e20d535b0d03ac29cca1f510811c8
+2018-07-19 15:01:14 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:14 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:22 ==> URL: PARRAGA_MOLINAT_014.jpg
+2018-07-19 15:01:22 ==> CouchDB Document Id: 1parraga_molinat_014.jpg316_2018-_07-_19_14_57_10
+2018-07-19 15:01:22 ==> CouchDB Revision Id: 1-fb0bd9e252576fccf291375348323933
+2018-07-19 15:01:22 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:22 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:29 ==> URL: PARRAGA_MOLINAT_015.jpg
+2018-07-19 15:01:29 ==> CouchDB Document Id: 1parraga_molinat_015.jpg316_2018-_07-_19_14_57_12
+2018-07-19 15:01:29 ==> CouchDB Revision Id: 1-f51cfeebc507b2a0aacc20d99c766020
+2018-07-19 15:01:29 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:29 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:37 ==> URL: PARRAGA_MOLINAT_016.jpg
+2018-07-19 15:01:37 ==> CouchDB Document Id: 1parraga_molinat_016.jpg316_2018-_07-_19_14_57_14
+2018-07-19 15:01:37 ==> CouchDB Revision Id: 1-ced0a2d885e6227303eb5b14606e585e
+2018-07-19 15:01:37 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:37 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:45 ==> URL: PARRAGA_MOLINAT_017.jpg
+2018-07-19 15:01:45 ==> CouchDB Document Id: 1parraga_molinat_017.jpg316_2018-_07-_19_14_57_16
+2018-07-19 15:01:45 ==> CouchDB Revision Id: 1-f54154993cd4fdbbadf9187d5866c3b3
+2018-07-19 15:01:45 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:45 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:01:54 ==> URL: PARRAGA_MOLINAT_018.jpg
+2018-07-19 15:01:54 ==> CouchDB Document Id: 1parraga_molinat_018.jpg316_2018-_07-_19_14_57_18
+2018-07-19 15:01:54 ==> CouchDB Revision Id: 1-481772f135b196f7ce43ca73eda6f01d
+2018-07-19 15:01:54 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:01:54 ==> Will try to download file from HardDisk if exists.
+
+2018-07-19 15:02:01 ==> URL: PARRAGA_MOLINAT_019.jpg
+2018-07-19 15:02:01 ==> CouchDB Document Id: 1parraga_molinat_019.jpg316_2018-_07-_19_14_57_21
+2018-07-19 15:02:01 ==> CouchDB Revision Id: 1-830472dc05b79fc053740d84e104aede
+2018-07-19 15:02:01 ==> Failed to fetch document content from CouchDB.
+2018-07-19 15:02:01 ==> Will try to download file from HardDisk if exists.
+

@@ -1,0 +1,28 @@
+<html xmlns:x='urn:schemas-microsoft-com:office:excel'>
+        <head>
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>PrefacturaBecerra Jose</x:Name>
+                            <x:WorksheetOptions>
+                                <x:Print>
+                                    <x:ValidPrinterInfo/>
+                                </x:Print>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+        </head>
+        <body>
+           <table>
+        		 <tr><td style='font-size: 7pt'>NOMBRE DEL PACIENTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>Becerra  Jose </td><td style='font-size: 7pt'>FECHA INGRESO</td><td></td><td style='font-size: 7pt'>FECHA EGRESO</td><td></td>
+        		 </td></tr>
+        		 <tr><td style='font-size: 7pt'>GARANTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>
+             Instituto Ecuatoriano de Seguridad Social</td>
+            </tr>
+           </table>
+           </body>

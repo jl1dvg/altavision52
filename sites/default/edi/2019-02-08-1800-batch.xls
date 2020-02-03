@@ -1,0 +1,45 @@
+<html xmlns:x='urn:schemas-microsoft-com:office:excel'>
+        <head>
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>PrefacturaBecerra Jose</x:Name>
+                            <x:WorksheetOptions>
+                                <x:Print>
+                                    <x:ValidPrinterInfo/>
+                                </x:Print>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+        </head>
+        <body>
+           <table>
+        		 <tr><td style='font-size: 7pt'>NOMBRE DEL PACIENTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>Becerra  Jose </td><td style='font-size: 7pt'>FECHA INGRESO</td><td></td><td style='font-size: 7pt'>FECHA EGRESO</td><td></td>
+        		 </td></tr>
+        		 <tr><td style='font-size: 7pt'>GARANTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>
+             Instituto Ecuatoriano de Seguridad Social</td><td style='font-size: 7pt'>TIPO</td><td style='font-size: 7pt'>General</td><td style='font-size: 7pt'>EDAD</td><td></td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>DIAGNOSTICO</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>General</td><td style='font-size: 7pt'>SEXO</td><td style='font-size: 7pt'>M</td><td style='font-size: 7pt'>FECHA DE NACIMIENTO</td><td style='font-size: 7pt'>02/05/1957</td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>CEDULA</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>0906145107</td><td style='font-size: 7pt'>HISTORIA CLINICA</td><td style='font-size: 7pt'>0906145107</td><td style='font-size: 7pt'>LIQUIDACION No.</td><td></td>
+            		 </td></tr><tr><td colspan=7 style='background-color:Yellow; font-size: 9pt'><b>Servicios Médicos</b></td></tr>
+<tr><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Fecha</b></td><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Código</b></td><td nowrap='nowrap' style='white-space:nowrap;width:50%; font-size: 8pt'><b>Descripcion</b></td><td style='width:5%; font-size: 8pt'><b>Cant</b></td><td style='white-space:nowrap;font-size: 8pt'><b>Valor Unit</b></td><td nowrap='nowrap' style='white-space:nowrap;width:5%; font-size: 8pt'><b>IVA</b></td><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Precio Total</b></td></tr>
+<tr>
+<td style='font-size: 7pt'>06/02/2019</td><td style='font-size: 7pt'>92002</td>
+<td style='font-size: 7pt;word-wrap: break-word;'>SERVICIOS OFTALMOLOGICOS EXAMEN MEDICO Y EVALUACION CON INICIO DE UN PROGRAMA DE DIAGNOSTICO Y TRATAMIENTO INTERMEDIO NUEVO PACIENTE</td>
+<td style='font-size: 7pt'>1</td>
+<tr><td colspan=7 style='background-color:Yellow; font-size: 9pt'><b>Examenes Imagenes</b></td></tr>
+<tr><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Fecha</b></td><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Código</b></td><td nowrap='nowrap' style='white-space:nowrap;width:50%; font-size: 8pt'><b>Descripcion</b></td><td style='width:5%; font-size: 8pt'><b>Cant</b></td><td style='white-space:nowrap;font-size: 8pt'><b>Valor Unit</b></td><td nowrap='nowrap' style='white-space:nowrap;width:5%; font-size: 8pt'><b>IVA</b></td><td nowrap='nowrap' style='white-space:nowrap;width:10%; font-size: 8pt'><b>Precio Total</b></td></tr>
+<tr>
+<td style='font-size: 7pt'>06/02/2019</td><td style='font-size: 7pt'>76519</td>
+<td style='font-size: 7pt;word-wrap: break-word;'>BIOMETRIA OFTALMICA POR ULTRASONOGRAFIA A SCAN CON CALCULO DE MEDIDA DE LENTE INTRAOCULAR</td>
+<td style='font-size: 7pt'>1</td>
+<tr>
+<td style='font-size: 7pt'>06/02/2019</td><td style='font-size: 7pt'>281186</td>
+<td style='font-size: 7pt;word-wrap: break-word;'>TOPOGRAFA CORNEAL COMPUTARIZADA UNILATERAL</td>
+<td style='font-size: 7pt'>1</td>

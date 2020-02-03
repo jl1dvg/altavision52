@@ -1,0 +1,63 @@
+<html xmlns:x='urn:schemas-microsoft-com:office:excel'>
+        <head>
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>PrefacturaBecerra Jose</x:Name>
+                            <x:WorksheetOptions>
+                                <x:Print>
+                                    <x:ValidPrinterInfo/>
+                                </x:Print>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+        </head>
+        <body>
+           <table>
+        		 <tr><td style='font-size: 7pt'>NOMBRE DEL PACIENTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>Becerra  Jose </td><td style='font-size: 7pt'>FECHA INGRESO</td><td></td><td style='font-size: 7pt'>FECHA EGRESO</td><td></td>
+        		 </td></tr>
+        		 <tr><td style='font-size: 7pt'>GARANTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>
+             Instituto Ecuatoriano de Seguridad Social</td><td style='font-size: 7pt'>TIPO</td><td style='font-size: 7pt'>General</td><td style='font-size: 7pt'>EDAD</td><td></td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>DIAGNOSTICO</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>General</td><td style='font-size: 7pt'>SEXO</td><td style='font-size: 7pt'>M</td><td style='font-size: 7pt'>FECHA DE NACIMIENTO</td><td style='font-size: 7pt'>02/05/1957</td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>CEDULA</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>0906145107</td><td style='font-size: 7pt'>HISTORIA CLINICA</td><td style='font-size: 7pt'>0906145107</td><td style='font-size: 7pt'>LIQUIDACION No.</td><td></td>
+            		 </td></tr>
+           </table>
+           </body><html xmlns:x='urn:schemas-microsoft-com:office:excel'>
+        <head>
+            <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>PrefacturaPantoja Alba</x:Name>
+                            <x:WorksheetOptions>
+                                <x:Print>
+                                    <x:ValidPrinterInfo/>
+                                </x:Print>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </x:ExcelWorkbook>
+            </xml>
+            <![endif]-->
+        </head>
+        <body>
+           <table>
+        		 <tr><td style='font-size: 7pt'>NOMBRE DEL PACIENTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>Pantoja  Alba </td><td style='font-size: 7pt'>FECHA INGRESO</td><td></td><td style='font-size: 7pt'>FECHA EGRESO</td><td></td>
+        		 </td></tr>
+        		 <tr><td style='font-size: 7pt'>GARANTE</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>
+             Instituto Ecuatoriano de Seguridad Social</td><td style='font-size: 7pt'>TIPO</td><td style='font-size: 7pt'></td><td style='font-size: 7pt'>EDAD</td><td></td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>DIAGNOSTICO</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'></td><td style='font-size: 7pt'>SEXO</td><td style='font-size: 7pt'>F</td><td style='font-size: 7pt'>FECHA DE NACIMIENTO</td><td style='font-size: 7pt'>22/10/1960</td>
+            		 </td></tr>
+                 <tr><td style='font-size: 7pt'>CEDULA</td><td colspan=2 style='font-size: 7pt;word-wrap: break-word;'>0701560096</td><td style='font-size: 7pt'>HISTORIA CLINICA</td><td style='font-size: 7pt'>0701560096</td><td style='font-size: 7pt'>LIQUIDACION No.</td><td></td>
+            		 </td></tr>
+           </table>
+           </body>
