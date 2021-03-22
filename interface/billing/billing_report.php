@@ -7,9 +7,11 @@
 * @author    Terry Hill <terry@lilysystems.com>
 * @author    Brady Miller <brady.g.miller@gmail.com>
 * @author    Jerry Padgett <sjpadgett@gmail.com>
+* @author    Sherwin Gaddis <sherwingaddis@gmail.com>
 * @copyright Copyright (c) 2016 Terry Hill <terry@lillysystems.com>
 * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
 * @copyright Copyright (c) 2018-2019 Jerry Padgett <sjpadgett@gmail.com>
+* @copyright Copyright (c) 2019 Sherwin Gaddis <sherwingaddis@gmail.com>
 * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
 */
 
@@ -91,6 +93,11 @@ $missing_mods_only = (isset($_POST['missing_mods_only']) && !empty($_POST['missi
 
 $left_margin = isset($_POST["left_margin"]) ? $_POST["left_margin"] : $GLOBALS['cms_left_margin_default'];
 $top_margin = isset($_POST["top_margin"]) ? $_POST["top_margin"] : $GLOBALS['cms_top_margin_default'];
+if ($left_margin + 0 === 20 && $top_margin + 0 === 24) {
+    // defaults are flipped. No easy way to reset existing. Global defaults fixed.
+    $left_margin = '24';
+    $top_margin = '20';
+}
 if ($ub04_support) {
     $left_ubmargin = isset($_POST["left_ubmargin"]) ? $_POST["left_ubmargin"] : $GLOBALS['left_ubmargin_default'];
     $top_ubmargin = isset($_POST["top_ubmargin"]) ? $_POST["top_ubmargin"] : $GLOBALS['top_ubmargin_default'];
@@ -125,14 +132,35 @@ $partners = $x->_utility_array($x->x12_partner_factory());
 </style>
 <script>
     var partners = <?php echo json_encode($partners); ?>;
+
     // next set of 4 functions are for a wait confirm action then submit.
     // I wrote this a little more involved than it needs to be
     // to example the pattern. Ideal submit part would be via a fetch or ajax
     // then could do refresh or after submit actions.
-    function doSubmit() {
+    //
+    function doSubmit(action) {
         top.restoreSession();
-        return new Promise(function(resolve, reject){
+        return new Promise(function (resolve, reject) {
+            if (action !== 'btn-continue') {
+                var showLog = function () {
+                    $("#view-log-link").click();
+                };
+                // Pre-open a dialog and target dialogs iframe for content from billing_process
+                // text or PDF.
+                dlgopen('', 'ValidateShowBatch', 875, 500, false, '', {
+                    buttons: [
+                        {text: '<?php echo xlt("Logs"); ?>', close: false, style: 'default btn-xs', click: showLog},
+                        {text: '<i class="fa fa-thumbs-up"></i>&nbsp;<?php echo xlt("Close"); ?>', close: true, style: 'default btn-xs'}
+                    ],
+                    //onClosed: 'SubmitTheScreen', // future and/or example of onClosed.
+                    sizeHeight: 'full'
+                });
+                // target content from submit to dialogs iframe
+                document.update_form.target = 'ValidateShowBatch';
+            }
+            // Now submit form and populate dialog.
             document.update_form.submit();
+            // go fulfill the promise.
             resolve(true);
         });
     }
@@ -203,7 +231,7 @@ $partners = $x->_utility_array($x->x12_partner_factory());
             return action;
         }).then(action => {
             // submit update_form then cleanup
-            doSubmit().then( function () {
+            doSubmit(action).then( function () {
                 $("#submitTask").remove();
                 $("#confirmTask").remove();
             });
@@ -281,14 +309,14 @@ $partners = $x->_utility_array($x->x12_partner_factory());
         f.bn_x12_support.disabled = !can_generate;
             <?php if ($GLOBALS['support_encounter_claims']) { ?>
         f.bn_x12_encounter.disabled = !can_generate;
-        <?php } ?>
+            <?php } ?>
         f.bn_process_hcfa_support.disabled = !can_generate;
             <?php if ($GLOBALS['preprinted_cms_1500']) { ?>
         f.bn_process_hcfa_form.disabled = !can_generate;
-        <?php } ?>
+            <?php } ?>
             <?php if ($GLOBALS['ub04_support']) { ?>
         f.bn_process_ub04_support.disabled = !can_generate;
-        <?php } ?>
+            <?php } ?>
         f.bn_hcfa_txt_file.disabled = !can_generate;
         f.bn_reopen.disabled = !can_bill;
         <?php } ?>
@@ -505,6 +533,9 @@ $partners = $x->_utility_array($x->x12_partner_factory());
     ul > li {
         line-height: 1.86em;
     }
+    ul {
+        list-style-type: none;
+    }
     a, a:visited, a:hover {
         text-decoration: none;
         color: #000000;
@@ -705,8 +736,12 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                            title='<?php echo xla('See messages from the last set of generated claims'); ?>'><strong><?php echo xlt('View Log'); ?></strong></a>
                                     </li>
                                 <?php } ?>
+                                <li><a href="<?php echo $webroot ?>/interface/billing/customize_log.php" rel="noopener" target="_blank" onclick="top.restoreSession()"><strong><?php  echo xlt('Tab Log') ?></strong></a>
+                                </li>
                                 <li><a class="link_submit"
                                        href="JavaScript:void(0);" onclick="select_all(); return false;"><strong><?php echo xlt('Select All'); ?></strong></a>
+                                </li>
+                                <li><a  id="clear-log" href="#" title='<?php xla('Clear the log'); ?>'><strong><?php echo xlt('Clear Log') ?></strong></a>
                                 </li>
                             </ul>
                             <ul>
@@ -1318,7 +1353,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                 $rhtml .= text(oeFormatMoney($iter['fee']));
                             }
                             $rhtml .= "</span></td>\n";
-                            $rhtml .= '<td><span style="font-size:8pt;">&nbsp;&nbsp;&nbsp;';
+                            $rhtml .= '<td><span style="font-size:8pt; font-weight:900; background:#ffff9e">&nbsp;&nbsp;&nbsp;';
                             if ($iter['id']) {
                                 $rhtml .= getProviderName(empty($iter['provider_id']) ? text($iter['enc_provider_id']) : text($iter['provider_id']));
                             }
@@ -1444,13 +1479,22 @@ $(function () {
         top.restoreSession();
         dlgopen('customize_log.php', '_blank', 750, 400);
     });
+    $("#clear-log").click( function(){
+        var checkstr = confirm(<?php echo xlj("Do you really want to clear the log?"); ?>);
+        if(checkstr == true){
+            top.restoreSession();
+            dlgopen("clear_log.php?csrf_token_form=" + <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>, '_blank', 500, 400);
+        }else{
+            return false;
+        }
+    });
 
     $('button[type="submit"]').click(function () {
         top.restoreSession();
         $(this).attr('data-clicked', true);
     });
 
-    $('form[name="update_form"]').submit(function (e) {
+    $('form[name="update_form"]').on('submit', function (e) {
         var clickedButton = $("button[type=submit][data-clicked='true'")[0];
         // clear clicked button indicator
         $('button[type="submit"]').attr('data-clicked', false);
