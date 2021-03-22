@@ -6,8 +6,8 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/patient.inc");
 require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
-include_once($GLOBALS["srcdir"]."/api.inc");
-require_once(dirname(__FILE__) ."/../../../library/lists.inc");
+include_once($GLOBALS["srcdir"] . "/api.inc");
+require_once(dirname(__FILE__) . "/../../../library/lists.inc");
 
 use OpenEMR\Services\FacilityService;
 
@@ -16,14 +16,14 @@ $form_folder = "eye_mag";
 
 $facilityService = new FacilityService();
 
-require_once("../../forms/".$form_folder."/php/".$form_folder."_functions.php");
+require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
 if ($_REQUEST['ptid']) {
     $pid = $_REQUEST['ptid'];
 }
 
 if ($_REQUEST['encid']) {
-    $encounter=$_REQUEST['encid'];
+    $encounter = $_REQUEST['encid'];
 }
 
 if ($_REQUEST['formid']) {
@@ -31,14 +31,14 @@ if ($_REQUEST['formid']) {
 }
 
 if ($_REQUEST['formname']) {
-    $form_name=$_REQUEST['formname'];
+    $form_name = $_REQUEST['formname'];
 }
 
 //Datos del PACIENTE
 $titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,pricelevel,providerID,DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS");
 
 //Fecha del form_eye_mag
-$query="select form_encounter.date as encounter_date,form_eye_mag.id as form_id,form_encounter.*, form_eye_mag.*
+$query = "select form_encounter.date as encounter_date,form_eye_mag.id as form_id,form_encounter.*, form_eye_mag.*
         from form_eye_mag ,forms,form_encounter
         where
         form_encounter.encounter =? and
@@ -47,9 +47,9 @@ $query="select form_encounter.date as encounter_date,form_eye_mag.id as form_id,
         forms.deleted != '1' and
         form_eye_mag.pid=? ";
 
-$encounter_data =sqlQuery($query, array($encounter,$pid));
+$encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
-$providerID  =  getProviderIdOfEncounter($encounter);
+$providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
 $dated = new DateTime($encounter_date);
 $visit_date = oeFormatShortDate($dated);
@@ -61,38 +61,39 @@ $nombreMes = str_replace($meses_EN, $meses_ES, $datedmes);
 //Data Protocolo
 function lookup_lbf_desc($desc_lbf)
 {
-    $querylbf="select field_value from lbf_data WHERE form_id=? AND field_id=? ";
-    $lbf_query = sqlStatement($querylbf, array($_GET['formid'],$desc_lbf));
+    $querylbf = "select field_value from lbf_data WHERE form_id=? AND field_id=? ";
+    $lbf_query = sqlStatement($querylbf, array($_GET['formid'], $desc_lbf));
     return $lbf_query;
 }
+
 $lbfid = $_GET['formid'];
-$querylbfcirujano= sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_Cirujano'");
-$querylbfayudante= sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_ayudante'");
-$querylbfproced= sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_proced'");
-$querylbfopp= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_opp'");
+$querylbfcirujano = sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_Cirujano'");
+$querylbfayudante = sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_ayudante'");
+$querylbfproced = sqlQuery("select * from lbf_data WHERE form_id=$lbfid AND field_id='Prot_proced'");
+$querylbfopp = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_opp'");
 $PROYECTADA = $querylbfopp['field_value'];
-$querylbfopr= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_opr'");
+$querylbfopr = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_opr'");
 $REALIZADA = $querylbfopr['field_value'];
-$querylbfdxpre= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre'");
+$querylbfdxpre = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre'");
 $DX_PRE = $querylbfdxpre['field_value'];
-$querylbfdxpre= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre2'");
+$querylbfdxpre = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre2'");
 $DX_PRE2 = $querylbfdxpre['field_value'];
-$querylbfdxpre= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre3'");
+$querylbfdxpre = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpre3'");
 $DX_PRE3 = $querylbfdxpre['field_value'];
-$querylbfdxpost= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost'");
+$querylbfdxpost = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost'");
 $DX_POS = $querylbfdxpost['field_value'];
-$querylbfdxpost= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost2'");
+$querylbfdxpost = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost2'");
 $DX_POS2 = $querylbfdxpost['field_value'];
-$querylbfdxpost= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost3'");
+$querylbfdxpost = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dxpost3'");
 $DX_POS3 = $querylbfdxpost['field_value'];
-$querylbfdieresis= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dieresis'");
+$querylbfdieresis = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_dieresis'");
 $DIERESIS = $querylbfdieresis['field_value'];
-$querylbfexposicion= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_expo'");
+$querylbfexposicion = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_expo'");
 $EXPOSICION = $querylbfexposicion['field_value'];
-$querylbfojo= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_ojo'");
+$querylbfojo = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_ojo'");
 $OJO = $querylbfojo['field_value'];
 //Fin fecha del form_eye_mag
-$fechaPROTOCOLO = sqlQuery("select * from forms WHERE form_id=? AND encounter=?", array($_GET['formid'],$_GET['visitid']));
+$fechaPROTOCOLO = sqlQuery("select * from forms WHERE form_id=? AND encounter=?", array($_GET['formid'], $_GET['visitid']));
 $sqlENCUENTRO = sqlQuery("select * from form_encounter WHERE encounter=?", array($_GET['visitid']));
 $datedprotocolo = new DateTime($fechaPROTOCOLO['date']);
 $dateddia = $datedprotocolo->format('d');
@@ -153,24 +154,27 @@ ob_start();
 <HTML>
 <HEAD>
     <style>
-        td.encabezado{
+        td.encabezado {
             text-align: center;
             font-weight: bold;
             font-size: 10px;
             height: 16px;
         }
-        td.encabezado2{
+
+        td.encabezado2 {
             text-align: center;
             font-weight: bold;
             font-size: 8px;
             height: 14px;
         }
-        td.contenido{
+
+        td.contenido {
             text-align: center;
             font-size: 10px;
             height: 16px;
         }
-        td.procedimiento{
+
+        td.procedimiento {
             font-size: 10px;
         }
     </style>
@@ -197,7 +201,7 @@ ob_start();
     <tr>
         <td class="contenido" colspan="4">CIRUGIA</td>
         <td class="contenido" colspan="4">SALA DE OFTALMOLOGIA</td>
-        <td class="contenido" colspan="4"> </td>
+        <td class="contenido" colspan="4"></td>
     </tr>
     <tr>
         <td class="encabezado" width=50% colspan="6">DIAGNOSTICO</td>
@@ -207,7 +211,7 @@ ob_start();
         <td class="encabezado" colspan="2">PRE-OPERATORIO:</td>
         <td colspan="4"></td>
         <td class="encabezado" colspan="2">POYECTADA:</td>
-        <td colspan="4">      </td>
+        <td colspan="4"></td>
     </tr>
     <tr>
         <td class="contenido" colspan="6"><?php
@@ -234,100 +238,104 @@ ob_start();
     </tr>
     <tr>
         <td class="contenido" colspan="6">
-        <?php     $queryOjo= sqlQuery("SELECT * FROM `list_options`
+            <?php $queryOjo = sqlQuery("SELECT * FROM `list_options`
               WHERE `list_id` = 'OD' AND `option_id` = ? ", array($OJO));
-              echo $queryOjo['title'];?>
-      </td>
+            echo $queryOjo['title']; ?>
+        </td>
         <td class="contenido" colspan="6">
-        <?php     $queryOjo= sqlQuery("SELECT * FROM `list_options`
+            <?php $queryOjo = sqlQuery("SELECT * FROM `list_options`
               WHERE `list_id` = 'OD' AND `option_id` = ? ", array($OJO));
-              echo $queryOjo['title'];?>
-      </td>
+            echo $queryOjo['title']; ?>
+        </td>
     </tr>
     <tr>
-        <td class="contenido" width=8.3% style="border-right:0;"> </td>
-        <td width=8.3% style="border-left:0;border-right:0;"> </td>
-        <td width=8.3% style="border-left:0;border-right:0;"> </td>
-        <td width=8.3% style="border-left:0;border-right:0;"> </td>
-        <td width=8.3% style="border-left:0;border-right:0;"> </td>
-        <td width=8.3% style="border-left:0;border-right:0;"> </td>
+        <td class="contenido" width=8.3% style="border-right:0;"></td>
+        <td width=8.3% style="border-left:0;border-right:0;"></td>
+        <td width=8.3% style="border-left:0;border-right:0;"></td>
+        <td width=8.3% style="border-left:0;border-right:0;"></td>
+        <td width=8.3% style="border-left:0;border-right:0;"></td>
+        <td width=8.3% style="border-left:0;border-right:0;"></td>
         <td class="encabezado2" width=8.3%>ELECTIVA</td>
-        <td width=8.3%> </td>
+        <td width=8.3%></td>
         <td class="encabezado2" width=8.3%>EMERGENCIA</td>
-        <td width=8.3%> </td>
+        <td width=8.3%></td>
         <td class="encabezado2" width=8.3%>PALEATIVA</td>
-        <td width=8.3%> </td>
+        <td width=8.3%></td>
     </tr>
     <tr>
         <td class="encabezado" colspan="2">POST-OPERATORIO:</td>
         <td colspan="4"></td>
         <td class="encabezado" colspan="2">REALIZADA:</td>
         <td class="contenido" colspan="4">
-      <?php
-      ///////////////IESS////////////////
-      function codigos_QXIESS($convenio,$lbfID){
-        $return = [];
-      $querylbfopr= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfID AND field_id='Prot_opr'");
-      $REALIZADA = $querylbfopr['field_value'];
-      if ($convenio == 'IESS') {
-        if ($REALIZADA && $REALIZADA != '0') {
-          $REALIZADA_items = explode('|', $REALIZADA);
-            foreach ($REALIZADA_items as $item) {
-              $QXpropuesta = ($item);
-                  $IntervencionPropuesta = sqlquery("SELECT codes FROM `list_options`
+            <?php
+            ///////////////IESS////////////////
+            function codigos_QXIESS($convenio, $lbfID)
+            {
+                $return = [];
+                $querylbfopr = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfID AND field_id='Prot_opr'");
+                $REALIZADA = $querylbfopr['field_value'];
+                if ($convenio == 'IESS') {
+                    if ($REALIZADA && $REALIZADA != '0') {
+                        $REALIZADA_items = explode('|', $REALIZADA);
+                        foreach ($REALIZADA_items as $item) {
+                            $QXpropuesta = ($item);
+                            $IntervencionPropuesta = sqlquery("SELECT codes FROM `list_options`
                     WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` = '$QXpropuesta' ");
-                    $return[] = $IntervencionPropuesta['codes'];
+                            $return[] = $IntervencionPropuesta['codes'];
+                        }
+                        $result = str_replace(";", "", $return);
+                        return $result;
+                    }
+                }
             }
-            $result = str_replace(";","",$return);
-              return $result;
+
+            foreach (codigos_QXIESS($titleres['pricelevel'], $lbfid) as $key) {
+                $CodeExp = explode('CPT4:', $key);
+                foreach ($CodeExp as $val) {
+                    $value[] = $val;
+                }
             }
-        }
-      }
-      foreach (codigos_QXIESS($titleres['pricelevel'],$lbfid) as $key) {
-        $CodeExp = explode('CPT4:',$key);
-        foreach ($CodeExp as $val) {
-        $value[] = $val;
-        }
-      }
-      $codeUNI = (array_unique($value));
-      foreach ($codeUNI as $CPT4) {
-        if ($CPT4 > 0) {
-          echo ($CPT4) . "/";
-        }
-      }
-      ///////////////MSP/////////////////
-      function codigos_QXMSP($convenio,$lbfID){
-        $return = [];
-      $querylbfopr= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfID AND field_id='Prot_opr'");
-      $REALIZADA = $querylbfopr['field_value'];
-      if ($convenio == 'MSP') {
-        if ($REALIZADA && $REALIZADA != '0') {
-          $REALIZADA_items = explode('|', $REALIZADA);
-            foreach ($REALIZADA_items as $item) {
-              $QXpropuesta = ($item);
-                  $IntervencionPropuesta = sqlquery("SELECT codes FROM `list_options`
+            $codeUNI = (array_unique($value));
+            foreach ($codeUNI as $CPT4) {
+                if ($CPT4 > 0) {
+                    echo ($CPT4) . "/";
+                }
+            }
+            ///////////////MSP/////////////////
+            function codigos_QXMSP($convenio, $lbfID)
+            {
+                $return = [];
+                $querylbfopr = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfID AND field_id='Prot_opr'");
+                $REALIZADA = $querylbfopr['field_value'];
+                if ($convenio == 'MSP') {
+                    if ($REALIZADA && $REALIZADA != '0') {
+                        $REALIZADA_items = explode('|', $REALIZADA);
+                        foreach ($REALIZADA_items as $item) {
+                            $QXpropuesta = ($item);
+                            $IntervencionPropuesta = sqlquery("SELECT codes FROM `list_options`
                     WHERE `list_id` = 'cirugia_propuesta_MSP' AND `option_id` = '$QXpropuesta' ");
-                    $return[] = $IntervencionPropuesta['codes'];
+                            $return[] = $IntervencionPropuesta['codes'];
+                        }
+                        $result = str_replace(";", "", $return);
+                        return $result;
+                    }
+                }
             }
-            $result = str_replace(";","",$return);
-              return $result;
-          }
-        }
-      }
-      foreach (codigos_QXMSP($titleres['pricelevel'],$lbfid) as $key) {
-        $CodeExpMSP = explode('CPT4:',$key);
-        foreach ($CodeExpMSP as $valMSP) {
-        $valueMSP[] = $valMSP;
-        }
-      }
-      $codeUNIMSP = (array_unique($valueMSP));
-      foreach ($codeUNIMSP as $CPT4MSP) {
-        if ($CPT4MSP > 0) {
-          echo ($CPT4MSP) . "/";
-        }
-      }
-?>
-</td>
+
+            foreach (codigos_QXMSP($titleres['pricelevel'], $lbfid) as $key) {
+                $CodeExpMSP = explode('CPT4:', $key);
+                foreach ($CodeExpMSP as $valMSP) {
+                    $valueMSP[] = $valMSP;
+                }
+            }
+            $codeUNIMSP = (array_unique($valueMSP));
+            foreach ($codeUNIMSP as $CPT4MSP) {
+                if ($CPT4MSP > 0) {
+                    echo ($CPT4MSP) . "/";
+                }
+            }
+            ?>
+        </td>
     </tr>
     <tr>
         <td class="contenido" colspan="6"><?php
@@ -346,7 +354,7 @@ ob_start();
                     $QXpropuesta = ($item);
                     $IntervencionPropuesta = sqlquery("SELECT notes FROM `list_options`
                   WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` = '$QXpropuesta' ");
-                    echo ($IntervencionPropuesta['notes'] . " + ");
+                    echo($IntervencionPropuesta['notes'] . " + ");
                 }
             }
 
@@ -354,25 +362,25 @@ ob_start();
     </tr>
     <tr>
         <td class="contenido" colspan="6">
-        <?php   $queryOjo= sqlQuery("SELECT * FROM `list_options`
+            <?php $queryOjo = sqlQuery("SELECT * FROM `list_options`
               WHERE `list_id` = 'OD' AND `option_id` = ? ", array($OJO));
-              echo $queryOjo['title']; ?>
-      </td>
+            echo $queryOjo['title']; ?>
+        </td>
         <td class="contenido" colspan="6">
-        <?php   $queryOjo= sqlQuery("SELECT * FROM `list_options`
+            <?php $queryOjo = sqlQuery("SELECT * FROM `list_options`
               WHERE `list_id` = 'OD' AND `option_id` = ? ", array($OJO));
-              echo $queryOjo['title']; ?>
-      </td>
+            echo $queryOjo['title']; ?>
+        </td>
     </tr>
     <tr>
         <td class="encabezado" colspan="12">EQUIPO QUIRURGICO</td>
     </tr>
     <tr>
         <td class="encabezado" colspan="2">CIRUJANO 1:</td>
-        <td class="contenido" colspan="4"><?php echo $providerNAME;?></td>
+        <td class="contenido" colspan="4"><?php echo $providerNAME; ?></td>
         <td class="encabezado" colspan="2">INSTRUMENTISTA:</td>
         <td class="contenido" colspan="4"><?php
-            $querylbfInstrumentista= sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_Instrumentistas'");
+            $querylbfInstrumentista = sqlQuery("select field_value from lbf_data WHERE form_id=$lbfid AND field_id='Prot_Instrumentistas'");
             $instrumentistaOK = $querylbfInstrumentista['field_value'];
             if ($instrumentistaOK == 'Si') {
                 echo "Dr. Jorge Luis de Vera";
@@ -380,21 +388,21 @@ ob_start();
     </tr>
     <tr>
         <td class="encabezado" colspan="2">CIRUJANO 2:</td>
-        <td class="contenido" colspan="4"><?php echo getProviderName($querylbfcirujano['field_value']);?> </td>
+        <td class="contenido" colspan="4"><?php echo getProviderName($querylbfcirujano['field_value']); ?> </td>
         <td class="encabezado" colspan="2">CIRCULANTE:</td>
         <td class="contenido" colspan="4">Kelly Mora</td>
     </tr>
     <tr>
         <td class="encabezado" colspan="2">PRIMER AYUDANTE:</td>
-        <td class="contenido" colspan="4"><?php echo getProviderName($querylbfayudante['field_value']);?></td>
+        <td class="contenido" colspan="4"><?php echo getProviderName($querylbfayudante['field_value']); ?></td>
         <td class="encabezado" colspan="2">ANESTESIOLOGO:</td>
-        <td class="contenido" colspan="4">Dr. Javier Rodriguez</td>
+        <td class="contenido" colspan="4">Dr. Cesar Sanchez</td>
     </tr>
     <tr>
         <td class="encabezado" colspan="2">SEGUNDO AYUDANTE:</td>
-        <td colspan="4"> </td>
+        <td colspan="4"></td>
         <td class="encabezado" colspan="2">AYUDANTE:</td>
-        <td colspan="4"> </td>
+        <td colspan="4"></td>
     </tr>
     <tr>
         <td class="encabezado" colspan="3">FECHA DE OPERACION</td>
@@ -408,11 +416,13 @@ ob_start();
         <td class="encabezado" colspan="1">AÑO</td>
     </tr>
     <tr>
-        <td class="contenido" colspan="1"><?php  echo $dateddia; ?></td>
-        <td class="contenido" colspan="1"><?php  echo $datedmes; ?></td>
-        <td class="contenido" colspan="1"><?php  echo $datedano; ?></td>
-        <td class="contenido" colspan="3"><?php echo str_replace("field_value","",lookup_lbf_desc('Prot_hini')); ?></td>
-        <td class="contenido" colspan="3"><?php echo str_replace("field_value","",lookup_lbf_desc('Prot_hfin')); ?></td>
+        <td class="contenido" colspan="1"><?php echo $dateddia; ?></td>
+        <td class="contenido" colspan="1"><?php echo $datedmes; ?></td>
+        <td class="contenido" colspan="1"><?php echo $datedano; ?></td>
+        <td class="contenido"
+            colspan="3"><?php echo str_replace("field_value", "", lookup_lbf_desc('Prot_hini')); ?></td>
+        <td class="contenido"
+            colspan="3"><?php echo str_replace("field_value", "", lookup_lbf_desc('Prot_hfin')); ?></td>
         <td class="contenido" colspan="3">REGIONAL</td>
     </tr>
     <tr>
@@ -426,18 +436,13 @@ ob_start();
                     $QXdieresis = ($item);
                     $queryDieresis = sqlquery("SELECT * FROM `list_options`
                   WHERE `option_id` = '$QXdieresis' ");
-                    echo ($queryDieresis['title'] . ", ");
+                    echo($queryDieresis['title'] . ", ");
                 }
             }
-            ?>    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
+            ?>
     </tr>
     <tr>
-        <td class="contenido" colspan="12"><BR /></td>
-    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
+        <td class="contenido" colspan="12"><BR/></td>
     </tr>
     <tr>
         <td class="encabezado" colspan="12">EXPOSICIÓN:</td>
@@ -450,101 +455,88 @@ ob_start();
                     $QXexpo = ($item);
                     $queryExpo = sqlquery("SELECT * FROM `list_options`
                   WHERE `option_id` = '$QXexpo' ");
-                    echo ($queryExpo['title'] . ", ");
+                    echo($queryExpo['title'] . ", ");
                 }
             }
             ?></td>
     </tr>
     <tr>
-        <td class="contenido" colspan="12"><BR /></td>
-    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
-    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
+        <td class="contenido" colspan="12"><BR/></td>
     </tr>
     <tr>
         <td class="encabezado" colspan="12">EXPLORACION Y HALLAZGOS QUIRÚRGICOS:</td>
     </tr>
     <tr>
-        <td class="contenido" colspan="12"><?php echo str_replace("field_value","",lookup_lbf_desc('Prot_halla'));?></td>
+        <td class="contenido"
+            colspan="12"><?php echo str_replace("field_value", "", lookup_lbf_desc('Prot_halla')); ?></td>
     </tr>
     <tr>
-        <td class="contenido" colspan="12"><BR /></td>
-    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
-    </tr>
-    <tr>
-        <td class="contenido" colspan="12"><BR /></td>
+        <td class="contenido" colspan="12"><BR/></td>
     </tr>
     <tr>
         <td class="encabezado" colspan="12">PROCEDIMIENTO OPERATORIO:</td>
     </tr>
     <tr>
         <td class="procedimiento" colspan="12"><?php
-            $procedimientoQX = str_replace("&amp;lt;b&amp;gt;","<b>",$querylbfproced['field_value']);
-            echo str_replace("&amp;lt;/b&amp;gt;","</b>",$procedimientoQX);;
+            $procedimientoQX = str_replace("&amp;lt;b&amp;gt;", "<b>", $querylbfproced['field_value']);
+            echo str_replace("&amp;lt;/b&amp;gt;", "</b>", $procedimientoQX);;
             ?></td>
     </tr>
-
-
 
 
 </table>
 <pagebreak>
     <table border="1" width="100%" style="border-collapse: collapse;">
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
             <td class="encabezado" colspan="12">SINTESIS</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
             <td class="encabezado" colspan="12">COMPLICACIONES DEL ACTO OPERATORIO</td>
@@ -553,71 +545,71 @@ ob_start();
             <td class="contenido" colspan="12">NINGUNA</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
             <td class="encabezado" colspan="12">EXAMEN HISTOPATOLOGICO</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12">SI          NO X</td>
+            <td class="contenido" colspan="12">SI NO X</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
             <td class="encabezado" colspan="12">HISTOPATOLOGICO DIAGNOSTICO</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" colspan="12"><BR /></td>
+            <td class="contenido" colspan="12"><BR/></td>
         </tr>
     </table>
-    <br />
+    <br/>
     <table border="1" width="100%" style="border-collapse: collapse;">
         <tr>
             <td class="encabezado" colspan="1">DICTADA POR:</td>
-            <td class="contenido" colspan="2"><?php echo $providerNAME;?></td>
+            <td class="contenido" colspan="2"><?php echo $providerNAME; ?></td>
         </tr>
         <tr>
             <td class="encabezado" colspan="3">FECHA DEL DICTADO:</td>
@@ -628,9 +620,9 @@ ob_start();
             <td class="encabezado" colspan="1">AÑO</td>
         </tr>
         <tr>
-            <td class="contenido" colspan="1"><?php  echo $dateddia; ?></td>
-            <td class="contenido" colspan="1"><?php  echo $datedmes; ?></td>
-            <td class="contenido" colspan="1"><?php  echo $datedano; ?></td>
+            <td class="contenido" colspan="1"><?php echo $dateddia; ?></td>
+            <td class="contenido" colspan="1"><?php echo $datedmes; ?></td>
+            <td class="contenido" colspan="1"><?php echo $datedano; ?></td>
 
         </tr>
         <tr>
@@ -643,11 +635,11 @@ ob_start();
 </span></td>
         </tr>
         <tr>
-            <td class="contenido" style="border:0;" colspan="4"><BR /></td>
+            <td class="contenido" style="border:0;" colspan="4"><BR/></td>
         </tr>
         <tr>
-            <td class="contenido" style="border:0;" colspan="4"><BR /></td>
-            <td class="encabezado" colspan="1" width="40%"><?php echo $providerNAME;?></td>
+            <td class="contenido" style="border:0;" colspan="4"><BR/></td>
+            <td class="encabezado" colspan="1" width="40%"><?php echo $providerNAME; ?></td>
         </tr>
     </table>
 

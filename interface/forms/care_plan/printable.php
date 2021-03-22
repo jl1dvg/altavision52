@@ -238,6 +238,13 @@ $MedicoProcedimiento = $CarePlanSQL['care_plan_type'];
         posterior opaca logrando obtener disrupción de la misma y dejando el eje visual libre
         de opacidades.");
             }
+            elseif ($CodigoProcedimiento == '65855') {
+                echo("Bajo anestesia tópica de clorhidrato de Proximetacaina al 0,5%.<br /><br />
+        Se posiciona lente de contacto de goldmann de tres espejos con solución de
+        viscoelastico Eyecoat.<br /><br />
+        Una vez visualizado la malla trabecular se realiza la aplicación de láser dentro del
+        trabéculo en 360°.");
+            }
             ?>
         </FONT></FONT></P>
 

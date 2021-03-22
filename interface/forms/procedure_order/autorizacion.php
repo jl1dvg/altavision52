@@ -183,9 +183,9 @@ ob_start();
 </page_header>
 <P STYLE="margin-bottom: 0.14in" align="right"><FONT SIZE=2 STYLE="font-size: 9pt">Guayaquil,
         <?php echo($dateddia); ?> de  <?php echo($nombreMes); ?> del <?php echo($datedano); ?><br/><br/></FONT></P>
-<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Se&ntilde;or
-        Doctor</FONT></P>
-<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>CARLOS RUIZ MORLA</B></FONT></P>
+<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Se&ntilde;orita
+        Magister</FONT></P>
+<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>ANITA MARIA JOUVIN HENRIQUEZ</B></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>COORDINADOR
             PROVINCIAL DE PRESTACIONES DEL SEGURO DE SALUD GUAYAS</B></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><A NAME="_GoBack"></A><FONT SIZE=2 STYLE="font-size: 9pt">Cuidad.

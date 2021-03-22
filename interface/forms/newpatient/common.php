@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Common script for the encounter form (new and view) scripts.
  *
@@ -6,18 +7,20 @@
  * @link      http://www.open-emr.org
  * @author    Brady Miller <brady.g.miller@gmail.com>
  * @author    Ranganath Pathak <pathak@scrs1.org>
+ * @author    Jerry Padgett <sjpadgett@gmail.com>
  * @copyright Copyright (c) 2019 Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2019 Ranganath Pathak <pathak@scrs1.org>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-
 require_once("$srcdir/options.inc.php");
-require_once("$srcdir/acl.inc");
 require_once("$srcdir/lists.inc");
 
+use OpenEMR\Common\Acl\AclExtended;
+use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
+use OpenEMR\Services\UserService;
 use OpenEMR\Services\FacilityService;
 use OpenEMR\OeUI\OemrUI;
 
@@ -27,11 +30,24 @@ if ($GLOBALS['enable_group_therapy']) {
     require_once("$srcdir/group.inc");
 }
 
-$months = array("01","02","03","04","05","06","07","08","09","10","11","12");
-$days = array("01","02","03","04","05","06","07","08","09","10","11","12","13","14",
-  "15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31");
+$months = array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
+$days = array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14",
+    "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31");
 $thisyear = date("Y");
-$years = array($thisyear-1, $thisyear, $thisyear+1, $thisyear+2);
+$years = array($thisyear - 1, $thisyear, $thisyear + 1, $thisyear + 2);
+
+$mode = (!empty($_GET['mode'])) ? $_GET['mode'] : null;
+
+// "followup" mode is relevant when enable follow up encounters global is enabled
+// it allows the user to duplicate past encounter and connect between the two
+// under this mode the facility and the visit category will be same as the origin and in readonly
+if ($mode === "followup") {
+    $encounter = (!empty($_GET['enc'])) ? (int)$_GET['enc'] : null;
+    if (!is_null($encounter)) {
+        $viewmode = true;
+        $_REQUEST['id'] = $encounter;
+    }
+}
 
 if ($viewmode) {
     $id = (isset($_REQUEST['id'])) ? $_REQUEST['id'] : '';
@@ -53,86 +69,84 @@ function sensitivity_compare($a, $b)
 
 // get issues
 $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
-  "pid = ? AND enddate IS NULL " .
-  "ORDER BY type, begdate", array($pid));
+    "pid = ? AND enddate IS NULL " .
+    "ORDER BY type, begdate", array($pid));
 ?>
 <!DOCTYPE html>
-<html>
 <head>
-<?php Header::setupHeader(['datetime-picker', 'common', 'jquery-ui', 'jquery-ui-darkness']);?>
-<title><?php echo xlt('Patient Encounter'); ?></title>
+    <?php Header::setupHeader(['datetime-picker', 'common']); ?>
+    <title><?php echo xlt('Patient Encounter'); ?></title>
 
 
-<!-- validation library -->
-<?php
-//Not lbf forms use the new validation, please make sure you have the corresponding values in the list Page validation
-$use_validate_js = 1;
-require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
-
-<?php include_once("{$GLOBALS['srcdir']}/ajax/facility_ajax_jav.inc.php"); ?>
-<script language="JavaScript">
-
-
-    var mypcc = <?php echo js_escape($GLOBALS['phone_country_code']); ?>;
-
-    // Process click on issue title.
-    function newissue() {
-        dlgopen('../../patient_file/summary/add_edit_issue.php', '_blank', 700, 535, '', '', {
-            buttons: [
-            {text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}
-            ]
-        });
-        return false;
-    }
-
-     // callback from add_edit_issue.php:
-     function refreshIssue(issue, title) {
-      var s = document.forms[0]['issues[]'];
-      s.options[s.options.length] = new Option(title, issue, true, true);
-     }
-
+    <!-- validation library -->
     <?php
-    //Gets validation rules from Page Validation list.
-    //Note that for technical reasons, we are bypassing the standard validateUsingPageRules() call.
-    $collectthis = collectValidationPageRules("/interface/forms/newpatient/common.php");
-    if (empty($collectthis)) {
-         $collectthis = "undefined";
-    } else {
-         $collectthis = json_sanitize($collectthis["new_encounter"]["rules"]);
-    }
-    ?>
-    var collectvalidation = <?php echo $collectthis; ?>;
-    $(function(){
-        window.saveClicked = function(event) {
-            var submit = submitme(1, event, 'new-encounter-form', collectvalidation);
-            if (submit) {
-            top.restoreSession();
-            $('#new-encounter-form').submit();
-            }
+    //Not lbf forms use the new validation, please make sure you have the corresponding values in the list Page validation
+    $use_validate_js = 1;
+    require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
+
+    <?php include_once("{$GLOBALS['srcdir']}/ajax/facility_ajax_jav.inc.php"); ?>
+    <script language="JavaScript">
+        const mypcc = '' + <?php echo js_escape($GLOBALS['phone_country_code']); ?>;
+
+        // Process click on issue title.
+        function newissue() {
+            dlgopen('../../patient_file/summary/add_edit_issue.php', '_blank', 700, 535, '', '', {
+                buttons: [
+                    {text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}
+                ]
+            });
+            return false;
         }
 
-        $(".enc_issue").on('click', function(e) {
-           e.preventDefault();e.stopPropagation();
-           dlgopen('', '', 700, 650, '', '', {
+        // callback from add_edit_issue.php:
+        function refreshIssue(issue, title) {
+            var s = document.forms[0]['issues[]'];
+            s.options[s.options.length] = new Option(title, issue, true, true);
+        }
 
-               buttons: [{text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}],
+        <?php
+        //Gets validation rules from Page Validation list.
+        //Note that for technical reasons, we are bypassing the standard validateUsingPageRules() call.
+        $collectthis = collectValidationPageRules("/interface/forms/newpatient/common.php");
+        if (empty($collectthis)) {
+            $collectthis = "undefined";
+        } else {
+            $collectthis = json_sanitize($collectthis["new_encounter"]["rules"]);
+        }
+        ?>
+        let collectvalidation = <?php echo $collectthis; ?>;
+        $(function () {
+            window.saveClicked = function (event) {
+                const submit = submitme(1, event, 'new-encounter-form', collectvalidation);
+                if (submit) {
+                    top.restoreSession();
+                    $('#new-encounter-form').submit();
+                }
+            }
 
-               allowResize: true,
-               allowDrag: true,
-               dialogId: '',
-               type: 'iframe',
-               url: $(this).attr('href')
-           });
+            $(".enc_issue").on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dlgopen('', '', 700, 650, '', '', {
+
+                    buttons: [{text: <?php echo xlj('Close'); ?>, close: true, style: 'default btn-sm'}],
+
+                    allowResize: true,
+                    allowDrag: true,
+                    dialogId: '',
+                    type: 'iframe',
+                    url: $(this).attr('href')
+                });
+            });
+
+            $('.datepicker').datetimepicker({
+                <?php $datetimepicker_timepicker = false; ?>
+                <?php $datetimepicker_showseconds = false; ?>
+                <?php $datetimepicker_formatInput = true; ?>
+                <?php require($GLOBALS['srcdir'] . '/js/xl/jquery-datetimepicker-2-5-4.js.php'); ?>
+                <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
+            });
         });
-
-        $('.datepicker').datetimepicker({
-            <?php $datetimepicker_timepicker = false; ?>
-            <?php $datetimepicker_showseconds = false; ?>
-            <?php $datetimepicker_formatInput = true; ?>
-            <?php require($GLOBALS['srcdir'] . '/js/xl/jquery-datetimepicker-2-5-4.js.php'); ?>
-            <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
-        });
-    });
 
     function bill_loc(){
         var pid = <?php echo attr($pid);?>;
@@ -171,22 +185,23 @@ require_once($GLOBALS['srcdir'] . "/validation/validation_script.js.php"); ?>
         return false;
     }
 
-</script>
-<style>
-@media only screen and (max-width: 1024px) {
-    #visit-details [class*="col-"], #visit-issues [class*="col-"]{
-    width: 100%;
-    text-align: <?php echo ($_SESSION['language_direction'] == 'rtl') ? 'right ': 'left '?> !Important;
-}
-</style>
-<?php
-if ($viewmode) {
-    $body_javascript = '';
-    $heading_caption = xl('Patient Encounter Form');
-} else {
-    $body_javascript = 'onload="javascript:document.new_encounter.reason.focus();"';
-    $heading_caption = xl('New Encounter Form');
-}
+    </script>
+    <style>
+        @media only screen and (max-width: 1024px) {
+            #visit-details [class*="col-"],
+            #visit-issues [class*="col-"] {
+                width: 100%;
+                text-align: <?php echo ($_SESSION['language_direction'] == 'rtl') ? 'right ' : 'left '?> !Important;
+            }
+    </style>
+    <?php
+    if ($viewmode) {
+        $body_javascript = '';
+        $heading_caption = xl('Patient Encounter Form');
+    } else {
+        $body_javascript = 'onload="javascript:document.new_encounter.reason.focus();"';
+        $heading_caption = xl('New Encounter Form');
+    }
 
 
 if ($GLOBALS['enable_help'] == 1) {
@@ -210,16 +225,17 @@ $arrOeUiSettings = array(
     'help_file_name' => "common_help.php"
 );
 $oemr_ui = new OemrUI($arrOeUiSettings);
+
 ?>
 </head>
-<body class="body_top" <?php echo $body_javascript;?>>
+<body class="body_top" <?php echo $body_javascript; ?>>
     <div id="container_div" class="<?php echo attr($oemr_ui->oeContainer()); ?>">
         <div class="row">
             <div class="col-sm-12">
                 <!-- Required for the popup date selectors -->
-                <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
+                <div id="overDiv" style="position: absolute; visibility: hidden; z-index: 1000;"></div>
                 <div class="page-header clearfix">
-                    <?php echo  $oemr_ui->pageHeading() . "\r\n"; ?>
+                    <?php echo $oemr_ui->pageHeading() . "\r\n"; ?>
                 </div>
             </div>
         </div>
@@ -227,10 +243,10 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
             <div class="col-sm-12">
                 <form id="new-encounter-form" method='post' action="<?php echo $rootdir ?>/forms/newpatient/save.php" name='new_encounter'>
                 <?php if ($viewmode) { ?>
-                    <input type=hidden name='mode' value='update'>
+                    <input type=hidden name='mode' value='update' />
                     <input type=hidden name='id' value='<?php echo (isset($_GET["id"])) ? attr($_GET["id"]) : '' ?>'>
                 <?php } else { ?>
-                    <input type='hidden' name='mode' value='new'>
+                    <input type='hidden' name='mode' value='new' />
                 <?php } ?>
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <fieldset>
@@ -298,24 +314,24 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                        FROM openemr_postcalendar_categories
                                                        WHERE pc_active = 1 and pc_cattype IN (0,3) and pc_constant_id  != 'no_show' ORDER BY pc_seq";
 
-                                            $visitResult = sqlStatement($visitSQL);
-                                            $therapyGroupCategories = [];
+                                $visitResult = sqlStatement($visitSQL);
+                                $therapyGroupCategories = [];
 
-                                            while ($row = sqlFetchArray($visitResult)) {
-                                                $catId = $row['pc_catid'];
-                                                $name = $row['pc_catname'];
+                                while ($row = sqlFetchArray($visitResult)) {
+                                    $catId = $row['pc_catid'];
+                                    $name = $row['pc_catname'];
 
-                                                if ($row['pc_cattype'] == 3) {
-                                                    $therapyGroupCategories[] = $catId;
-                                                }
+                                    if ($row['pc_cattype'] == 3) {
+                                        $therapyGroupCategories[] = $catId;
+                                    }
 
-                                                if ($catId === "_blank") {
-                                                    continue;
-                                                }
+                                    if ($catId === "_blank") {
+                                        continue;
+                                    }
 
-                                                if ($row['pc_cattype'] == 3 && !$GLOBALS['enable_group_therapy']) {
-                                                    continue;
-                                                }
+                                    if ($row['pc_cattype'] == 3 && !$GLOBALS['enable_group_therapy']) {
+                                        continue;
+                                    }
 
                                                 // Fetch acl for category of given encounter. Only if has write auth for a category, then can create an encounter of that category.
                                                 $postCalendarCategoryACO = fetchPostCalendarCategoryACO($catId);
@@ -326,19 +342,19 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                     $authPostCalendarCategoryWrite = true;
                                                 }
 
-                                                //if no permission for category write, don't show in drop-down
-                                                if (!$authPostCalendarCategoryWrite) {
-                                                    continue;
-                                                }
+                                    //if no permission for category write, don't show in drop-down
+                                    if (!$authPostCalendarCategoryWrite) {
+                                        continue;
+                                    }
 
-                                                $optionStr = '<option value="%pc_catid%" %selected%>%pc_catname%</option>';
-                                                $optionStr = str_replace("%pc_catid%", attr($catId), $optionStr);
-                                                $optionStr = str_replace("%pc_catname%", text(xl_appt_category($name)), $optionStr);
-                                                if ($viewmode) {
-                                                    $selected = ($result['pc_catid'] == $catId) ? " selected" : "";
-                                                } else {
-                                                    $selected = ($GLOBALS['default_visit_category'] == $catId) ? " selected" : "";
-                                                }
+                                    $optionStr = '<option value="%pc_catid%" %selected%>%pc_catname%</option>';
+                                    $optionStr = str_replace("%pc_catid%", attr($catId), $optionStr);
+                                    $optionStr = str_replace("%pc_catname%", text(xl_appt_category($name)), $optionStr);
+                                    if ($viewmode) {
+                                        $selected = ($result['pc_catid'] == $catId) ? " selected" : "";
+                                    } else {
+                                        $selected = ($GLOBALS['default_visit_category'] == $catId) ? " selected" : "";
+                                    }
 
                                                   $optionStr = str_replace("%selected%", $selected, $optionStr);
                                                   echo $optionStr;
@@ -602,17 +618,16 @@ if (!$viewmode) { ?>
         }
         // otherwise just continue normally
     }
-    <?php
-
-  // Search for an encounter from today
-    $erow = sqlQuery("SELECT fe.encounter, fe.date " .
-    "FROM form_encounter AS fe, forms AS f WHERE " .
-    "fe.pid = ? " .
-    " AND fe.date >= ? " .
-    " AND fe.date <= ? " .
-    " AND " .
-    "f.formdir = 'newpatient' AND f.form_id = fe.id AND f.deleted = 0 " .
-    "ORDER BY fe.encounter DESC LIMIT 1", array($pid,date('Y-m-d 00:00:00'),date('Y-m-d 23:59:59')));
+        <?php
+    // Search for an encounter from today
+        $erow = sqlQuery("SELECT fe.encounter, fe.date " .
+        "FROM form_encounter AS fe, forms AS f WHERE " .
+        "fe.pid = ? " .
+        " AND fe.date >= ? " .
+        " AND fe.date <= ? " .
+        " AND " .
+        "f.formdir = 'newpatient' AND f.form_id = fe.id AND f.deleted = 0 " .
+        "ORDER BY fe.encounter DESC LIMIT 1", array($pid, date('Y-m-d 00:00:00'), date('Y-m-d 23:59:59')));
 
     if (!empty($erow['encounter'])) {
         // If there is an encounter from today then present the duplicate visit dialog
@@ -627,7 +642,7 @@ if ($GLOBALS['enable_group_therapy']) { ?>
 /* hide / show group name input */
     var groupCategories = <?php echo json_encode($therapyGroupCategories); ?>;
     $('#pc_catid').on('change', function () {
-        if(groupCategories.indexOf($(this).val()) > -1){
+        if (groupCategories.indexOf($(this).val()) > -1) {
             $('#therapy_group_name').show();
         } else {
             $('#therapy_group_name').hide();
@@ -643,6 +658,7 @@ if ($GLOBALS['enable_group_therapy']) { ?>
           ]
       });
     }
+
     // This is for callback by the find-group popup.
     function setgroup(gid, name) {
         var f = document.forms[0];
@@ -650,13 +666,13 @@ if ($GLOBALS['enable_group_therapy']) { ?>
         f.form_gid.value = gid;
     }
 
-    <?php
-    if ($viewmode && in_array($result['pc_catid'], $therapyGroupCategories)) {?>
-        $('#therapy_group_name').show();
+        <?php
+        if ($viewmode && in_array($result['pc_catid'], $therapyGroupCategories)) {?>
+    $('#therapy_group_name').show();
+            <?php
+        } ?>
         <?php
     } ?>
-    <?php
-} ?>
 
 $(function (){
     $('#billing_facility').addClass('col-sm-9');

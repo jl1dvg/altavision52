@@ -702,6 +702,7 @@ function show_right() {
     $("#ANTSEG_1").removeClass("size50").addClass("size100");
     $("#NEURO_1").removeClass("size50").addClass("size100");
     $("#POSTSEG_1").removeClass("size50").addClass("size100");
+    $("#NO_1").removeClass("size50").addClass("size100");
     $("#IMPPLAN_1").removeClass("size50").addClass("size100");
     $("#HPI_right").removeClass('nodisplay');
     $("#PMH_right").removeClass('nodisplay');
@@ -713,6 +714,7 @@ function show_right() {
     $("#PMH_1").addClass("clear_both");
     $("#ANTSEG_1").addClass("clear_both");
     $("#POSTSEG_1").addClass("clear_both");
+    $("#NO_1").addClass("clear_both");
     $("#NEURO_1").addClass("clear_both");
     $("#IMPPLAN_1").addClass("clear_both");
     hide_PRIORS();
@@ -737,6 +739,7 @@ function hide_right() {
     $("#PMH_1").removeClass("clear_both");
     $("#ANTSEG_1").removeClass("clear_both");
     $("#POSTSEG_1").removeClass("clear_both");
+    $("#NO_1").removeClass("clear_both");
     $("#NEURO_1").removeClass("clear_both");
     update_PREFS();
 }
@@ -750,6 +753,7 @@ function show_left() {
     $("#ANTSEG_1").removeClass("size100").addClass("size50");
     $("#NEURO_1").removeClass("size100").addClass("size50");
     $("#POSTSEG_1").removeClass("size100").addClass("size50");
+    $("#NO_1").removeClass("size100").addClass("size50");
     $("#IMPPLAN_1").removeClass("size100").addClass("size50");
     $("#HPI_left").removeClass('nodisplay');
     $("#PMH_left").removeClass('nodisplay');
@@ -770,6 +774,7 @@ function hide_left() {
     $("#ANTSEG_1").removeClass("size100").addClass("size50");
     $("#NEURO_1").removeClass("size100").addClass("size50");
     $("#POSTSEG_1").removeClass("size100").addClass("size50");
+    $("#NO_1").removeClass("size100").addClass("size50");
     $("#IMPPLAN_1").removeClass("size100").addClass("size50");
     $("#HPI_left").addClass('nodisplay');
     $("#PMH_left").addClass('nodisplay');

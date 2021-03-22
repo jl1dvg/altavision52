@@ -58,6 +58,7 @@ $queryProced="select * from procedure_order_code AS PO
         ORDER BY ojo";
 
 $order_data = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
+$order_oct = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
 $order_data2 = sqlQuery($queryProced, array($pid,$encounter,$_GET['formid']));
 $order_dataF = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
 $order_fecha = sqlFetchArray($order_dataF);
@@ -167,7 +168,7 @@ ob_start();
         <TD COLSPAN=2 WIDTH=105>
             <P ALIGN=CENTER><FONT COLOR="#ff0000"><FONT SIZE=1 STYLE="font-size: 6pt">
                         <?php
-                        echo date("d/m/Y", strtotime($order_fecha['date_collected']));
+                        echo date("d/m/Y", strtotime($order_fecha['date_ordered']));
                         ?>
                     </FONT></P>
         </TD>
@@ -244,7 +245,7 @@ ob_start();
         <TD COLSPAN=4 WIDTH=589>
             <P ALIGN=CENTER><FONT SIZE=2 STYLE="font-size: 9pt">
                     <?php
-                    echo date("d/m/Y", strtotime($fechaINGRESO['date']));
+                    echo date("d/m/Y", strtotime($order_fecha['date_ordered']));
                     ?>
                 </FONT></P>
         </TD>
@@ -597,6 +598,27 @@ ob_start();
             $i++;
         }
     }
+    $i='0';
+    $a='1';
+    while ($order_lista = sqlFetchArray($order_oct)) {
+        $newORDERdatos =  array (
+            'procedure_name'       => $order_lista['procedure_name'],
+            'procedure_code'       => $order_lista['procedure_code'],
+            'ojo'                  => $order_lista['ojo'],
+            'dosis'                => $order_lista['dosis'],
+            'clinical_hx'          => $order_lista['clinical_hx'],
+        );
+        if ($newORDERdatos['procedure_code'] == "281032"){
+            print "<tr><td>".$a++."</td>";
+            print "<td>Comparison of retinal thickness in normal eyes using Stratus and Spectralis optical coherence tomography<br>https://pubmed.ncbi.nlm.nih.gov/20007831/</td>
+                   <td></td>
+                   <td>X</td>
+                   <td></td>
+                   <td><b>Justificación: </b>" . $newORDERdatos['clinical_hx'] . "</td>";
+        }
+        print "</td></tr>";
+    }
+
 
     ?>
 </TABLE>
@@ -629,7 +651,7 @@ ob_start();
             <TD COLSPAN=2 WIDTH=105>
                 <P ALIGN=CENTER><FONT COLOR="#ff0000"><FONT SIZE=1 STYLE="font-size: 6pt">
                             <?php
-                            echo date("d/m/Y", strtotime($order_fecha['date_collected']));
+                            echo date("d/m/Y", strtotime($order_fecha['date_ordered']));
                             ?>
                         </FONT></FONT></P>
             </TD>

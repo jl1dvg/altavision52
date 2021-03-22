@@ -987,7 +987,7 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
         if ($cols != 'Fax') {
             ?><!-- start of the refraction boxes -->
             <?php
-            if ($ODVA || $OSVA || $ARODSPH || $AROSSPH || $MRODSPH || $MROSSPH || $CRODSPH || $CROSSPH || $CTLODSPH || $CTLOSSPH) { ?>
+            if ($ODVA || $OSVA || $ARODSPH || $AROSSPH || $MRODSPH || $MROSSPH || $CRODSPH || $CROSSPH || $CTLODSPH || $CTLOSSPH || $IOPTIME) { ?>
                 <br/>
                 <table class="refraction_tables">
                 <tr>

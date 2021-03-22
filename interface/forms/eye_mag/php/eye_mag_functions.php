@@ -4119,6 +4119,48 @@ function Menu_myGetRegistered($state = "1", $limit = "unlimited", $offset = "0")
  *  @param string $direction, options "web" or anything else.  Web provides apache-friendly url links.
  *  @return outputs directly to screen
  */
+        function rx_header($pid, $direction = 'shell')
+        {
+            global $encounter;
+            global $visit_date;
+            global $facilityService;
+            global $OE_SITE_DIR;
+
+            /*******************************************************************
+             * $titleres = getPatientData($pid, "fname,lname,providerID");
+             * $sql = "SELECT * FROM facility ORDER BY billing_location DESC LIMIT 1";
+             *******************************************************************/
+            //$titleres = getPatientData($pid, "fname,lname,providerID,DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS");
+            $titleres = getPatientData($pid, "fname,lname,lname2, providerID,DOB");
+            $facility = null;
+            if ($_SESSION['pc_facility']) {
+                $facility = $facilityService->getById($_SESSION['pc_facility']);
+            } else {
+                $facility = $facilityService->getPrimaryBillingLocation();
+            }
+
+            $DOB = oeFormatShortDate($titleres['DOB']);
+            /******************************************************************/
+            ob_start();
+            // Use logo if it exists as 'practice_logo.gif' in the site dir
+            // old code used the global custom dir which is no longer a valid
+            //need to fix logo for multi-site
+            ?>
+            <table style="width:100%;">
+                <tr>
+
+                    <td>
+                        <em style="font-weight:bold;font-size:1.4em;"><?php echo text($titleres['fname']) . " " . text($titleres['lname'] ." " . text($titleres['lname2'])); ?></em><br/>
+                        <b><?php echo xlt('Visit Date'); ?>:</b> <?php echo oeFormatSDFT(strtotime($visit_date)); ?><br/>
+
+                    </td>
+                </tr>
+            </table>
+            <?php
+            $output = ob_get_contents();
+            ob_end_clean();
+            return $output;
+        }
 function report_header($pid, $direction = 'shell')
 {
     global $encounter;

@@ -110,8 +110,8 @@ $config_mpdf = array(
     'default_font' => '',
     'margin_left' => '10',
     'margin_right' => '10',
-    'margin_top' => $GLOBALS['pdf_top_margin'],
-    'margin_bottom' => $GLOBALS['pdf_bottom_margin'],
+    'margin_top' => '10',
+    'margin_bottom' => '10',
     'margin_header' => '',
     'margin_footer' => '',
     'orientation' => $GLOBALS['pdf_layout'],
@@ -836,7 +836,7 @@ ob_start();
             <TD ALIGN=LEFT></TD>
         </TR>
         <TR>
-            <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=22 HEIGHT=29 ALIGN=CENTER>DR. JAVIER RODRIGUEZ</TD>
+            <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=22 HEIGHT=29 ALIGN=CENTER>DR. CESAR SANCHEZ</TD>
             <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER>ANESTESIOLOGO</TD>
             <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER SDVAL="2286080" SDNUM="12298;">2286080</TD>
             <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=8 ALIGN=CENTER><BR></TD>
@@ -1146,7 +1146,7 @@ ob_start();
                     </TD>
                     <TD WIDTH=142>
                         <P ALIGN=LEFT><FONT FACE="Calibri, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">Dr.
-                                    Javier Rodriguez</FONT></FONT></P>
+                                    Cesar Sanchez</FONT></FONT></P>
                     </TD>
                     <TD WIDTH=133>
                         <P ALIGN=LEFT><FONT FACE="Calibri, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">Instrumentista:</FONT></FONT></P>

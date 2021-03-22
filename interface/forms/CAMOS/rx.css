@@ -37,21 +37,21 @@
 	padding-bottom: 0.09in;
 }
 .topheader {
-	font-family: times;
+	font-family: Arial, Arial, sans-serif;
 	font-weight: bold;
 	font-size: 12px;
-	text-align: center;
+	text-align: right;
 }
 .bottomheader {
 	font-family: times;
 	font-weight: normal;
-	font-size: 12px;
-	text-align: left;
+	font-size: 16px;
+	text-align: right;
 }
 .content {
 	font-family: courier;
 	font-weight: normal;
-	font-size: 14px;
+	font-size: 20px;
 	text-align: left;
 }
 .signature {
@@ -66,12 +66,11 @@
 }
 .mytagname {
 	font-weight: bold;
-	font-size: 12px;
+	font-size: 16px;
 }
 .mydata {
 	font-weight: normal;
-	font-size: 12px;
-        text-decoration: underline;
+	font-size: 16px;
 }
 .symbol {
 	font-weight: bold;

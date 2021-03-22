@@ -167,7 +167,7 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
                 //print text($practice_zip) . "<br/>\n";
                 //print xlt('Voice') . ': ' . text($practice_phone) . ' / ' . xlt('Fax') . ': ' . text($practice_fax) . "<br/>\n";
                 //print xlt('DEA') . ': ' . text($practice_dea);
-                print "<br/><br/><br/><br/><br/><br/>\n";
+                print "<br/><br/><br/><br/><br/><br/><br/><br/><br/>\n";
             }
             function bottomHeaderRx()
             {
@@ -182,7 +182,7 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
                 //print "<span class='mytagname'>" . xlt('DOB') . ":</span>\n";
                 //print "<span class='mydata'> " . text($patient_dob) . " </span>\n";
                 print "<span class='mytagname'>" . xlt('Date') . ":</span>\n";
-                print "<span class='mydata'>" . date("d/m/Y") . "</span><br/><br/>\n";
+                print "<span class='mydata'>" . date("d/m/Y") . "</span><br/><br/><br/>\n";
                 //print "<div class='symbol'>" . xlt('Rx') . "</div><br/>\n";
             }
             function cita()
@@ -190,8 +190,8 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
                 global $physician_name,$practice_address,$practice_city,$practice_state,$practice_zip,$practice_phone,$practice_fax,$practice_dea;
                 print "<br/>\n";
                 print "<span class='mytagname'>" . xlt('Próxima cita') . ":</span>\n";
-                $newdate = date("d-m-Y", strtotime($practice_phone));
-                print "<span class='mydata'>" . dateformat(strtotime($practice_phone)) . " " . text($practice_fax) . "</span><br/><br/>\n";
+                //$newdate = date("d-m-Y", $_POST['nextvisit']);
+                print "<span class='mydata'>" . $_POST['nextvisit'] . "</span><br/><br/>\n";
             }
             ?>
 <div id='rx1'  class='rx' >
@@ -209,15 +209,17 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
   <div class='content'>
 
             <?php
-            $INSTRUCCIONES = "</div>" . $sigline[$_GET[sigline]].
-                              "</div><div id='rx3'  class='rx' ><br/><br/><br/><br/><div class='content'>";
+            $INSTRUCCIONES = "</div>" .
+                              "</div><div id='rx3'  class='rx' ><br/><br/><br/><br/><br/><br/><br/><br/><div class='content'>";
                 $Receta = str_replace("INSTRUCCIONES",$INSTRUCCIONES,$camos_content[0]);
             print $Receta;
             ?>
   </div>
+    <div>
             <?php
             cita();
-            print $sigline[$_GET[sigline]] ?>
+            //print $sigline[$_GET[sigline]] ?>
+    </div>
 </div> <!-- end of rx block -->
             <?php
         } else { // end of deciding if we are printing the above rx block
@@ -457,6 +459,18 @@ return count_turnoff;
     <?php if ($_GET['letterhead']) { ?>
 <input type=submit name='print_pdf' value='<?php echo xla('Print (PDF)'); ?>'>
 <?php } ?>
+    <select id="nextvisit" name="nextvisit">
+        <option value=" -- ">--</option>
+        <option value="24 horas">24 horas</option>
+        <option value="1 semana previa cita llamando al 04-228-1620">1 semana</option>
+        <option value="2 semanas previa cita llamando al 04-228-1620">2 semanas</option>
+        <option value="3 semanas previa cita llamando al 04-228-1620">3 semanas</option>
+        <option value="1 mes previa cita llamando al 04-228-1620">1 mes</option>
+        <option value="2 meses previa cita llamando al 04-228-1620">2 meses</option>
+        <option value="3 meses previa cita llamando al 04-228-1620">3 meses</option>
+        <option value="6 meses previa cita llamando al 04-228-1620">6 meses</option>
+        <option value="1 año previa cita llamando al 04-228-1620">1 año</option>
+    </select>
 
 <input type=submit name='print_html' value='<?php echo xla('Print (HTML)'); ?>'>
 </form>
@@ -495,7 +509,7 @@ return count_turnoff;
 <tr>
 <td> <?php echo xlt('CI'); ?>: </td>
 <td> <input type=text name=practice_dea value ='<?php echo attr($practice_dea); ?>'> </td>
-</tr>-->
+</tr>
     <tr>
         <td> <?php echo xlt('Próxima cita'); ?>: </td>
         <td> <input type=date name=practice_phone value ='<?php echo attr($practice_phone); ?>'> </td>
@@ -503,9 +517,9 @@ return count_turnoff;
     <tr>
         <td> <?php echo xlt('Hora'); ?>: </td>
         <td> <input type=text name=practice_fax value ='<?php echo attr($practice_fax); ?>'> </td>
-    </tr>
+    </tr>-->
 </table>
-<input type=submit name=update value='<?php echo xla('Update'); ?>'>
+<!--<input type=submit name=update value='<?php echo xla('Update'); ?>'>-->
 </form>
     <?php
 } //end of else statement
