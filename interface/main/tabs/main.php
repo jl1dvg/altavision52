@@ -350,7 +350,7 @@ if (isset($_SESSION['app1'])) {
 
     <div class="body_top" id="body_top_div" data-bind='css: responsiveDisplay.objWidth().bodyTopDivWidth'>
         <div id="logo_menu" >
-        <a href="https://www.open-emr.org" title="OpenEMR <?php echo xla("Website"); ?>" rel="noopener" target="_blank"><img class="logo oe-pull-toward" id='oemr_logo' alt="openEMR small logo"  style="width:20px" border="0" src="<?php echo $GLOBALS['images_static_relative']; ?>/menu-logo.png"></a>
+        <a href="https://www.alta-vision.com" title="Alta-Vision <?php echo xla("Website"); ?>" rel="noopener" target="_blank"><img class="logo oe-pull-toward" id='oemr_logo' alt="openEMR small logo"  style="width:20px" border="0" src="<?php echo $GLOBALS['images_static_relative']; ?>/menu-logo.png"></a>
         <div>
         <i class="fa fa-2x fa-bars oe-hidden col-sm-2 oe-pull-away" aria-hidden="true" id='menu_icon' data-bind='css: responsiveDisplay.objWidth().menuIconHide, click: function(){ responsiveDisplay.verticalMenuObservable(); responsiveDisplay.menuIconObservable()}, css2: {"fa-bars" : !responsiveDisplay.oeMenuIcon(), "fa-eye-slash" : responsiveDisplay.oeMenuIcon}'></i>
         </div>

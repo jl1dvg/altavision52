@@ -68,7 +68,7 @@ if ($search_any_type == 'dual') {
                 <div class="oe-expandable-search" id="div-search-globals">
                 <?php //adapted from https://codepen.io/brandonkennedy/pen/yGjsi ?>
                     <form name="frm_search_globals">
-                        <input type="text" id="anySearchBox"  class="<?php echo $any_search_class ?>" name="anySearchBox"  placeholder="<?php echo xla("Search by any demographics") ?>" autocomplete="off">
+                        <input type="text" id="anySearchBox"  class="<?php echo $any_search_class ?>" name="anySearchBox"  placeholder="<?php echo xla("Buscar pacientes con cualquier dato") ?>" autocomplete="off">
                         <button type="button" id="search_globals" class="btn btn-default btn-search btn-search1 <?php echo $search_globals_class ?>" title='<?php echo xla("Search for patient by entering whole or part of any demographics field information"); ?>' data-bind="event: {mousedown: viewPtFinder.bind( $data, '<?php echo xla("The search field cannot be empty. Please enter a search term") ?>', '<?php echo attr($search_any_type); ?>')}">
                         </button>
                     </form>

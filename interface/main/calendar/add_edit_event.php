@@ -2128,7 +2128,9 @@ if ($repeatexdate != "") {
 <input type='button' id='cancel' value='<?php echo xla('Cancel');?>' />
 &nbsp;
 <input type='button' name='form_duplicate' id='form_duplicate' value='<?php echo xla('Create Duplicate');?>' />
-</p></td></tr></table>
+
+
+</></td></tr></table>
 <?php if ($informant) {
     echo "<p class='text'>" . xlt('Last update by') . " " .
     text($informant) . " " . xlt('on') . " " . text($row['pc_time']) . "</p>\n";
