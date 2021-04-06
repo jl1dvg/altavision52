@@ -359,7 +359,7 @@ if ($GLOBALS['gbl_portal_cms_enable']) {
                                             "forms.pid = ? AND form_encounter.pid = ? AND " .
                                             "form_encounter.encounter = forms.encounter " .
                                             " AND forms.deleted=0 ". // --JRM--
-                                            "ORDER BY form_encounter.encounter DESC, form_encounter.date DESC, fdate ASC", array($pid, $pid));
+                                            "ORDER BY form_encounter.encounter DESC, form_encounter.date DESC, str_to_date(fdate, '%d-%m-%Y') ASC", array($pid, $pid));
                                         $res2 = sqlStatement("SELECT name FROM registry ORDER BY priority");
                                         $html_strings = array();
                                         $registry_form_name = array();

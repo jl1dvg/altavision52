@@ -159,6 +159,7 @@ function getEncounterDateByEncounter($encounter)
     $sql = "SELECT date FROM " . escape_table_name($table) . " WHERE encounter = ? ORDER BY date";
     return sqlQuery($sql, array($encounter));
 }
+
 function getEncounterDateByFormID($encounter, $formid, $formdir)
 {
     $sql = "SELECT date FROM forms WHERE encounter = ? AND form_id = ? AND formdir = ? ORDER BY date";

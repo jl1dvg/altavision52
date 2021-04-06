@@ -238,7 +238,7 @@ if ($printable) {
   $titleres = getPatientData($pid, "fname,lname,providerID");
   $sql = "SELECT * FROM facility ORDER BY billing_location DESC LIMIT 1";
   *******************************************************************/
-    $titleres = getPatientData($pid, "pubpid,fname,mname,lname,pricelevel, lname2,race, sex,status,genericval1,genericname1,providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
+    $titleres = getPatientData($pid, "pubpid,fname,mname,lname,pricelevel,lname2,race, sex,status,genericval1,genericname1,providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
     $facility = null;
     if ($_SESSION['pc_facility']) {
         $facility = $facilityService->getById($_SESSION['pc_facility']);
@@ -854,6 +854,28 @@ foreach ($ar as $key => $val) {
 } // end $ar loop
 
 if ($PDF_CONTRA){
+    $config_mpdf = array(
+        'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
+        'mode' => $GLOBALS['pdf_language'],
+        'format' => $GLOBALS['pdf_size'],
+        'default_font_size' => '9',
+        'default_font' => 'dejavusans',
+        'margin_left' => '10',
+        'margin_right' => '10',
+        'margin_top' => '10',
+        'margin_bottom' => '10',
+        'margin_header' => '',
+        'margin_footer' => '',
+        'orientation' => $GLOBALS['pdf_layout'],
+        'shrink_tables_to_fit' => 1,
+        'use_kwt' => true,
+        'autoScriptToLang' => true,
+        'keep_table_proportions' => true
+    );
+    $pdf = new mPDF($config_mpdf);
+    if ($_SESSION['language_direction'] == 'rtl') {
+        $pdf->SetDirectionality('rtl');
+    }
     include ("contra_template.php");
 }
 
