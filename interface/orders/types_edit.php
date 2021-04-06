@@ -384,7 +384,7 @@ function proc_type_changed() {
                                             <label class="control-label" for="form_name"><?php echo xlt('Name'); ?>:</label><a href="#name_info" class="icon-tooltip" data-toggle="collapse"><i class="fa fa-question-circle" aria-hidden="true"></i></a>
                                         </div>
                                         <div class="col-sm-12">
-                                            <input type='text' name='form_name' id='form_name 'maxlength='63'
+                                            <input type='text' name='form_name' id='form_name 'maxlength='300'
                                                 value='<?php echo attr($row['name']); ?>'
                                                 title='<?php echo xla('Your name for this category, procedure or result'); ?>'
                                                  class='form-control'>

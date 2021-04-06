@@ -785,7 +785,7 @@ if ($esign->isButtonViewable()) {
 <!-- Get the documents tagged to this encounter and display the links and notes as the tooltip -->
 <?php
 if ($attendant_type == 'pid') {
-    $docs_list = getDocumentsByEncounter($pid, $_SESSION['encounter']);
+    $docs_list = getDocumentsByGroupByEncounter($pid, $_SESSION['encounter']);
 } else {
     // already doesn't exist document for therapy groups
     $docs_list = array();
@@ -825,12 +825,12 @@ if (!empty($docs_list) && count($docs_list) > 0) {
                     }
                     ?>
                     <br>
-                    <a href="images_slider.php" class='css_button_small' title='Examenes de Imagenes' target="_blank" style="font-size:small;background-color: orangered;"><?php echo "Examenes de: " . text($doc_iter[name]);?></a><br /><br />
+                    <a href="images_slider.php" class='css_button_small' title='Examenes de Imagenes' target="_blank" style="font-size:small;background-color: orangered;"><?php echo "Imágenes de " . xlt($doc_iter[name]);?></a>
                     <?php if ($note != '') {?>
                         <a href="javascript:void(0);" title="<?php echo attr($note);?>"><img src="<?php echo $GLOBALS['images_static_relative']; ?>/info.png"/></a>
                     <?php }?>
                     <?php
-                    break;
+
                 } ?>
             </td>
         </tr>
