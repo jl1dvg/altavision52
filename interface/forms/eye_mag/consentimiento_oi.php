@@ -35,7 +35,7 @@ if ($_REQUEST['formname']) {
 }
 
 //Datos del PACIENTE
-$titleres = getPatientData($pid, "pubpid,fname,mname,lname, lname2, pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
+$titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,sex,pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
 
 //Fecha del form_eye_mag
 $query="select form_encounter.date as encounter_date,form_eye_mag.id as form_id,form_encounter.*, form_eye_mag.*
@@ -713,7 +713,7 @@ ob_start();
                 </FONT></TD>
             <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=32 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
                     <?php
-                    $query1 = "SELECT id, form_id, pid, ORDER_DETAILS, option_id, notes FROM form_eye_mag_ordenqxoi 
+                    $query1 = "SELECT id, form_id, pid, ORDER_DETAILS, option_id, notes FROM form_eye_mag_ordenqxoi
                            LEFT JOIN list_options on ORDER_DETAILS = title
                            WHERE form_id=? and pid=? and list_id=? ORDER BY id ASC";
                     $PLAN_results1 = sqlStatement($query1, array($form_id, $pid, 'cirugia_propuesta_defaults'));
@@ -739,7 +739,7 @@ ob_start();
         <TR>
             <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=32 HEIGHT=17 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
                     <?php
-                    $query2 = "SELECT id, pid, PROPOSITOOI FROM form_eye_locking 
+                    $query2 = "SELECT id, pid, PROPOSITOOI FROM form_eye_locking
                            WHERE id=? and pid=? ORDER BY id ASC";
                     $PLAN_results2 = sqlQuery($query2, array($form_id, $pid));
                     echo text($PLAN_results2['PROPOSITOOI']);
@@ -747,7 +747,7 @@ ob_start();
                 </FONT></TD>
             <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=32 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
                     <?php
-                    $query1 = "SELECT id, form_id, pid, ORDER_DETAILS, option_id, notes FROM form_eye_mag_ordenqxoi 
+                    $query1 = "SELECT id, form_id, pid, ORDER_DETAILS, option_id, notes FROM form_eye_mag_ordenqxoi
                            LEFT JOIN list_options on ORDER_DETAILS = title
                            WHERE form_id=? and pid=? and list_id=? ORDER BY id ASC";
                     $PLAN_results1 = sqlStatement($query1, array($form_id, $pid, 'cirugia_propuesta_defaults'));
@@ -1110,7 +1110,7 @@ ob_start();
                     <TD WIDTH=147>
                         <P ALIGN=LEFT><FONT FACE="Calibri, sans-serif"><FONT SIZE=1 STYLE="font-size: 8pt">
                                     <?php
-                                $query2do = "SELECT id, form_id, pid, ORDER_DETAILS FROM form_eye_mag_ordenqxoi 
+                                $query2do = "SELECT id, form_id, pid, ORDER_DETAILS FROM form_eye_mag_ordenqxoi
                                            WHERE form_id=? and pid=? ORDER BY id ASC LIMIT 1";
                                 $PLAN_results2do = sqlStatement($query2do, array($form_id, $pid));
                                 if (!empty($PLAN_results2do)) {
