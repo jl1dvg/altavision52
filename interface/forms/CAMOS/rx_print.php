@@ -71,9 +71,11 @@ if ($_POST['update']) { // OPTION update practice inf
 }
 
 //get user information
-$query = sqlStatement("select * from users where id =?", array($_SESSION['authUserID']));
+$query = sqlStatement("select * from users u
+                                left join forms f on u.id = f.authorized
+                                WHERE f.encounter = ?", array($_SESSION['authUserID']));
 if ($result = sqlFetchArray($query)) {
-    $physician_name =  $result['title'] . '. ' . $result['fname'] . ' ' . $result['lname'];
+    $physician_name =  $result['title'] . ' ' . $result['fname'] . ' ' . $result['lname'];
     $practice_fname = $result['fname'];
     $practice_lname = $result['lname'];
     $practice_title = $result['title'];
@@ -109,12 +111,14 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
     $camos_content = array();
     foreach ($_POST as $key => $val) {
         if (substr($key, 0, 3) == 'ch_') {
-            $query = sqlStatement("select content from ".mitigateSqlTableUpperCase("form_CAMOS")." where id =?", array(substr($key, 3)));
+            $query = sqlStatement("select * from ".mitigateSqlTableUpperCase("form_CAMOS")." where id =?", array(substr($key, 3)));
             if ($result = sqlFetchArray($query)) {
                 if ($_POST['print_html']) { //do this change to formatting only for html output
                             $content = preg_replace('|\n|', '<br/>', text($result['content']));
                             $content = preg_replace('|<br/><br/>|', '<br/>', $content);
+                            $content = "<b>Receta No: </b>" . text($result['id']) . '<br/>' . $content;
                 } else {
+                        $RecetaID = "<b>Receta No: </b>" . text($result['id']);
                         $content = $result['content'];
                 }
 
@@ -182,7 +186,7 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
                 //print "<span class='mytagname'>" . xlt('DOB') . ":</span>\n";
                 //print "<span class='mydata'> " . text($patient_dob) . " </span>\n";
                 print "<span class='mytagname'>" . xlt('Date') . ":</span>\n";
-                print "<span class='mydata'>" . date("d/m/Y") . "</span><br/><br/><br/>\n";
+                print "<span class='mydata'>" . date("d/m/Y") . "</span><br/><br/>\n";
                 //print "<div class='symbol'>" . xlt('Rx') . "</div><br/>\n";
             }
             function cita()
@@ -190,8 +194,9 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
                 global $physician_name,$practice_address,$practice_city,$practice_state,$practice_zip,$practice_phone,$practice_fax,$practice_dea;
                 print "<br/>\n";
                 print "<span class='mytagname'>" . xlt('Próxima cita') . ":</span>\n";
+                print "<span class='mydata'>" . $_POST['nextvisit'] . "</span><br/>\n";
+                print "<span class='mytagname'>" . xlt('CIE10') . ":</span>\n";
                 //$newdate = date("d-m-Y", $_POST['nextvisit']);
-                print "<span class='mydata'>" . $_POST['nextvisit'] . "</span><br/><br/>\n";
             }
             ?>
 <div id='rx1'  class='rx' >
@@ -305,30 +310,72 @@ if ($_POST['print_pdf'] || $_POST['print_html']) {
             <?php
             exit;
         } else { //print letterhead to pdf
-            $pdf = new Cezpdf();
-            $pdf->selectFont('Times-Bold');
-            $pdf->ezSetCmMargins(3, 1, 1, 1);
-            $pdf->ezText($physician_name, 12);
-            $pdf->ezText($practice_address, 12);
-            $pdf->ezText($practice_city.', '.$practice_state.' '.$practice_zip, 12);
-            $pdf->ezText($practice_phone . ' (' . xl('Voice') . ')', 12);
-            $pdf->ezText($practice_phone . ' ('. xl('Fax') . ')', 12);
-            $pdf->ezText('', 12);
-            $pdf->ezText(date("l, F jS, Y"), 12);
+            $pdf = new Cezpdf('A5');
+            $pdf->selectFont('Helvetica');
+            $pdf->ezSetCmMargins(2.9, 1, 1, 1);
+            //$pdf->ezText($physician_name, 12);
+            //$pdf->ezText($practice_address, 12);
+            //$pdf->ezText($practice_city.', '.$practice_state.' '.$practice_zip, 12);
+            //$pdf->ezText($practice_phone . ' (' . xl('Voice') . ')', 12);
+            //$pdf->ezText($practice_phone . ' ('. xl('Fax') . ')', 12);
+            //$pdf->ezText('', 12);
+            $pdf->ezText('<b>Nombre del paciente: </b>' . $patient_name, 12, array('justification' => 'right'));
+            $pdf->ezText(xl("<b>Fecha: </b>") . date("d M, Y"), 12, array('justification' => 'right'));
             $pdf->ezText('', 12);
             $pdf->selectFont('Helvetica');
-            $pdf->ezText($content, 10);
-            $pdf->selectFont('Times-Bold');
+            $pdf->ezText($RecetaID, 10);
             $pdf->ezText('', 12);
+            $Recetapdf = explode("INSTRUCCIONES", $content);
+            $pdf->ezText($Recetapdf[0], 10);
+            $pdf->ezSetCmMargins(12.5, 1, 1, 1);
             $pdf->ezText('', 12);
+            $pdf->ezText($Recetapdf[1], 10);
+            $pdf->ezText('', 12);
+            $pdf->ezText('<b>Próxima cita: </b>' . $_POST['nextvisit'], 10);
+            /**
+             *  Retrieve and Display the IMPPLAN_items for the Impression/Plan zone.
+             */
+            $queryCIE = "select * from forms  f
+                         left join form_eye_mag_impplan cie on f.form_id = cie.form_id
+                         where f.encounter = ? AND f.pid = ? AND f.formdir = 'eye_mag' AND f.deleted = 0 order by IMPPLAN_order ASC";
+            $resultCIE = sqlStatement($queryCIE, array($_SESSION['encounter'], $_SESSION['pid']));
+            $i = '0';
+            $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+            $replace = "<br />";
+            // echo '<ol>';
+            while ($ip_list = sqlFetchArray($resultCIE)) {
+                $newdata = array(
+                    'form_id' => $ip_list['form_id'],
+                    'pid' => $ip_list['pid'],
+                    'title' => $ip_list['title'],
+                    'code' => $ip_list['code'],
+                    'codetype' => $ip_list['codetype'],
+                    'codetext' => $ip_list['codetext'],
+                    'codedesc' => $ip_list['codedesc'],
+                    'plan' => str_replace($order, $replace, $ip_list['plan']),
+                    'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+                );
+                $IMPPLAN_items[$i] = $newdata;
+                $i++;
+            }
+            foreach ($IMPPLAN_items as $item) {
+                $pattern = '/Code/';
+                if (preg_match($pattern, $item['code'])) {
+                    $item['code'] = '';
+                }
+
+                if ($item['codetext'] > '') {
+                    $CIE10 = $item['code'] . ". ";
+                }
+                $pdf->ezText('<b>CIE10 </b>' .  $CIE10,10);
+            }
             if ($_GET['signer'] == 'patient') {
                 $pdf->ezText("__________________________________________________________________________________", 12);
                 $pdf->ezText(xl("Print name, sign and date."), 12);
             } elseif ($_GET['signer'] == 'doctor') {
-                $pdf->ezText(xl('Sincerely,'), 12);
-                $pdf->ezText('', 12);
-                $pdf->ezText('', 12);
-                $pdf->ezText($physician_name, 12);
+                //$pdf->ezText(xl('Atentamente,'), 12);
+                //$pdf->ezSetCmMargins(19, 1, 1, 1);
+                //$pdf->ezText($physician_name, 12, array('justification' => 'right'));
             }
 
             $pdf->ezStream();
@@ -462,14 +509,14 @@ return count_turnoff;
     <select id="nextvisit" name="nextvisit">
         <option value=" -- ">--</option>
         <option value="24 horas">24 horas</option>
-        <option value="1 semana previa cita llamando al 04-228-1620">1 semana</option>
-        <option value="2 semanas previa cita llamando al 04-228-1620">2 semanas</option>
-        <option value="3 semanas previa cita llamando al 04-228-1620">3 semanas</option>
-        <option value="1 mes previa cita llamando al 04-228-1620">1 mes</option>
-        <option value="2 meses previa cita llamando al 04-228-1620">2 meses</option>
-        <option value="3 meses previa cita llamando al 04-228-1620">3 meses</option>
-        <option value="6 meses previa cita llamando al 04-228-1620">6 meses</option>
-        <option value="1 año previa cita llamando al 04-228-1620">1 año</option>
+        <option value="1 semana previa cita llamando al 04-228-6080">1 semana</option>
+        <option value="2 semanas previa cita llamando al 04-228-6080">2 semanas</option>
+        <option value="3 semanas previa cita llamando al 04-228-6080">3 semanas</option>
+        <option value="1 mes previa cita llamando al 04-228-6080">1 mes</option>
+        <option value="2 meses previa cita llamando al 04-228-6080">2 meses</option>
+        <option value="3 meses previa cita llamando al 04-228-6080">3 meses</option>
+        <option value="6 meses previa cita llamando al 04-228-6080">6 meses</option>
+        <option value="1 año previa cita llamando al 04-228-6080">1 año</option>
     </select>
 
 <input type=submit name='print_html' value='<?php echo xla('Print (HTML)'); ?>'>

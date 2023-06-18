@@ -1,9 +1,11 @@
 <!DOCTYPE HTML>
 <?php
+require_once("$srcdir/iess.inc.php");
+
 function ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
                    $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS)
 {
-    $dateform = getEncounterDateByEncounter($form_encounter);
+    $dateform = getEncounterDateByFormID($form_encounter, $form_id, $formdir);
     $ExamOFT = "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform["date"]))) . ") " . "</b>";
 
     if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $SCODVA || $SCOSVA || $ODIOPAP || $OSIOPAP || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
@@ -122,11 +124,6 @@ function ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $L
 
 function ExamenesImagenes($pid, $encounter, $formid, $formdir)
 {
-    $queryform = sqlQuery("SELECT * FROM forms AS f
-                           WHERE f.pid=? AND f.encounter=? AND form_id = ? AND f.formdir = ?
-                           AND f.formdir NOT LIKE 'LBFprotocolo' AND f.deleted = 0
-                           GROUP BY f.formdir ", array($pid, $encounter, $formid, $formdir));
-    echo "<b>" . $queryform['form_name'] . " </b>";
 
     $query = sqlStatement("SELECT * FROM forms AS f
                                            LEFT JOIN lbf_data AS lbf ON (lbf.form_id = f.form_id)
@@ -142,7 +139,7 @@ function ExamenesImagenes($pid, $encounter, $formid, $formdir)
         );
         $lb[$formdir] = $lbf;
         foreach ($lb as $inf) {
-            echo  $inf['etiqueta'] . ": " . $inf['informe'] . " ";
+            echo $inf['etiqueta'] . ": " . $inf['informe'] . " ";
         }
     }
     //$Exam = $Examen . $ExamenContent;
@@ -151,31 +148,46 @@ function ExamenesImagenes($pid, $encounter, $formid, $formdir)
 
 function protocolo($form_id, $form_encounter, $formdir)
 {
-    $querylbfopr = sqlQuery("SELECT field_value from lbf_data
-                                    WHERE form_id = $form_id
-                                    AND field_id='Prot_opr'");
-
-    $querylbfojo = sqlQuery("SELECT field_value from lbf_data
-                                    WHERE form_id = $form_id
-                                    AND field_id='Prot_ojo'");
-    $REALIZADA = $querylbfopr['field_value'];
-    $OjoOperado = $querylbfojo['field_value'];
+    $REALIZADA = getFieldValue($form_id, 'Prot_opr');
+    $ojoValue = getFieldValue($form_id, 'Prot_ojo');
     $dateform = getEncounterDateByFormID($form_encounter, $form_id, $formdir);
-    echo "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform["date"]))) . ") " . "</b>";
+
+    echo "<b>(" . text(oeFormatSDFT(strtotime($dateform['date']))) . ") </b>";
+
     if ($REALIZADA && $OjoOperado != '0') {
         $REALIZADA_items = explode('|', $REALIZADA);
-        foreach ($REALIZADA_items as $item => $value) {
-            $QXpropuesta = ($value);
+        $notesArray = [];
+
+        foreach ($REALIZADA_items as $value) {
+            $QXpropuesta = $value;
             $IntervencionPropuesta = sqlquery("SELECT notes FROM `list_options`
-                                                                 WHERE `list_id` = 'cirugia_propuesta_defaults'
-                                                                 AND `option_id` = '$QXpropuesta' ");
-            echo $IntervencionPropuesta['notes'] . " + ";
+                                               WHERE `list_id` = 'cirugia_propuesta_defaults'
+                                               AND `option_id` = '$QXpropuesta' ");
+
+            $notesArray[] = $IntervencionPropuesta['notes'];
         }
 
-        $OjoOK = sqlQuery("SELECT title FROM list_options
-                           WHERE list_id = 'OD' AND option_id = '$OjoOperado'");
-        echo $OjoOK['title'];
-        echo "</TD></TR><TR><TD class='linearesumen'>";
+        $notesString = implode(" + ", $notesArray);
+
+        if (!empty($notesString)) {
+            echo $notesString;
+        }
+
+        $mensajeOjo = [
+            'OI' => 'Ojo izquierdo',
+            'OjoIzq' => 'Ojo izquierdo',
+            'OD' => 'Ojo derecho',
+            'OjoDer' => 'Ojo derecho',
+            'AO' => 'Ambos ojos',
+            'OjoAmb' => 'Ambos ojos'
+        ];
+
+        if (isset($mensajeOjo[$ojoValue])) {
+            echo " " . $mensajeOjo[$ojoValue];
+        } else {
+            echo " Valor no válido";
+        }
+        echo "</td></tr><tr><td class='linearesumen'>";
     }
 }
 
@@ -191,6 +203,82 @@ function noInvasivos($form_id, $form_encounter, $formdir)
     echo "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform))) . ") " . "</b>";
     echo $procedimiento . ' ' . $ojo_atendido;
     echo "</TD></TR><TR><TD class='linearesumen'>";
+}
+
+function getDXoftalmo($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['codedesc'] . ". ";
+        }
+
+    }
+}
+
+function getDXoftalmoCIE10($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['code'] . ". ";
+        }
+
+    }
 }
 
 ?>
@@ -261,6 +349,7 @@ function noInvasivos($form_id, $form_encounter, $formdir)
             font-size: 11;
             padding-left: 10px;
         }
+
         td.lineatituloDX1 {
             border-top: 5px solid #808080;
             border-left: 5px solid #808080;
@@ -399,7 +488,7 @@ foreach ($ar as $key => $val) {
                                 echo $titleres['pricelevel'];
                                 ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma"><?php echo text($facility['name']);?></FONT></B>
+                        COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">ALTA VISION</FONT></B>
                     </TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
@@ -487,7 +576,7 @@ foreach ($ar as $key => $val) {
                         COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ESTADO CIVIL</FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC">
                         <FONT
-                                SIZE=1>INSTRUCCI&Oacute;N</FONT></TD>
+                            SIZE=1>INSTRUCCI&Oacute;N</FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=10 ROWSPAN=2
                         ALIGN=CENTER
                         VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>EMPRESA DONDE TRABAJA</FONT></TD>
@@ -513,7 +602,7 @@ foreach ($ar as $key => $val) {
                         COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>U-L</FONT></B></TD>
                     <TD STYLE="border-bottom: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE
                         BGCOLOR="#CCFFCC"><FONT
-                                SIZE=1>ULTIMO A&Ntilde;O APROBADO</FONT></TD>
+                            SIZE=1>ULTIMO A&Ntilde;O APROBADO</FONT></TD>
                 </TR>
                 <TR>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
@@ -716,6 +805,7 @@ foreach ($ar as $key => $val) {
                     }
                     if (substr($res[1], 0, 3) == 'LBF') {
                         echo "<tr><td class='linearesumen'>";
+                        echo "<b>" . ImageStudyName($pid, $form_encounter, $form_id, $res[1]) . ": </b>";
                         echo ExamenesImagenes($pid, $form_encounter, $form_id, $res[1]);
                     }
                 }
@@ -761,81 +851,6 @@ foreach ($ar as $key => $val) {
 </table>
 
 <?php
-function getDXoftalmo($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['codedesc'] . ". ";
-        }
-
-    }
-}
-
-function getDXoftalmoCIE10($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['code'] . ". ";
-        }
-
-    }
-}
 
 krsort($ar);
 foreach ($ar as $key => $val) {
@@ -875,13 +890,13 @@ foreach ($ar as $key => $val) {
                 <TR>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
                         HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="1" SDNUM="1033;"><B><FONT
-                                    SIZE=1>1</FONT></B></TD>
+                                SIZE=1>1</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmo($form_id, $pid, "0"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "0"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>
@@ -892,13 +907,13 @@ foreach ($ar as $key => $val) {
                                 } ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="4" SDNUM="1033;"><B><FONT
-                                    SIZE=1>4</FONT></B></TD>
+                                SIZE=1>4</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmo($form_id, $pid, "3"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "3"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>
@@ -911,13 +926,13 @@ foreach ($ar as $key => $val) {
                 <TR>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
                         HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="2" SDNUM="1033;"><B><FONT
-                                    SIZE=1>2</FONT></B></TD>
+                                SIZE=1>2</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmo($form_id, $pid, "1"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "1"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>
@@ -928,13 +943,13 @@ foreach ($ar as $key => $val) {
                                 } ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="5" SDNUM="1033;"><B><FONT
-                                    SIZE=1>5</FONT></B></TD>
+                                SIZE=1>5</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmo($form_id, $pid, "4"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "4"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                    SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></FONT></B></TD>
+                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>
@@ -947,13 +962,13 @@ foreach ($ar as $key => $val) {
                 <TR>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
                         HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="3" SDNUM="1033;"><B><FONT
-                                    SIZE=1>3</FONT></B></TD>
+                                SIZE=1>3</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT
-                                SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "2"); ?></B></FONT></TD>
+                            SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "2"); ?></B></FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><FONT
-                                SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></B></FONT></TD>
+                            SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></B></FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>
@@ -964,13 +979,13 @@ foreach ($ar as $key => $val) {
                                 } ?></FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="6" SDNUM="1033;"><B><FONT
-                                    SIZE=1>6</FONT></B></TD>
+                                SIZE=1>6</FONT></B></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT
-                                SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "5"); ?></B></FONT></TD>
+                            SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "5"); ?></B></FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE><FONT
-                                SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></B></FONT></TD>
+                            SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></B></FONT></TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
                         ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
                     </TD>

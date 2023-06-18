@@ -439,6 +439,32 @@ function getProviderName($providerID, $provider_only = 'any')
     return "";
 }
 
+function getProviderNameConcat($providerID, $provider_only = 'any')
+{
+    $pi = getProviderInfo($providerID, 'any');
+
+    $fullName = '';
+
+    if (isset($pi[0]["mname"]) && strlen($pi[0]["mname"]) > 0) {
+        $fullName .= $pi[0]["mname"] . " ";
+    }
+
+    if (isset($pi[0]["fname"]) && strlen($pi[0]["fname"]) > 0) {
+        $fullName .= $pi[0]["fname"] . " ";
+    }
+
+    if (isset($pi[0]["lname"]) && strlen($pi[0]["lname"]) > 0) {
+        $fullName .= $pi[0]["lname"] . " ";
+    }
+
+    if (isset($pi[0]["suffix"]) && strlen($pi[0]["suffix"]) > 0) {
+        $fullName .= $pi[0]["suffix"] . " ";
+    }
+
+    return trim($fullName);
+}
+
+
 function getResponsableName($providerID)
 {
     $pi = getResponsableInfo($providerID, 'any');

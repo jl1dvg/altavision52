@@ -43,7 +43,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and 
+                    forms.encounter=? and
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -183,9 +183,9 @@ ob_start();
 </page_header>
 <P STYLE="margin-bottom: 0.14in" align="right"><FONT SIZE=2 STYLE="font-size: 9pt">Guayaquil,
         <?php echo($dateddia); ?> de  <?php echo($nombreMes); ?> del <?php echo($datedano); ?><br/><br/></FONT></P>
-<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Se&ntilde;orita
-        Magister</FONT></P>
-<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>ANITA MARIA JOUVIN HENRIQUEZ</B></FONT></P>
+<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Se&ntilde;or
+        </FONT></P>
+<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B><?php echo getResponsableName(56);?></B></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>COORDINADOR
             PROVINCIAL DE PRESTACIONES DEL SEGURO DE SALUD GUAYAS</B></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><A NAME="_GoBack"></A><FONT SIZE=2 STYLE="font-size: 9pt">Cuidad.

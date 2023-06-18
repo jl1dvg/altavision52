@@ -1,163 +1,230 @@
 <!DOCTYPE html>
+<html>
+<head>
+    <title>ACTA DE ENTREGA RECEPCION DE SERVICIOS</title>
+    <style>
+        body, div, table, thead, tbody, tfoot, tr, th, td, p {
+            font-size: 9pt;
+        }
+
+        div.Observaciones {
+            border: 1px solid;
+        }
+
+        td.casilla {
+            border: 1px solid;
+            width: 10%;
+        }
+    </style>
+</head>
+<body>
 <?php
 require_once("../../globals.php");
 require_once("$srcdir/patient.inc");
+require_once("$srcdir/lists.inc");
+require_once("$srcdir/encounter.inc");
+require_once("$srcdir/options.inc.php");
 
+
+// Variables para los parámetros de la consulta
 $pid = $_GET['patientid'];
-$pat_data = getPatientData($pid, "pubpid,fname,mname,lname, lname2, pricelevel, providerID,DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS");
+$encounter = $_GET['visitid'];
+$form_id = $_GET['formid'];
 
-$FONTSIZE = 9;
+$pat_data = getPatientData($pid, "pubpid, fname, mname, lname, lname2, pricelevel, providerID, DATE_FORMAT(DOB, '%m/%d/%Y') as DOB_TS");
 $logo = '';
 $ma_logo_path = "sites/" . $_SESSION['site_id'] . "/images/ma_logo.png";
+
 if (is_file("$webserver_root/$ma_logo_path")) {
-    // Would use max-height here but html2pdf does not support it.
-    // TODO - now use mPDF, so should test if still need this fix
-    $logo = "<img src='$web_root/$ma_logo_path' style='height:" . attr(round($FONTSIZE * 6.50)) . "pt' />";
+    // Path to the logo file exists
+    $logo = "<img src='$web_root/$ma_logo_path' style='height:" . attr(round(9 * 6.50)) . "pt' />";
 } else {
+    // Path to the logo file does not exist
     $logo = "<!-- '$ma_logo_path' does not exist. -->";
 }
+
+
+// Consulta preparada con extracción de día, mes y año
+$query = "SELECT *, DAY(date) AS day, MONTHNAME(date) AS month, YEAR(date) AS year, DATE_FORMAT(date, '%Y') AS year FROM forms WHERE pid = ? AND encounter = ? AND form_id = ?";
+$stmt = sqlQuery($query, array($pid, $encounter, $form_id));
+// Obtener los resultados
+$day = $stmt['day'];
+$month = $stmt['month'];
+$year = $stmt['year'];
+// Convertir el nombre del mes a español
+$meses_ES = array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
+$meses_EN = array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+$nombreMes = str_replace($meses_EN, $meses_ES, $month);
+
+function getReferral($pid, $field_id)
+{
+    $referralQuery = sqlStatement("SELECT lbt_data.field_id, lbt_data.field_value
+                                   FROM transactions
+                                   JOIN lbt_data ON transactions.id = lbt_data.form_id
+                                   WHERE pid = ? AND field_id = ?
+                                   ORDER BY transactions.date DESC
+                                   LIMIT 1", array($pid, $field_id));
+
+    if ($referralQuery) {
+        $row = sqlFetchArray($referralQuery);
+        $fieldValue = $row['field_value'];
+        return $fieldValue;
+    }
+
+    return "No se encontraron resultados";
+}
+
+// get issues
+$ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
+    "pid = ? AND enddate IS NULL " .
+    "ORDER BY type, begdate", array($pid));
+
+$selectedIssues = array(); // Array para almacenar los valores seleccionados
+
+while ($irow = sqlFetchArray($ires)) {
+    $list_id = $irow['id'];
+    $tcode = $irow['type'];
+    if ($ISSUE_TYPES[$tcode]) {
+        $tcode = $ISSUE_TYPES[$tcode][2];
+    }
+
+
+    $perow = sqlQuery("SELECT count(*) AS count FROM issue_encounter WHERE " .
+        "pid = ? AND encounter = ? AND list_id = ?", array($pid, $encounter, $list_id));
+    if ($perow['count']) {
+        $selectedIssues[] = text($tcode) . ": " . text($irow['begdate']) . " " . text(substr($irow['title'], 0, 40));
+    }
+}
+
+
 ?>
-<html>
-<HEAD>
-    <TITLE></TITLE>
-    <STYLE>
-        BODY, DIV, TABLE, THEAD, TBODY, TFOOT, TR , TH, TD, P {
-            font-size: 9.00;
-        }
+<p align="center">
+    <?php echo $logo; ?>
+    <br>
+    <b>ALTAVISION</b>
+    <br>
+</p>
+<div class="Observaciones" style="text-align: center; font-weight: bold">
+    ACTA DE ENTREGA RECEPCION DE SERVICIOS
+</div>
+<dl>
+    <dt>
+        <table width="100%" border="1" bordercolor="#000000" cellpadding="1" cellspacing="0" frame="void"
+               rules="groups">
+            <tbody>
+            <tr valign="top">
+                <td width="50%">PRESTADOR</td>
+                <td>ALTAVISION</td>
+            </tr>
+            <tr valign="top">
+                <td>PERSONA DE CONTACTO</td>
+                <td>LUCRECIA SAA</td>
+            </tr>
+            <tr valign="top">
+                <td>TELEFONO: 2286080</td>
+                <td>E-MAIL: <a href="mailto:visilas@hotmail.com">visilas@hotmail.com</a></td>
+            </tr>
+            <tr valign="top">
+                <td>MES Y A&Ntilde;O DE PRESTACION: <?php
+                    echo $nombreMes . " - " . $year;
+                    ?></td>
+                <td>CODIGO CIE 10: <?php
+                    $ires = sqlStatement("SELECT id, type, title, diagnosis FROM lists WHERE " .
+                        "pid = ? AND enddate IS NULL " .
+                        "ORDER BY type, begdate", array($pid));
 
-        div.Observaciones{
-            border: 1;
-        }
-        td.casilla{
-            border: 1;
-            width: 10%;
-        }
+                    $selectedIssues = array(); // Array para almacenar los valores seleccionados
 
-    </STYLE>
+                    while ($irow = sqlFetchArray($ires)) {
+                        $list_id = $irow['id'];
+                        $tcode = $irow['type'];
+                        if ($tcode == "medical_problem") {
+                            $selectedIssues[] = text(substr($irow['diagnosis'], 6, 40));
+                        }
+                    }
 
-</HEAD>
-<BODY>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; text-decoration: none">
-    <FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 10pt"><B><SPAN STYLE="text-decoration: none">ACTA
-DE ENTREGA RECEPCION DE SERVICIOS</SPAN></B></FONT></font>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; text-decoration: none">
+                    // Imprimir los valores seleccionados separados por comas
+                    echo implode(", ", $selectedIssues);
+                    ?>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" valign="top">CODIGO DE VALIDACION / RPC: <?php
+                    echo getReferral($pid, "refer_id");
+                    ?>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td>NUMERO DE HISTORIA CLINICA:</td>
+                <td><?php echo htmlentities($pat_data["pubpid"]); ?></td>
+            </tr>
+            <tr valign="top">
+                <td>TIPO DE SERVICIO ENTREGADO</td>
+                <td><?php
+                    $pc_catid = fetchCategoryIdByEncounter($encounter);
+                    echo ucwords(fetchNameByEncounter($pc_catid)) . " Ambulatorio";
+                    ?></td>
+            </tr>
+            </tbody>
+        </table>
+    </dt>
+</dl>
+
+<p align="center" style="margin-bottom: 0in; font-style: normal; text-decoration: none; font-weight: bold">
+    ACUSE ENTREGA DE SERVICIO
+</p>
+<div class="Observaciones">
+    <b>OBSERVACIONES:</b><br><br><br></div>
+<p style="font-size: 7pt; font-family: Arial; text-align: justify">Como prestador de la RPIS, conozco el cumplimiento
+    obligatorio del TPSNS y sus procedimientos que están regulados en
+    el presente Reglamento de relacionamiento.<br>
+    Además, tengo conocimiento el acápite que refiere a la coordinación de pagos y tarifas que indica textualmente:</p>
+<div class="Observaciones">
+        <span style="text-decoration: none; font-style: normal; font-weight: normal;">
+        "En caso de objeción o débito, el prestador no podrá requerir el pago al usuario/paciente,
+            familiares o acompañante. Cualquier cobro en este sentido será motivo de la sanción que la Ley prevea"</span>
+</div>
+<div>
+    <br>
+    <br>
+    <br>
+    <br>
+    _______________________________<br>
+    LUCRECIA SAA<br>
+    CI: 0912481595
+    <p align="center" style="font-weight: bold; text-decoration: underline">
+        ACUSE ENTREGA DE SERVICIO
+    </p>
+    Ciudad de Guayaquil a los _______ días del mes de__________________
+    del año______________
+    <br>
+    <br>
+    <br>
+    <br>
+    _______________________________<br>
     <?php
-    echo $logo;
+    echo text($pat_data['fname']) . " " . text($pat_data['lname']) . " " . text($pat_data['lname2']);
     ?>
-    <BR CLEAR=LEFT><BR>
-</P>
-<DL>
-    <DD>
-        <TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000000" CELLPADDING=1 CELLSPACING=0 FRAME=VOID RULES=GROUPS>
-            <TBODY>
-            <TR VALIGN=TOP>
-                <TD width=50%>PRESTADOR</TD>
-                <TD >ALTAVISION</TD>
-            </TR>
-            <TR VALIGN=TOP>
-                <TD>PERSONA DE CONTACTO</TD>
-                <TD>LUCRECIA SAA</TD>
-            </TR>
-            <TR VALIGN=TOP>
-                <TD >TELEFONO: 2286080</TD>
-                <TD >E-MAIL: <A HREF="mailto:visilas@hotmail.com">visilas@hotmail.com</A></TD>
-            </TR>
-            <TR VALIGN=TOP>
-                <TD >MES Y A&Ntilde;O DE PRESTACION</TD>
-                <TD >CODIGO CIE 10</TD>
-            </TR>
-            <TR>
-                <TD COLSPAN=2 VALIGN=TOP >NUMERO DE HISTORIA CLINICA: <FONT COLOR="#000000"><SPAN STYLE="text-decoration: none"><SPAN STYLE="font-style: normal"><SPAN STYLE="font-weight: normal"><SPAN STYLE="text-decoration: none"><?php echo text($pat_data["pubpid"]) ?></SPAN></SPAN></SPAN></SPAN></FONT></TD>
-            </TR>
-            <TR VALIGN=TOP>
-                <TD >SERVICIO ENTREGADO</TD>
-                <TD >AMBULATORIO</TD>
-            </TR>
-            </TBODY>
-        </TABLE>
-
-        <div>
-            <br>
-            <div class="Observaciones" height=30>
-                <B>OBSERVACIONES:</B>
-            </div>
-            <P ALIGN=CENTER><font size=2 ><B>ACUSE ENTREGA DEL SERVICIO</B>
-            <p>
-                <LI>
-                    Como prestador de la RPIS, conozco el cumplimiento obligatorio del
-                    TPSNS y sus procedimientos que est&aacute;n regulados en la
-                    normativa legal vigente.
-            <LI>
-                Adem&aacute;s tengo conocimiento el ac&aacute;pite que refiere a la
-                Coordinaci&oacute;n de pagos y tarifas que indica textualmente:
-            </p>
-            <div class="Observaciones">
-                &quot;En	caso de procedimientos observados que no fueren justificados y
-                produzcan d&eacute;bitos definitivos, la unidad de salud no
-                podr&aacute; requerir por
-                ning&uacute;n motivo el pago al paciente o familiares de los
-                valores objetados&quot;. Por lo que me comprometo a entregar la
-                documentaci&oacute;n seg&uacute;n la norma.
-            </div>
-            <br><br><br>
-            <P STYLE="margin-bottom: 0in; font-weight: normal">LUCRECIA SAA ESTEVES<br>C.I. 0912481595
-            </P>
-            <P ALIGN=CENTER><font size=2><B>ACUSE ENTREGA DEL SERVICIO</B>
-            <P STYLE="font-weight: normal">
-                Guayaquil, a los &hellip;&hellip;&hellip;d&iacute;as del mes de
-                &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;...&hellip;.
-                Del a&ntilde;o &hellip;&hellip;&hellip;&hellip;..<br>
-                Yo <?php echo text($pat_data["fname"] . " " . $pat_data["lname"] . " " . $pat_data["lname2"] . " ") ?>con C.I. <?php echo text($pat_data["pubpid"] . " ") ?>
-                certifico haber recibido conforme los servicios de forma gratuita, correspondiente a:
-            </P>
-            <table width="40%" align="CENTER">
-                <tr>
-                    <td>Exámenes Oftalmológicos diagnósticos</td>
-                    <td class="casilla"></td>
-                </tr>
-                <tr>
-                    <td>Consultas Oftalmológicas</td>
-                    <td class="casilla"></td>
-                </tr>
-                <tr>
-                    <td>Tratamientos Clínicos</td>
-                    <td class="casilla"></td>
-                </tr>
-                <tr>
-                    <td>Tratamientos Quirúrgicos</td>
-                    <td class="casilla"></td>
-                </tr>
-                <tr>
-                    <td>Insumos y medicamentos</td>
-                    <td class="casilla"></td>
-                </tr>
-            </table>
-            <P STYLE="font-weight: normal">
-                En Alta Visión desde &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip; del 2021, hasta el
-                &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;del 2021<br>
-            </P>
-            <br><br><br>
-            <P STYLE="font-weight: normal">
-                Firma del Beneficiario
-            <P STYLE="font-weight: normal"><B>Observaciones: </B>
-                Yo&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.. En mi calidad de &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;
-                y/o representante o acompa&ntilde;ante, del paciente &hellip;&hellip;&hellip;&hellip;&hellip;..&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;.
-                Certifico que el mencionado usuario/paciente recibi&oacute; el
-                servicio registrado en la presente acta
-            </P>
-            <br><br><br>
-            <P STYLE="font-weight: normal; text-decoration: none">
-                Firma del Representante o Acompa&ntilde;ante
-            </p>
-            <P STYLE="font-weight: normal">
-                EN MI CALIDAD DE PRESTADOR DE SERVICIOS, CERTIFICO QUE LAS FIRMAS CONSTANTES EN EL PRESENTE DOCUMENTO, CORRESPONDEN A LA FIRMA
-                DEL PACIENTE O SU REPRESENTANTE DE SER EL CASO, MISMA QUE FUE RECEPTADA EN ESTA INSTITUCION, POR LO TANTO ME RESPONSABILIZO
-                POR EL CONTENIDO DE DICHO CERTIFICADO, ASUMIENTO TODA LA RESPONSABILIDAD TANTO ADMINISTRATIVA, CIVIL O PENAL POR LA
-                VERACIDAD DE LA INFORMACI&Oacute;N ENTREGADA.
-            </p>
-            <br><br><br>
-            <P align="center">LUCRECIA SAA ESTEVES<br>C.I. 0912481595
-        </div>
-</DL>
-</BODY>
-</HTML>
+</div>
+<br>
+<div class="Observaciones">
+    <b>Observaciones:</b> Yo _______________________ en mi calidad de ____________________ y/o representante o
+    acompañante, del usuario/paciente ______________________________ certifico que el
+    usuario/paciente recibió el servicio registrado en la presente acta.
+    <br>
+    <br>
+    <br>
+    _______________________________<br>
+    Firma del Representante/Acompañante
+    <b>(Utilizar este campo sólo cuando el usuario/paciente no pueda registrar su firma)</b>
+</div>
+<br><br><br><br>
+<div>
+    <b>Certificación de firmas</b><br><br>
+    <span style="text-align: justify; font-family: Arial; font-size: 7pt">En mi calidad de prestador de servicios, certifico que la firmas constantes en el presente documento, corresponden a
+    la firma del usuario/paciente o su representante, misma que fue receptar en esta casa de salud; por lo tanto, me
+    responsabilizo por el contenido de dicho certificado, asumiendo toda la responsabilidad tanto administrativa, civil
+        o penal por la veracidad de la información entregada.</span>
+</div>
+</body>
+</html>

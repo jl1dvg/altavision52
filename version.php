@@ -19,7 +19,7 @@ $v_tag   = ''; // minor revision number, should be empty for production releases
 // A real patch identifier. This is incremented when we release a patch for a
 // production release. Note the above $v_patch variable is a misnomer and actually
 // stores release version information.
-$v_realpatch = '0';
+$v_realpatch = '1';
 
 // Database version identifier, this is to be incremented whenever there
 // is a database change in the course of development.  It is used
@@ -47,7 +47,7 @@ if (getenv('OPENEMR__ENVIRONMENT') === 'dev') {
     $v_js_includes = md5(microtime());
 } else {
     // Change this number when bumping
-    $v_js_includes = 44;
+    $v_js_includes = 49;
 }
 
 // Do note modify below

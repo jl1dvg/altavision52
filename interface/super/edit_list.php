@@ -39,7 +39,7 @@ if (empty($_REQUEST['list_id'])) {
 }
 
 // Check authorization.
-$thisauth = acl_check('admin', 'super');
+$thisauth = acl_check('lists', 'qpeditor');
 if (!$thisauth) {
     die(xlt('Not authorized'));
 }

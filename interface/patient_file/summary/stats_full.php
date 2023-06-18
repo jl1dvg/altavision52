@@ -118,7 +118,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
     <div id="container_div" class="<?php echo $oemr_ui->oeContainer();?>">
         <div class="row">
             <div class="col-sm-12">
-                <?php require_once("$include_root/patient_file/summary/dashboard_header.php") ?>
+                <?php //require_once("$include_root/patient_file/summary/dashboard_header.php") ?>
             </div>
         </div>
         <div class="row" >
@@ -127,7 +127,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                 $list_id = "issues"; // to indicate nav item is active, count and give correct id
                 // Collect the patient menu then build it
                 $menuPatient = new PatientMenuRole();
-                $menuPatient->displayHorizNavBarMenu();
+                //$menuPatient->displayHorizNavBarMenu();
                 ?>
             </div>
         </div>

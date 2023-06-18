@@ -433,7 +433,7 @@ Search options include diagnosis, procedure, prescription, medical history, and 
 $sqlBindArray = array();
 if ($_POST['form_refresh']) {
     $sqlstmt = "select
-                concat(pd.fname, ' ', pd.lname) AS patient_name,
+                concat(pd.lname, ' ', pd.lname2, ' ', pd.fname, ' ', pd.mname) AS patient_name,
                 pd.pid AS patient_id,
                 DATE_FORMAT(FROM_DAYS(DATEDIFF(NOW(),pd.dob)), '%Y')+0 AS patient_age,
                 pd.sex AS patient_sex,

@@ -808,7 +808,7 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                     echo xlt('Date of Service') . ": ";?>
                     <input type='date' name='form_date_id' id='form_date_id'
                      value='<?php if ($firow['date'] == null) {
-                       echo date('Y-m-d');
+                       echo substr($enrow['date'], 0, 10);
                      }
                      else {
                        echo substr($firow['date'], 0, 10);

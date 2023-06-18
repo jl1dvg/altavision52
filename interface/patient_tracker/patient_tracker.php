@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Patient Tracker (Patient Flow Board)
  *
@@ -12,7 +13,7 @@
  * @author  Brady Miller <brady.g.miller@gmail.com>
  * @author  Ray Magauran <magauran@medexbank.com>
  * @copyright Copyright (c) 2015-2017 Terry Hill <terry@lillysystems.com>
- * @copyright Copyright (c) 2017-2018 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2017 Ray Magauran <magauran@medexbank.com>
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
@@ -45,9 +46,11 @@ $form_apptstatus = prevSetting($uspfx, 'form_apptstatus', 'form_apptstatus', '')
 $facility = prevSetting($uspfx, 'form_facility', 'form_facility', '');
 $provider = prevSetting($uspfx, 'form_provider', 'form_provider', $_SESSION['authUserID']);
 
-if (($_POST['setting_new_window']) ||
+if (
+    ($_POST['setting_new_window']) ||
     ($_POST['setting_bootstrap_submenu']) ||
-    ($_POST['setting_selectors'])) {
+    ($_POST['setting_selectors'])
+) {
     // These are not form elements. We only ever change them via ajax, so exit now.
     exit();
 }
@@ -63,19 +66,19 @@ if (!$GLOBALS['ptkr_date_range']) {
     $from_date = date('Y-m-d');
 } elseif (!is_null($_REQUEST['form_from_date'])) {
     $from_date = DateToYYYYMMDD($_REQUEST['form_from_date']);
-} elseif (($GLOBALS['ptkr_start_date'])=='D0') {
+} elseif (($GLOBALS['ptkr_start_date']) == 'D0') {
     $from_date = date('Y-m-d');
-} elseif (($GLOBALS['ptkr_start_date'])=='B0') {
-    if (date(w)==GLOBALS['first_day_week']) {
+} elseif (($GLOBALS['ptkr_start_date']) == 'B0') {
+    if (date(w) == GLOBALS['first_day_week']) {
         //today is the first day of the week
         $from_date = date('Y-m-d');
-    } elseif ($GLOBALS['first_day_week']==0) {
+    } elseif ($GLOBALS['first_day_week'] == 0) {
         //Sunday
         $from_date = date('Y-m-d', strtotime('previous sunday'));
-    } elseif ($GLOBALS['first_day_week']==1) {
+    } elseif ($GLOBALS['first_day_week'] == 1) {
         //Monday
         $from_date = date('Y-m-d', strtotime('previous monday'));
-    } elseif ($GLOBALS['first_day_week']==6) {
+    } elseif ($GLOBALS['first_day_week'] == 6) {
         //Saturday
         $from_date = date('Y-m-d', strtotime('previous saturday'));
     }
@@ -131,7 +134,7 @@ if ($GLOBALS['medex_enable'] == '1') {
     $preferences = sqlStatement($sql);
     $prefs = sqlFetchArray($preferences);
     $results = json_decode($prefs['status'], true);
-    $logged_in=$results;
+    $logged_in = $results;
     if (!empty($prefs)) {
         foreach ($results['campaigns']['events'] as $event) {
             if ($event['M_group'] != 'REMINDER') {
@@ -162,23 +165,19 @@ if (!$_REQUEST['flb_table']) {
     ?>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="OpenEMR: MedExBank">
+    <?php Header::setupHeader(['datetime-picker', 'opener', 'purecss']); ?>
     <title><?php echo xlt('Flow Board'); ?></title>
-
-    <?php Header::setupHeader(['datetime-picker', 'jquery-ui', 'jquery-ui-cupertino', 'opener', 'pure']); ?>
-
     <script type="text/javascript">
         <?php require_once "$srcdir/restoreSession.php"; ?>
     </script>
 
-    <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']; ?>/library/css/bootstrap_navbar.css?v=<?php echo $v_js_includes; ?>" type="text/css">
+    <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']; ?>/library/css/bootstrap_navbar.css?v=<?php echo $v_js_includes; ?>">
     <script type="text/javascript" src="<?php echo $GLOBALS['web_root']; ?>/interface/main/messages/js/reminder_appts.js?v=<?php echo $v_js_includes; ?>"></script>
 
     <link rel="shortcut icon" href="<?php echo $webroot; ?>/sites/default/favicon.ico" />
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="author" content="OpenEMR: MedExBank">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         label {
             font-weight: 400;
@@ -188,59 +187,62 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
-        .btn{
-            border: solid black 0.5pt;
-            box-shadow: 3px 3px 3px #7b777760;
-            color:white;
-        }
-
         .dialogIframe {
             border: none;
         }
 
         .scheduled {
-            background-color: white;
-            color: black;
+            background-color: var(--light);
             padding: 5px;
         }
 
         .divTable {
             display: table;
-            font-size: 0.9em;
-            background: white;
-            box-shadow: 2px 3px 9px #c0c0c0;
+            font-size: 0.9rem;
+            background: var(--light);
+            box-shadow: 2px 3px 9px var(--gray400);
             border-radius: 8px;
             padding: 10px;
             margin: 15px auto;
             overflow: hidden;
         }
 
+        .head {
+            font-size: 0.9rem;
+            background: var(--light);
+            box-shadow: 2px 3px 9px var(--gray400);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px auto;
+            overflow: hidden;
+            width: 85%;
+        }
+
         .title {
-            font-family: Georgia, serif;
+            font-family: "Georgia", sans-serif;
             font-weight: bold;
             padding: 3px 10px;
             text-transform: uppercase;
-            line-height: 1.5em;
-            color: #455832;
-            border-bottom: 2px solid #455832;
+            line-height: 1.5rem;
+            border-bottom: 2px solid var(--black);
             margin: 0 auto;
             width: 70%;
         }
-        .ui-datepicker-year {
-            color: #000;
-        }
+
         input[type="text"] {
-            text-align:center;
+            text-align: center;
         }
-         .ui-widget {
-            font-size: 1.0em;
+
+        .ui-widget {
+            font-size: 1.0rem;
         }
+
         body_top {
-            height:100%;
+            height: 100%;
         }
         a:hover {
-            color:black;
-            text-decoration:none;
+            color: var(--black);
+            text-decoration: none;
         }
     </style>
 
@@ -249,6 +251,7 @@ if (!$_REQUEST['flb_table']) {
 <body class="body_top">
     <?php
     if (($GLOBALS['medex_enable'] == '1') && (empty($_REQUEST['nomenu']))) {
+        $logged_in = $MedEx->login();
         $MedEx->display->navigation($logged_in);
     }
     ?>
@@ -266,7 +269,7 @@ if (!$_REQUEST['flb_table']) {
                     $last_col_width = "nodisplay";
                 }
                 ?>
-                <br/>
+
                 <form name="flb" id="flb" method="post">
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
@@ -428,11 +431,11 @@ if (!$_REQUEST['flb_table']) {
 
     <div class="row-fluid">
         <div class="col-md-12">
-            <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
+            <div class="text-center row divTable" style="width: 85%; padding: 10px 10px 0; margin: 10px auto;">
                 <div class="col-sm-12" id="loader">
                     <div class="text-center">
-                        <i class="fa fa-spinner fa-pulse fa-fw" style="font-size: 140px; color: #0000cc; padding: 20px"></i>
-                        <h2 ><?php echo xlt('Loading data'); ?>...</h2>
+                        <i class="fa fa-spinner fa-pulse fa-fw" style="font-size: 140px; color: var(--gray700); padding: 20px"></i>
+                        <h2><?php echo xlt('Loading data'); ?>...</h2>
                     </div>
                 </div>
                 <div id="flb_table" name="flb_table">
@@ -482,7 +485,8 @@ if (!$_REQUEST['flb_table']) {
                        class='fa fa-caret-<?php echo $caret = ($setting_selectors == 'none') ? 'down' : 'up'; ?> fa-stack-1x'></i>
                   </span>
 
-                  <a target='_blank'  <?php echo "href='parte.php?provider=" . $_POST['form_provider'] . "&from=" . date($_POST['form_from_date']) . "&to=" . $_POST['form_to_date'] . "'"; ?> class='btn btn-primary' onclick="top.restoreSession()"> <?php echo xlt('Imprimir Parte'); ?> </a>
+                  <a target='_blank'  <?php echo "href='parte.php?provider=" . $_POST['form_provider'] . "&from=" . date($_POST['form_from_date']) . "&to=" . $_POST['form_to_date'] . "'"; ?>
+                  class='btn btn-primary' onclick="top.restoreSession()"> <?php echo xlt('Imprimir Parte'); ?> </a>
                   <a class='btn btn-primary' onclick="print_FLB();"> <?php echo xlt('Imprimir Agenda'); ?> </a>
 
                 <?php if ($GLOBALS['new_tabs_layout']) { ?>
@@ -501,6 +505,9 @@ if (!$_REQUEST['flb_table']) {
                                 <?php echo xlt('PID'); ?>
                             </td>
                         <?php } ?>
+                        <td class="dehead hidden-xs text-center" name="kiosk_hide">
+                                <?php echo xlt('Convenio'); ?>
+                            </td>
                         <td class="dehead text-center" style="max-width:150px;">
                             <?php echo xlt('Patient'); ?>
                         </td>
@@ -559,6 +566,9 @@ if (!$_REQUEST['flb_table']) {
                         if ($GLOBALS['ptkr_show_staff']) { ?>
                             <td class="dehead hidden-xs hidden-sm text-center" name="kiosk_hide">
                                 <?php echo xlt('Updated By'); ?>
+                            </td>
+                            <td class="dehead hidden-xs hidden-sm text-center" name="kiosk_hide">
+                                <?php echo xlt('Notas del doctor'); ?>
                             </td>
                             <?php
                         }
@@ -667,7 +677,7 @@ if (!$_REQUEST['flb_table']) {
                                     $icon_4_CALL = $icons[$row['msg_type']]['CALL']['html'];
                                     $icon_CALL = "<span onclick=\"doCALLback(" . attr_js($date_squash) . "," . attr_js($appointment['eid']) . "," . attr_js($appointment['pc_cattype']) . ")\">" . $icon_4_CALL . "</span>
                                     <span class='hidden' name='progCALLback_" . attr($appointment['eid']) . "' id='progCALLback_" . attr($appointment['eid']) . "'>
-                                      <form id='notation_" . attr($appointment['eid']) . "' method='post' 
+                                      <form id='notation_" . attr($appointment['eid']) . "' method='post'
                                       action='#'>
                                         <input type='hidden' name='csrf_token_form' value='<?php echo attr(CsrfUtils::collectCsrfToken()); ?>' />
                                         <h4>" . xlt('Call Back Notes') . ":</h4>
@@ -698,7 +708,8 @@ if (!$_REQUEST['flb_table']) {
                         if (strlen($docname) <= 3) {
                             continue;
                         }
-                        $ptname = $appointment['lname'] . $appointment['lname2'] . ', ' . $appointment['fname'] . ' ' . $appointment['mname'];
+                        $ptname = $appointment['lname'] . ' ' . $appointment['lname2'] . ', ' . $appointment['fname'] . ' ' . $appointment['mname'];
+                        $ptpricelevel = $appointment['pricelevel'];
                         $ptname_short = $appointment['fname'][0] . " " . $appointment['lname'][0];
                         $appt_enc = $appointment['encounter'];
                         $appt_eid = (!empty($appointment['eid'])) ? $appointment['eid'] : $appointment['pc_eid'];
@@ -712,10 +723,10 @@ if (!$_REQUEST['flb_table']) {
                         $tracker_id = $appointment['id'];
                         // reason for visit
                         if ($GLOBALS['ptkr_visit_reason']) {
-                            $reason_visit = $appointment['pc_hometext'];
-                                    $cirugiaOD = "OD: " . $appointment['pc_apptqx']. " " . $appointment['pc_LIOOD'];
-                                    $cirugiaOI = "OI: " . $appointment['pc_apptqxOI']. " " . $appointment['pc_LIOOI'];
-                                    $examenes = $appointment['pc_examenes'];
+                            $reason_visit = $appointment['pc_hometext'] . " ";
+                            $cirugiaOD = "OD: " . $appointment['pc_apptqx']. " " . $appointment['pc_LIOOD'];
+                            $cirugiaOI = "OI: " . $appointment['pc_apptqxOI']. " " . $appointment['pc_LIOOI'];
+                            $examenes = $appointment['pc_examenes'];
                         }
                         $newarrive = collect_checkin($tracker_id);
                         $newend = collect_checkout($tracker_id);
@@ -749,6 +760,16 @@ if (!$_REQUEST['flb_table']) {
                         }
 
                         ?>
+                        <td class="detail hidden-xs" align="center" name="kiosk_hide">
+                        <?php
+                        if ($ptpricelevel == 'standard') {
+                                $ptpricelevel = 'Particular';
+                            } else {
+                                $ptpricelevel;
+                            }
+                        echo text($ptpricelevel);
+                        ?>
+</td>
                         <td class="detail text-center hidden-xs" name="kiosk_hide">
                             <a href="#"
                                onclick="return topatient(<?php echo attr_js($appt_pid); ?>,<?php echo attr_js($appt_enc); ?>)">
@@ -772,16 +793,16 @@ if (!$_REQUEST['flb_table']) {
                             <td class="detail hidden-xs text-center" name="kiosk_hide">
                                 <?php
                                 echo text($reason_visit);
-                                if ($appointment['pc_examenes']){
+                                if ($appointment['pc_examenes'] && $appointment['pc_catid'] == 14){
                                     echo $examenes;
                                 }
-                                if($appointment['pc_apptqx'] && $appointment['pc_apptqxOI']){
+                                if($appointment['pc_apptqx'] && $appointment['pc_apptqxOI'] && $appointment['pc_catid'] == 15){
                                   echo $cirugiaOD . "<br>" . $cirugiaOI;
                                 }
-                                elseif($appointment['pc_apptqx']){
+                                elseif($appointment['pc_apptqx'] && $appointment['pc_catid'] == 15){
                                   echo $cirugiaOD;
                                 }
-                                elseif($appointment['pc_apptqxOI']){
+                                elseif($appointment['pc_apptqxOI'] && $appointment['pc_catid'] == 15){
                                   echo $cirugiaOI;
                                 }
                                 ?>
@@ -894,6 +915,9 @@ if (!$_REQUEST['flb_table']) {
                             ?>
                             <td class="detail hidden-xs hidden-sm text-center" name="kiosk_hide">
                                 <?php echo text($appointment['user']) ?>
+                            </td>
+                            <td class="detail hidden-xs hidden-sm text-center" name="kiosk_hide">
+                                <?php echo text($appointment['pc_docnotes']) ?>
                             </td>
                             <?php
                         }

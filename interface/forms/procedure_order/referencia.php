@@ -43,7 +43,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and 
+                    forms.encounter=? and
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -392,7 +392,7 @@ ob_start();
     </TR>
     <TR>
         <TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" COLSPAN=12 HEIGHT=18 ALIGN=LEFT VALIGN=BOTTOM SDNUM="1033;1033;General"><FONT SIZE=1 COLOR="#000000"><?php
-                echo "Al momento paciente presenta " . text(substr($CC1,0,90)); ?></FONT></TD>
+                echo "Al momento paciente presenta " . text($CC1); ?></FONT></TD>
     </TR>
     <TR>
         <TD STYLE="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: 1px solid #000000" COLSPAN=12 HEIGHT=15 ALIGN=LEFT VALIGN=BOTTOM SDNUM="1033;1033;General"><FONT SIZE=1 COLOR="#000000"><BR></FONT></TD>

@@ -71,7 +71,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and
+                    forms.encounter=? and 
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -221,7 +221,7 @@ ob_start();
                     <?php
                     echo $titleres['pricelevel'];
                     ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma"><?php echo $facility;?></FONT></B></TD>
+        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">ALTA VISION</FONT></B></TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PARROQUIA</FONT></TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>CANT&Oacute;N</FONT></TD>
@@ -559,7 +559,7 @@ ob_start();
                         );
                         $examenes[$formdir] = $informe;
                         foreach ($examenes as $examen) {
-                            echo "<b>" . $examen['formulario'] . " </b>";
+                            echo "<b>" . str_replace('OCT', 'Tomografía', $examen['formulario']) . " </b>";
                         }
                         $formid = $examen['form_id'];
                         $query = sqlStatement("SELECT * FROM forms AS f

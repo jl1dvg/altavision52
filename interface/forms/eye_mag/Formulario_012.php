@@ -6,8 +6,8 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/patient.inc");
 require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
-include_once($GLOBALS["srcdir"]."/api.inc");
-require_once(dirname(__FILE__) ."/../../../library/lists.inc");
+include_once($GLOBALS["srcdir"] . "/api.inc");
+require_once(dirname(__FILE__) . "/../../../library/lists.inc");
 
 use OpenEMR\Services\FacilityService;
 
@@ -16,14 +16,14 @@ $form_folder = "eye_mag";
 
 $facilityService = new FacilityService();
 
-require_once("../../forms/".$form_folder."/php/".$form_folder."_functions.php");
+require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
 if ($_REQUEST['ptid']) {
     $pid = $_REQUEST['ptid'];
 }
 
 if ($_REQUEST['encid']) {
-    $encounter=$_REQUEST['encid'];
+    $encounter = $_REQUEST['encid'];
 }
 
 if ($_REQUEST['formid']) {
@@ -31,7 +31,7 @@ if ($_REQUEST['formid']) {
 }
 
 if ($_REQUEST['formname']) {
-    $form_name=$_REQUEST['formname'];
+    $form_name = $_REQUEST['formname'];
 }
 
 //Datos del PACIENTE
@@ -60,7 +60,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and 
+                    forms.encounter=? and
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -73,8 +73,8 @@ $queryform = "select * from forms
                 formdir = 'eye_mag' and
                 deleted = 0";
 
-$fechaINGRESO = sqlQuery($queryform, array($_GET['patientid'],$_GET['visitid']));
-$providerID  =  getProviderIdOfEncounter($encounter);
+$fechaINGRESO = sqlQuery($queryform, array($_GET['patientid'], $_GET['visitid']));
+$providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
 $providerRegistro = getProviderRegistro($providerID);
 $dated = new DateTime($encounter_date);
@@ -94,6 +94,240 @@ if ($_SESSION['pc_facility']) {
     $facility = $facilityService->getPrimaryBillingLocation();
 }
 //Fin fecha del form_eye_mag
+
+//Funciones
+function fetchEyeMagOrders($form_id, $pid)
+{
+    $query = "SELECT * FROM form_eye_mag_orders WHERE form_id=? AND pid=? ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($plan_row = sqlFetchArray($PLAN_results)) {
+            $IMAGENPropuesta = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'Eye_todo_done_' AND `title` LIKE ? ";
+            $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
+            if ($code_item['codes']) {
+                echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
+        }
+    }
+}
+
+//Funcion Resumen de historia
+function ExamOftal($RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
+                   $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS)
+{
+    $ExamOFT = "";
+
+    if ($SCODVA) {
+        $ExamOFT .= "OD: $SCODVA, ";
+    }
+    if ($SCOSVA) {
+        $ExamOFT .= "OI: $SCOSVA, ";
+    }
+    if ($ODIOPAP) {
+        $ExamOFT .= "OD: $ODIOPAP, ";
+    }
+    if ($OSIOPAP) {
+        $ExamOFT .= "OI: $OSIOPAP, ";
+    }
+
+    $ExamOFT .= "Luego de realizar examen físico oftalmológico y fondo de ojo con oftalmoscopia indirecta con lupa de 20 Dioptrías bajo dilatación con gotas de tropicamida y fenilefrina, a la Biomicroscopia se observa: ";
+
+    if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
+        $ExamOFT .= "Examen Externo: ";
+        if ($RBROW || $RUL || $RLL || $RMCT || $RADNEXA) {
+            $ExamOFT .= "OD $RBROW $RUL $RLL $RMCT $RADNEXA ";
+        }
+        if ($LBROW || $LUL || $LLL || $LMCT || $LADNEXA) {
+            $ExamOFT .= "OI $LBROW $LUL $LLL $LMCT $LADNEXA ";
+        }
+        $ExamOFT .= $EXT_COMMENTS;
+    }
+
+    if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS || $OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
+        $ExamOFT .= "En la evaluación de los ojos:";
+    }
+
+    if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
+        $ExamOFT .= " OD:";
+        if ($ODCONJ) {
+            $ExamOFT .= " Conjuntiva $ODCONJ,";
+        }
+        if ($ODCORNEA) {
+            $ExamOFT .= " Córnea $ODCORNEA,";
+        }
+        if ($ODAC) {
+            $ExamOFT .= " Cámara Anterior $ODAC,";
+        }
+        if ($ODLENS) {
+            $ExamOFT .= " Cristalino $ODLENS,";
+        }
+        if ($ODIRIS) {
+            $ExamOFT .= " Iris $ODIRIS,";
+        }
+    }
+
+    if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
+        $ExamOFT .= " OI:";
+        if ($OSCONJ) {
+            $ExamOFT .= " Conjuntiva $OSCONJ,";
+        }
+        if ($OSCORNEA) {
+            $ExamOFT .= " Córnea $OSCORNEA,";
+        }
+        if ($OSAC) {
+            $ExamOFT .= " Cámara Anterior $OSAC,";
+        }
+        if ($OSLENS) {
+            $ExamOFT .= " Cristalino $OSLENS,";
+        }
+        if ($OSIRIS) {
+            $ExamOFT .= " Iris $OSIRIS,";
+        }
+    }
+
+    if ($ODDISC || $OSDISC || $ODCUP || $OSCUP || $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
+        $ExamOFT .= "Al fondo de ojo: ";
+    }
+
+    if ($ODDISC || $ODCUP || $ODMACULA || $ODVESSELS || $ODPERIPH || $ODVITREOUS) {
+        $ExamOFT .= "OD:";
+        if ($ODDISC) {
+            $ExamOFT .= " Disco $ODDISC,";
+        }
+        if ($ODCUP) {
+            $ExamOFT .= " Copa $ODCUP,";
+        }
+        if ($ODMACULA) {
+            $ExamOFT .= " Mácula $ODMACULA,";
+        }
+        if ($ODVESSELS) {
+            $ExamOFT .= " Vasos $ODVESSELS,";
+        }
+        if ($ODPERIPH) {
+            $ExamOFT .= " Periferia $ODPERIPH,";
+        }
+        if ($ODVITREOUS) {
+            $ExamOFT .= " Vítreo $ODVITREOUS,";
+        }
+    }
+
+    if ($OSDISC || $OSCUP || $OSMACULA || $OSVESSELS || $OSPERIPH || $OSVITREOUS) {
+        $ExamOFT .= "OI:";
+        if ($OSDISC) {
+            $ExamOFT .= " Disco $OSDISC,";
+        }
+        if ($OSCUP) {
+            $ExamOFT .= " Copa $OSCUP,";
+        }
+        if ($OSMACULA) {
+            $ExamOFT .= " Mácula $OSMACULA,";
+        }
+        if ($OSVESSELS) {
+            $ExamOFT .= " Vasos $OSVESSELS,";
+        }
+        if ($OSPERIPH) {
+            $ExamOFT .= " Periferia $OSPERIPH,";
+        }
+        if ($OSVITREOUS) {
+            $ExamOFT .= " Vítreo $OSVITREOUS,";
+        }
+    }
+
+    // Eliminar la coma final si existe
+    $ExamOFT = rtrim($ExamOFT, ", ");
+
+    return $ExamOFT;
+}
+
+function getDXoftalmo($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['codedesc'] . ". ";
+        }
+
+    }
+}
+
+function getDXoftalmoCIE10($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['code'] . ". ";
+        }
+
+    }
+}
+
+//provider name explode
+$fullName = getProviderNameConcat($providerID);
+
+// Extraer los componentes del nombre
+$nameComponents = explode(" ", $fullName);
+
+// Obtener los componentes individuales
+$mname = isset($nameComponents[0]) ? $nameComponents[0] : '';
+$fname = isset($nameComponents[1]) ? $nameComponents[1] : '';
+$lname = isset($nameComponents[2]) ? $nameComponents[2] : '';
+$suffix = isset($nameComponents[3]) ? $nameComponents[3] : '';
 
 //Inicio PDF
 $FONTSIZE = 9;
@@ -128,8 +362,8 @@ $config_mpdf = array(
     'default_font' => 'Arial',
     'margin_left' => '10',
     'margin_right' => '10',
-    'margin_top' => $GLOBALS['pdf_top_margin'],
-    'margin_bottom' => $GLOBALS['pdf_bottom_margin'],
+    'margin_top' => '10',
+    'margin_bottom' => '10',
     'margin_header' => '',
     'margin_footer' => '',
     'orientation' => $GLOBALS['pdf_layout'],
@@ -147,724 +381,323 @@ ob_start();
 ?>
 <HTML>
 <HEAD>
-    <STYLE TYPE="text/css">
-        div.relative {
-            position: relative;
-            width: 400px;
-            height: 200px;
-            border: 3px solid #73AD21;
+    <style>
+        table {
+            width: 100%;
+            border: 5px solid #808080;
+            border-collapse: collapse;
+            margin-bottom: 10px;
         }
 
-        div.absolute {
-            position: absolute;
-            top: 80px;
-            right: 0;
-            width: 200px;
-            height: 100px;
-            border: 3px solid #73AD21;
-        }
-        img {
-            position: absolute;
-            left: 0px;
-            top: 0px;
+        td.morado {
+            text-align: left;
+            vertical-align: middle;
+            background-color: #CCCCFF;
+            font-size: 9pt;
+            font-weight: bold;
+            height: 23px;
         }
 
-    </STYLE>
+        td.verde {
+            height: 23px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #CCFFCC;
+            font-size: 7pt;
+            font-weight: bold;
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+        }
+
+        td.blanco {
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+            height: 21px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 7pt;
+        }
+
+
+    </style>
 </HEAD>
 <BODY>
-
-<TABLE CELLSPACING=0 COLS=64 RULES=NONE BORDER=0>
-    <COLGROUP><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16><COL WIDTH=16></COLGROUP>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=16 HEIGHT=23 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>INSTITUCI&Oacute;N DEL SISTEMA</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" COLSPAN=19 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>UNIDAD OPERATIVA</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>COD. UO</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>COD. LOCALIZACI&Oacute;N</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>NUMERO DE                       HISTORIA CL&Iacute;NICA</FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=16 ROWSPAN=2 HEIGHT=55 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">
-                    <?php
-                    echo $titleres['pricelevel'];
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">ALTA VISION</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PARROQUIA</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>CANT&Oacute;N</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PROVINCIA</FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>TARQUI</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>GYE</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>GUAYAS</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=4>
-                    <?php
-                    echo $titleres['pubpid'];
-                    ?>
-                </FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=13 HEIGHT=21 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>APELLIDO PATERNO</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>APELLIDO MATERNO</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PRIMER NOMBRE</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SEGUNDO NOMBRE</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>C&Eacute;DULA DE CIUDADAN&Iacute;A</FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=13 HEIGHT=21 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                <?php
-                echo $titleres['lname'];
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                <?php
-                echo $titleres['lname2'];
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                <?php
-                echo $titleres['fname'];
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                <?php
-                echo $titleres['mname'];
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE><B>
-                <?php
-                echo $titleres['pubpid'];
-                ?>
-            </B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=8 ROWSPAN=2 HEIGHT=43 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>FECHA DE REFERENCIA</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>HORA</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>EDAD</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>GENERO</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ESTADO CIVIL</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>INSTRUCCI&Oacute;N</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=10 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>EMPRESA DONDE TRABAJA</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SEGURO DE SALUD</FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>M</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>F</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>SOL</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>CAS</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>DIV</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>VIU</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>U-L</FONT></B></TD>
-        <TD STYLE="border-bottom: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ULTIMO A&Ntilde;O APROBADO</FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=8 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE SDVAL="43056" SDNUM="1033;1033;D-MMM-YY">
+<TABLE>
+    <colgroup>
+        <col class="xl76" span="71" style="width:10pt">
+    </colgroup>
+    <tr>
+        <td colspan="71" class="morado">A. DATOS DEL ESTABLECIMIENTO
+            Y USUARIO / PACIENTE
+        </td>
+    </tr>
+    <tr>
+        <td colspan="15" height="27" class="verde">INSTITUCIÓN DEL SISTEMA</td>
+        <td colspan="6" class="verde">UNICÓDIGO</td>
+        <td colspan="18" class="verde">ESTABLECIMIENTO DE SALUD</td>
+        <td colspan="18" class="verde">NÚMERO DE HISTORIA CLÍNICA ÚNICA</td>
+        <td colspan="14" class="verde" style="border-right: none">NÚMERO DE ARCHIVO</td>
+    </tr>
+    <tr>
+        <td colspan="15" height="27" class="blanco"><?php echo $titleres['pricelevel']; ?></td>
+        <td colspan="6" class="blanco">&nbsp;</td>
+        <td colspan="18" class="blanco">ALTA VISION</td>
+        <td colspan="18" class="blanco"><?php echo $titleres['pubpid']; ?></td>
+        <td colspan="14" class="blanco" style="border-right: none"><?php echo $titleres['pubpid']; ?></td>
+    </tr>
+    <tr>
+        <td colspan="15" rowspan="2" height="41" class="verde" style="height:31.0pt;">PRIMER APELLIDO</td>
+        <td colspan="13" rowspan="2" class="verde">SEGUNDO APELLIDO</td>
+        <td colspan="13" rowspan="2" class="verde">PRIMER NOMBRE</td>
+        <td colspan="10" rowspan="2" class="verde">SEGUNDO NOMBRE</td>
+        <td colspan="3" rowspan="2" class="verde">SEXO</td>
+        <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
+        <td colspan="3" rowspan="2" class="verde">EDAD</td>
+        <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
+                class="font7">(MARCAR)</font></td>
+    </tr>
+    <tr>
+        <td colspan="2" height="17" class="verde">H</td>
+        <td colspan="2" class="verde">D</td>
+        <td colspan="2" class="verde">M</td>
+        <td colspan="2" class="verde" style="border-right: none">A</td>
+    </tr>
+    <tr>
+        <td colspan="15" height="27" class="blanco"><?php echo $titleres['lname']; ?></td>
+        <td colspan="13" class="blanco"><?php echo $titleres['lname2']; ?></td>
+        <td colspan="13" class="blanco"><?php echo $titleres['fname']; ?></td>
+        <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
+        <td colspan="3" class="blanco"><?php echo $titleres['sex']; ?></td>
+        <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
+        <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="2" class="blanco" style="border-right: none">&nbsp;</td>
+    </tr>
+</TABLE>
+<table>
+    <colgroup>
+        <col class="xl76" span="71">
+    </colgroup>
+    <tr>
+        <td colspan="71" class="morado">B. SERVICIO Y PRIORIDAD DE ATENCIÓN</td>
+    </tr>
+    <tr>
+        <td colspan="25" class="verde" style="width: 30%">SERVICIO</td>
+        <td colspan="17" class="verde" style="width: 25%">ESPECIALIDAD</td>
+        <td colspan="6" class="verde" style="width: 10%">CAMA</td>
+        <td colspan="6" class="verde" style="width: 10%">SALA</td>
+        <td colspan="17" class="verde" style="border-right: none">PRIORIDAD</td>
+    </tr>
+    <tr>
+        <td colspan="5" class="verde">EMERGENCIA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="7" class="verde">CONSULTA EXTERNA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="7" class="verde">HOSPITALIZACIÓN</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="17" class="blanco">OFTALMOLOGIA</td>
+        <td colspan="6" class="blanco">&nbsp;</td>
+        <td colspan="6" class="blanco">&nbsp;</td>
+        <td colspan="4" class="verde">URGENTE</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="3" class="verde">RUTINA</td>
+        <td colspan="2" class="blanco">X</td>
+        <td colspan="4" class="verde">CONTROL</td>
+        <td colspan="2" class="blanco" style="border-right: none"></td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td colspan="71" class="morado">C. ESTUDIO DE IMAGENOLOGÍA SOLICITADO</td>
+    </tr>
+    <tr>
+        <td colspan="6" class="verde">RX<br>CONVENCIONAL</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="4" class="verde">RX<br>PORTÁTIL</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="6" class="verde">TOMOGRAFÍA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="5" class="verde">RESONANCIA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="5" class="verde">ECOGRAFÍA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="6" class="verde">MAMOGRAFÍA</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="7" class="verde">PROCEDIMIENTO</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="3" class="verde">OTRO</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="5" class="verde">SEDACIÓN</td>
+        <td colspan="2" class="verde">SI</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="2" class="verde">NO</td>
+        <td colspan="2" class="blanco" style="border-right: none">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="8" class="verde">DESCRIPCIÓN</td>
+        <td colspan="63" class="blanco" style="border-right: none; text-align: left">
             <?php
-            echo date("d/m/Y", strtotime($fechaINGRESO['date']));
+            echo fetchEyeMagOrders($form_id, $pid);
             ?>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td colspan="40" class="morado">D. MOTIVO DE LA SOLICITUD</td>
+        <td colspan="31" class="morado" style="font-weight: normal; font-size: 6pt; text-align: right">REGISTRAR LAS
+            RAZONES PARA SOLICITAR
+            EL ESTUDIO
+        </td>
+    </tr>
+    <tr>
+        <td colspan="10" class="verde"><font class="font6">FUM</font><font class="font5"><br>(aaaa-mm-dd)</font></td>
+        <td colspan="12" class="blanco">&nbsp;</td>
+        <td colspan="14" class="verde">PACIENTE CONTAMINADO</td>
+        <td colspan="2" class="verde">SI</td>
+        <td colspan="2" class="blanco">&nbsp;</td>
+        <td colspan="2" class="verde">NO</td>
+        <td colspan="2" class="blanco">X</td>
+        <td colspan="27" class="blanco">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="71" class="blanco" style="text-align: left;">SE SOLICITA EXAMENES PARA
+            CONTINUAR TRATAMIENTO
+        </td>
+    </tr>
+    <tr>
+        <td colspan="71" class="blanco">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="71" class="blanco">&nbsp;</td>
+    </tr>
+</table>
+<table>
+    <tr>
+        <td colspan="28" class="morado">E. RESUMEN CLÍNICO ACTUAL</td>
+        <td colspan="43" class="morado" style="font-weight: normal; font-size: 6pt; text-align: right">REGISTRAR DE
+            MANERA OBLIGATORIA EL CUADRO CLÍNICO ACTUAL DEL PACIENTE
+        </td>
+    </tr>
+    <tr>
+        <td colspan="71" class="blanco" style="border-right: none; text-align: left"><?php
+            echo wordwrap(ExamOftal($RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
+                $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS), 165, "</TD></TR><TR><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">"); ?></td>
+        </td>
+    </tr>
+</table>
+<table>
+    <TR>
+        <TD class="morado" width="2%">F.</TD>
+        <TD class="morado" width="17.5%">DIAGN&Oacute;STICOS</TD>
+        <TD class="morado" width="17.5%" style="font-weight: normal; font-size: 6pt">PRE= PRESUNTIVO DEF= DEFINITIVO
         </TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;1033;H:MM AM/PM"><BR></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDVAL="50" SDNUM="1033;"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php if ($titleres['sex'] == "Male") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['sex'] == "Female") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['status'] == "single") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['status'] == "married") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['status'] == "divorced") {
-                        echo text("x");
-                    }
-                    ?>
-                </FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['status'] == "widowed") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                    if ($titleres['status'] == "ul") {
-                        echo text("x");
-                    }
-                    ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=4 COLOR="#DD0806"><?php echo text($titleres['race']); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;0;000-00-0000"><B><?php echo text($titleres['genericval1']); ?></B></TD>
+        <TD class="morado" width="6%" style="font-size: 6pt; text-align: center">CIE</TD>
+        <TD class="morado" width="3.5%" style="font-size: 6pt; text-align: center">PRE</TD>
+        <TD class="morado" width="3.5%" style="font-size: 6pt; text-align: center">DEF</TD>
+        <TD class="morado" width="2%"><BR></TD>
+        <TD class="morado" width="17.5%"><BR></TD>
+        <TD class="morado" width="17.5%"><BR></TD>
+        <TD class="morado" width="6%" style="font-size: 6pt; text-align: center">CIE</TD>
+        <TD class="morado" width="3.5%" style="font-size: 6pt; text-align: center">PRE</TD>
+        <TD class="morado" width="3.5%" style="font-size: 6pt; text-align: center">DEF</TD>
     </TR>
     <TR>
-        <TD HEIGHT=20 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
+        <td class="verde">1.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "0"); ?></td>
+        <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "0")) {
+                echo "x";
+            } ?></td>
+        <td class="verde">4.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "3"); ?></td>
+        <td class=" blanco
+        "><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "3")) {
+                echo "x";
+            } ?></td>
     </TR>
     <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" COLSPAN=12 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ESTABLECIMIENTO AL QUE SE ENV&Iacute;A LA CONTRARREFERENCIA</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=16 ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1>ALTAVISION</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SERVICIO QUE CONTRAREFIERE</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=10 ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1>OFTALMOLOGIA</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=6 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" COLSPAN=6 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
+        <td class="verde">2.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "1"); ?></td>
+        <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "4")) {
+                echo "x";
+            } ?></td>
+        <td class="verde">5.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "4"); ?></td>
+        <td class=" blanco
+        "><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "4")) {
+                echo "x";
+            } ?></td>
     </TR>
     <TR>
-        <TD HEIGHT=20 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
-        <TD ALIGN=CENTER VALIGN=MIDDLE><B><BR></B></TD>
+        <td class="verde">3.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "2"); ?></td>
+        <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "2")) {
+                echo "x";
+            } ?></td>
+        <td class="verde">6.</td>
+        <td colspan="2" class="blanco" style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "5"); ?></td>
+        <td class=" blanco
+        "><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></td>
+        <td class="blanco"></td>
+        <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "5")) {
+                echo "x";
+            } ?></td>
     </TR>
 </table>
-
-<table CELLSPACING=0 COLS=13 RULES=NONE BORDER=0 WIDTH=100%>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=1 HEIGHT=24 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF" SDVAL="1" SDNUM="1033;"><B><FONT SIZE=3>1</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3>ESTUDIO SOLICITADO</FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>R-X CONVENCIONAL</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99" width="3%"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>TOMOGRAFIA</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99" width="3%"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>RESONANCIA</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT BGCOLOR="#FFFF99" width="3%"><BR></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>ECOGRAFIA</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT BGCOLOR="#FFFF99" width="3%"><BR></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>PROCEDIMIENTO</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99" width="3%"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1>OTROS</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99" width="3%"><FONT SIZE=1>X</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99"><FONT SIZE=1><BR></FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFF99" colspan="2"><FONT SIZE=1>DESCRIPCION:</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF" colspan="11"><FONT SIZE=1><BR></FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>
-                <?php
-                $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
-                $PLAN_results = sqlStatement($query, array($form_id, $pid));
-                if (!empty($PLAN_results)) {
-                    while ($plan_row = sqlFetchArray($PLAN_results)) {
-                        $IMAGENPropuesta = "SELECT title, codes, notes FROM `list_options`
-                                            WHERE `list_id` = 'Eye_todo_done_' AND `title` LIKE ? ";
-                        $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
-                        if($code_item['codes']) {
-                            echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
-                            echo "</FONT></TD></TR><TR>
-                                    <TD STYLE=\"border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080\" colspan=\"13\" HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR=\"#FFFFFF\"><FONT SIZE=1>";
-                        }
-                    }
-                }
-                ?>
-            </FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080" HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>PUEDE MOVILIZARSE</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF" WIDTH="3%"><FONT SIZE=1>X</FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080" colspan="3"ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>PUEDE RETIRARSE VENDAS, APOSITOS Y OTROS</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF" WIDTH="3%"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080" colspan="3" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>EL MEDICO ESTARA PRESENTE</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF" WIDTH="3%"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>TOMA DE RADIOGRAFIA EN LA CAMA</FONT></TD>
-        <TD STYLE="border-top: 3px solid #000000; border-bottom: 3px solid #000000; border-left: 3px solid #000000; border-right: 3px solid #000000" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF" WIDTH="3%"><FONT SIZE=1><BR></FONT></TD>
-    </TR>
-    <TR>
-        <TD HEIGHT=15 ALIGN=LEFT><BR></TD>
-    </TR>
+<table>
+    <tr>
+        <td colspan="71" class="morado">G. DATOS DEL PROFESIONAL RESPONSABLE</td>
+    </tr>
+    <tr class="xl78">
+        <td colspan="8" class="verde">FECHA<br>
+            <font class="font5">(aaaa-mm-dd)</font>
+        </td>
+        <td colspan="7" class="verde">HORA<br>
+            <font class="font5">(hh:mm)</font>
+        </td>
+        <td colspan="21" class="verde">PRIMER NOMBRE</td>
+        <td colspan="19" class="verde">PRIMER APELLIDO</td>
+        <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
+    </tr>
+    <tr>
+        <td colspan="8" class="blanco"><?php echo date("d/m/Y", strtotime($fechaINGRESO['date'])); ?></td>
+        <td colspan="7" class="blanco"></td>
+        <td colspan="21" class="blanco"><?php echo $mname; ?></td>
+        <td colspan="19" class="blanco"><?php echo $fname; ?></td>
+        <td colspan="16" class="blanco"><?php echo $lname; ?></td>
+    </tr>
+    <tr>
+        <td colspan="15" class="verde">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
+        <td colspan="26" class="verde">FIRMA</td>
+        <td colspan="30" class="verde">SELLO</td>
+    </tr>
+    <tr>
+        <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderRegistro($providerID); ?></td>
+        <td colspan="26" class="blanco">&nbsp;</td>
+        <td colspan="30" class="blanco">&nbsp;</td>
+    </tr>
 </table>
-
-<table CELLSPACING=0 COLS=13 RULES=NONE BORDER=0 WIDTH=100%>
+<table style="border: none">
     <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=1 HEIGHT=24 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF" SDVAL="2" SDNUM="1033;"><B><FONT SIZE=3>2</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3>MOTIVO DE SOLICITUD</FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>SE SOLICITA EXAMENES PARA CONTINUAR TRATAMIENTO </FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1><BR></FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1><BR></FONT></TD>
-    </TR>
-    <TR>
-        <TD HEIGHT=15 ALIGN=LEFT><BR></TD>
-    </TR>
-</table>
-
-<table CELLSPACING=0 COLS=13 RULES=NONE BORDER=0 WIDTH=100%>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" COLSPAN=1 HEIGHT=24 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF" SDVAL="3" SDNUM="1033;"><B><FONT SIZE=3>3</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" COLSPAN=12 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3>RESUMEN CLINICO</FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>
-                <?php
-
-                function ExamOftal($RBROW,$LBROW,$RUL,$LUL,$RLL,$LLL,$RMCT,$LMCT,$RADNEXA,$LADNEXA,$EXT_COMMENTS,$SCODVA,$SCOSVA,$ODIOPAP,$OSIOPAP,$ODCONJ,$OSCONJ,$ODCORNEA,$OSCORNEA,$ODAC,$OSAC,$ODLENS,$OSLENS,$ODIRIS,$OSIRIS,$ODDISC,$OSDISC,$ODCUP,$OSCUP,
-                                   $ODMACULA,$OSMACULA,$ODVESSELS,$OSVESSELS,$ODPERIPH,$OSPERIPH,$ODVITREOUS,$OSVITREOUS){
-                    if ($RBROW||$LBROW||$RUL||$LUL||$RLL||$LLL||$RMCT||$LMCT||$RADNEXA||$LADNEXA||$EXT_COMMENTS||$SCODVA||$SCOSVA||$ODIOPAP||$OSIOPAP||$OSCONJ||$ODCONJ||$ODCORNEA||$OSCORNEA||$ODAC||$OSAC||$ODLENS||$OSLENS||$ODIRIS||$OSIRIS||$ODDISC||$OSDISC||$ODCUP||$OSCUP||
-                        $ODMACULA||$OSMACULA||$ODVESSELS||$OSVESSELS||$ODPERIPH||$OSPERIPH||$ODVITREOUS||$OSVITREOUS) {
-                        if ($SCODVA){
-                            $ExamOFT = $ExamOFT .  ("OD: " . $SCODVA . ", ");
-                        }
-                        if ($SCOSVA){
-                            $ExamOFT = $ExamOFT .  ("OI: " . $SCOSVA . ", ");
-                        }
-                        if ($ODIOPAP){
-                            $ExamOFT = $ExamOFT .  ("OD: " . $ODIOPAP . ", ");
-                        }
-                        if ($OSIOPAP){
-                            $ExamOFT = $ExamOFT .  ("OI: " . $OSIOPAP . ", ");
-                        }
-                        $ExamOFT = $ExamOFT . "Luego de realizar examen fisico oftalmologico y fondo de ojo con oftalmoscopia indirecta con lupa de 20 Dioptrias bajo dilatacion con gotas de tropicamida y fenilefrina a la Biomicroscopia se observa: ";
-                        if ($RBROW||$LBROW||$RUL||$LUL||$RLL||$LLL||$RMCT||$LMCT||$RADNEXA||$LADNEXA||$EXT_COMMENTS) {
-                            $ExamOFT = $ExamOFT .  "Examen Externo: ";
-                            if ($RBROW||$RUL||$RLL||$RMCT||$RADNEXA) {
-                                $ExamOFT = $ExamOFT . "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
-                            }
-                            if ($LBROW||$LUL||$LLL||$LMCT||$LADNEXA) {
-                                $ExamOFT = $ExamOFT . "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
-                            }
-                            $ExamOFT = $ExamOFT . $EXT_COMMENTS;
-                        }
-                        if ($ODCONJ||$ODCORNEA||$ODAC||$ODLENS||$ODIRIS) {
-                            $ExamOFT = $ExamOFT .  "OD: ";
-                        }
-                        if ($ODCONJ) {
-                            $ExamOFT = $ExamOFT .  ("Conjuntiva " . $ODCONJ . ", ");
-                        }
-                        if ($ODCORNEA) {
-                            $ExamOFT = $ExamOFT .  ("Córnea " . $ODCORNEA . ", ");
-                        }
-                        if ($ODAC) {
-                            $ExamOFT = $ExamOFT .  ("Cámara Anterior " . $ODAC . ", ");
-                        }
-                        if ($ODLENS) {
-                            $ExamOFT = $ExamOFT .  ("Cristalino " . $ODLENS . ", ");
-                        }
-                        if ($ODIRIS) {
-                            $ExamOFT = $ExamOFT .  ("Iris " . $ODIRIS . ", ");
-                        }
-                        if ($OSCONJ||$OSCORNEA||$OSAC||$OSLENS||$OSIRIS) {
-                            $ExamOFT = $ExamOFT .  "OI: ";
-                        }
-                        if ($OSCONJ) {
-                            $ExamOFT = $ExamOFT .  ("Conjuntiva " . $OSCONJ . ", ");
-                        }
-                        if ($OSCORNEA) {
-                            $ExamOFT = $ExamOFT .  ("Córnea " . $OSCORNEA . ", ");
-                        }
-                        if ($OSAC) {
-                            $ExamOFT = $ExamOFT .  ("Cámara Anterior " . $OSAC . ", ");
-                        }
-                        if ($OSLENS) {
-                            $ExamOFT = $ExamOFT .  ("Cristalino " . $OSLENS . ", ");
-                        }
-                        if ($OSIRIS) {
-                            $ExamOFT = $ExamOFT .  ("Iris " . $OSIRIS . ", ");
-                        }
-                        if ($ODDISC||$OSDISC||$ODCUP||$OSCUP||$ODMACULA||$OSMACULA||$ODVESSELS||$OSVESSELS||$ODPERIPH||$OSPERIPH||$ODVITREOUS||$OSVITREOUS) {
-                            $ExamOFT = $ExamOFT .  "Al fondo de ojo: ";
-                        }
-                        //Retina Ojo Derecho
-                        if ($ODDISC||$ODCUP||$ODMACULA||$ODVESSELS||$ODPERIPH||$ODVITREOUS) {
-                            $ExamOFT = $ExamOFT .  "OD: ";
-                        }
-                        if ($ODDISC) {
-                            $ExamOFT = $ExamOFT .  ("Disco " . $ODDISC . ", ");
-                        }
-                        if ($ODCUP) {
-                            $ExamOFT = $ExamOFT .  ("Copa " . $ODCUP . ", ");
-                        }
-                        if ($ODMACULA) {
-                            $ExamOFT = $ExamOFT .  ("Mácula " . $ODMACULA . ", ");
-                        }
-                        if ($ODVESSELS) {
-                            $ExamOFT = $ExamOFT .  ("Vasos " . $ODVESSELS . ", ");
-                        }
-                        if ($ODPERIPH) {
-                            $ExamOFT = $ExamOFT .  ("Periferia " . $ODPERIPH . ", ");
-                        }
-                        if ($ODVITREOUS) {
-                            $ExamOFT = $ExamOFT .  ("Vítreo " . $ODVITREOUS . ", ");
-                        }
-                        //Retina Ojo Izquierdo
-                        if ($OSDISC||$OSCUP||$OSMACULA||$OSVESSELS||$OSPERIPH||$OSVITREOUS) {
-                            $ExamOFT = $ExamOFT .  "OI: ";
-                        }
-                        if ($OSDISC) {
-                            $ExamOFT = $ExamOFT .  ("Disco " . $OSDISC . ", ");
-                        }
-                        if ($OSCUP) {
-                            $ExamOFT = $ExamOFT .  ("Copa " . $OSCUP . ", ");
-                        }
-                        if ($OSMACULA) {
-                            $ExamOFT = $ExamOFT .  ("Mácula " . $OSMACULA . ", ");
-                        }
-                        if ($OSVESSELS) {
-                            $ExamOFT = $ExamOFT .  ("Vasos " . $OSVESSELS . ", ");
-                        }
-                        if ($OSPERIPH) {
-                            $ExamOFT = $ExamOFT .  ("Periferia " . $OSPERIPH . ", ");
-                        }
-                        if ($OSVITREOUS) {
-                            $ExamOFT = $ExamOFT .  ("Vítreo " . $OSVITREOUS . ", ");
-                        }
-                        return $ExamOFT;
-                    }
-
-
-                }
-                function SegAntOD($SCODVA,$SCOSVA,$ODIOPAP,$OSIOPAP,$ODCONJ,$OSCONJ,$ODCORNEA,$OSCORNEA,$ODAC,$OSAC,$ODLENS,$OSLENS,$ODIRIS,$OSIRIS,$ODDISC,$OSDISC,$ODCUP,$OSCUP,
-                                  $ODMACULA,$OSMACULA,$ODVESSELS,$OSVESSELS,$ODPERIPH,$OSPERIPH,$ODVITREOUS,$OSVITREOUS){
-                    if ($OSCONJ||$ODCONJ||$ODCORNEA||$OSCORNEA||$ODAC||$OSAC||$ODLENS||$OSLENS||$ODIRIS||$OSIRIS||$ODDISC||$OSDISC||$ODCUP||$OSCUP||
-                        $ODMACULA||$OSMACULA||$ODVESSELS||$OSVESSELS||$ODPERIPH||$OSPERIPH||$ODVITREOUS||$OSVITREOUS) {
-                        $SegAntOD = "Luego de realizar examen fisico oftalmologico y fondo de ojo con oftalmoscopia indirecta con lupa de 20 Dioptrias bajo dilatacion con gotas de tropicamida y fenilefrina a la Biomicroscopia se observa:";
-                        if ($ODCONJ||$ODCORNEA||$ODAC||$ODLENS||$ODIRIS) {
-                            $SegAntOD = $SegAntOD . "OD: ";
-                        }
-                        if ($ODCONJ) {
-                            $SegAntOD = $SegAntOD . "Conjuntiva " . $ODCONJ . ", ";
-                        }
-                        if ($ODCORNEA) {
-                            $SegAntOD = $SegAntOD . "Córnea " . $ODCORNEA . ", ";
-                        }
-                        if ($ODAC) {
-                            $SegAntOD = $SegAntOD . "Cámara Anterior " . $ODAC . ", ";
-                        }
-                        if ($ODLENS) {
-                            $SegAntOD = $SegAntOD . "Cristalino " . $ODLENS . ", ";
-                        }
-                        if ($ODIRIS) {
-                            $SegAntOD = $SegAntOD . "Iris " . $ODIRIS . ", ";
-                        }
-
-                    }
-                    return $SegAntOD;
-                }
-
-                echo wordwrap(ExamOftal($RBROW,$LBROW,$RUL,$LUL,$RLL,$LLL,$RMCT,$LMCT,$RADNEXA,$LADNEXA,$EXT_COMMENTS,$SCODVA,$SCOSVA,$ODIOPAP,$OSIOPAP,$ODCONJ,$OSCONJ,$ODCORNEA,$OSCORNEA,$ODAC,$OSAC,$ODLENS,$OSLENS,$ODIRIS,$OSIRIS,$ODDISC,$OSDISC,$ODCUP,$OSCUP,
-                    $ODMACULA,$OSMACULA,$ODVESSELS,$OSVESSELS,$ODPERIPH,$OSPERIPH,$ODVITREOUS,$OSVITREOUS),165,"</FONT></TD></TR><TR><TD STYLE=\"border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 5px solid #808080\" COLSPAN=13 HEIGHT=20 ALIGN=LEFT VALIGN=MIDDLE BGCOLOR=\"#FFFFFF\">
-           <FONT SIZE=1 COLOR=\"#000000\">");
-                ?>
-            </FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080;" colspan="13" HEIGHT=15 ALIGN=LEFT><BR></TD>
-    </TR>
-</table>
-<table CELLSPACING=0 RULES=NONE BORDER=0 WIDTH=100%>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080" width="2%" HEIGHT=24 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3>4</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="17.5%" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3>DIAGN&Oacute;STICOS</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="17.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><FONT SIZE=1>PRE= PRESUNTIVO DEF= DEFINITIVO</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="6%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>CIE</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="3.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>PRE</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="3.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>DEF</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="2%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3><BR></FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="17.5%" ALIGN=LEFT VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=3><BR></FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="17.5%"ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><FONT SIZE=1><BR></FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="6%"ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>CIE</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" width="3.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>PRE</FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080" width="3.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>DEF</FONT></B></TD>
-    </TR>
-    <?php
-    function getDXoftalmo($form_id,$pid,$dxnum){
-        $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-        $result =  sqlStatement($query, array($form_id,$pid,$dxnum));
-        $i='0';
-        $order   = array("\r\n", "\n", "\r","\v","\f","\x85","\u2028","\u2029");
-        $replace = "<br />";
-        // echo '<ol>';
-        while ($ip_list = sqlFetchArray($result)) {
-            $newdata =  array (
-                'form_id'       => $ip_list['form_id'],
-                'pid'           => $ip_list['pid'],
-                'title'         => $ip_list['title'],
-                'code'          => $ip_list['code'],
-                'codetype'      => $ip_list['codetype'],
-                'codetext'      => $ip_list['codetext'],
-                'codedesc'      => $ip_list['codedesc'],
-                'plan'          => str_replace($order, $replace, $ip_list['plan']),
-                'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-            );
-            $IMPPLAN_items[$i] =$newdata;
-            $i++;
-        }
-
-        //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-        foreach ($IMPPLAN_items as $item) {
-            $pattern = '/Code/';
-            if (preg_match($pattern, $item['code'])) {
-                $item['code'] = '';
-            }
-
-            if ($item['codetext'] > '') {
-                return $item['codedesc'].". ";
-            }
-
-        }
-    }
-    function getDXoftalmoCIE10($form_id,$pid,$dxnum){
-        $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-        $result =  sqlStatement($query, array($form_id,$pid,$dxnum));
-        $i='0';
-        $order   = array("\r\n", "\n", "\r","\v","\f","\x85","\u2028","\u2029");
-        $replace = "<br />";
-        // echo '<ol>';
-        while ($ip_list = sqlFetchArray($result)) {
-            $newdata =  array (
-                'form_id'       => $ip_list['form_id'],
-                'pid'           => $ip_list['pid'],
-                'title'         => $ip_list['title'],
-                'code'          => $ip_list['code'],
-                'codetype'      => $ip_list['codetype'],
-                'codetext'      => $ip_list['codetext'],
-                'codedesc'      => $ip_list['codedesc'],
-                'plan'          => str_replace($order, $replace, $ip_list['plan']),
-                'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-            );
-            $IMPPLAN_items[$i] =$newdata;
-            $i++;
-        }
-
-        //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-        foreach ($IMPPLAN_items as $item) {
-            $pattern = '/Code/';
-            if (preg_match($pattern, $item['code'])) {
-                $item['code'] = '';
-            }
-
-            if ($item['codetext'] > '') {
-                return $item['code'].". ";
-            }
-
-        }
-    }
-    ?>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="1" SDNUM="1033;"><B><FONT SIZE=1>1</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmo($form_id,$pid,"0"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmoCIE10($form_id,$pid,"0"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"0")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="4" SDNUM="1033;"><B><FONT SIZE=1>4</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmo($form_id,$pid,"3"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmoCIE10($form_id,$pid,"3"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"3")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="2" SDNUM="1033;"><B><FONT SIZE=1>2</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmo($form_id,$pid,"1"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmoCIE10($form_id,$pid,"1"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"1")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="5" SDNUM="1033;"><B><FONT SIZE=1>5</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmo($form_id,$pid,"4"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><?php echo getDXoftalmoCIE10($form_id,$pid,"4"); ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"4")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="3" SDNUM="1033;"><B><FONT SIZE=1>3</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1><B><?php echo getDXoftalmo($form_id,$pid,"2"); ?></B></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1><B><?php echo getDXoftalmoCIE10($form_id,$pid,"2"); ?></B></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"2")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="6" SDNUM="1033;"><B><FONT SIZE=1>6</FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1><B><?php echo getDXoftalmo($form_id,$pid,"5"); ?></B></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1><B><?php echo getDXoftalmoCIE10($form_id,$pid,"5"); ?></B></FONT></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B></TD>
-        <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><?php if (getDXoftalmo($form_id,$pid,"5")) {
-                        echo "x";
-                    } ?></FONT></B></TD>
-    </TR>
-
-</table>
-<table CELLSPACING=0 RULES=NONE BORDER=0 WIDTH=100%>
-    <TR>
-        <TD colspan="8" ALIGN=LEFT><BR></TD>
-        <TD rowspan="3" ALIGN=CENTER valign="top" BGCOLOR="#FFFFFF"><FONT SIZE=1>
-            </FONT></TD>
-    </TR>
-    <TR>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080" width="7%" HEIGHT=20 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SALA</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;1033;D-MMM-YY"><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>CAMA</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;0;[H]:MM:SS"><B><FONT SIZE=1><BR></FONT></B></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PROFESIONAL</FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>
-                <?php
-                echo getProviderName($providerID);
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                <?php
-                echo getProviderRegistro($providerID);
-                ?>
-            </FONT></TD>
-        <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080" width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>FIRMA</FONT></TD>
-
-    </TR>
-    <TR>
-        <TD colspan="8" ALIGN=LEFT><BR></TD>
-    </TR>
-    <TR>
-        <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=TOP><B><FONT SIZE=1 COLOR="#000000">SNS-MSP / HCU-form.012A / 2008</FONT></B></TD>
+        <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=TOP><B><FONT SIZE=1 COLOR="#000000">SNS-MSP / HCU-form.012A /
+                    2008</FONT></B></TD>
         <TD colspan="3" ALIGN=RIGHT VALIGN=TOP><B><FONT SIZE=3 COLOR="#000000">IMAGENOLOGIA SOLICITUD</FONT></B></TD>
     </TR>
-    </TBODY>
+    ]
 </TABLE>
-
 </BODY>
 </HTML>
-
 
 <?php
 $html = ob_get_clean();

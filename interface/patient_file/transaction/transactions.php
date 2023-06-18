@@ -13,6 +13,7 @@
 require_once("../../globals.php");
 require_once("$srcdir/transactions.inc");
 require_once("$srcdir/options.inc.php");
+require_once("$srcdir/lists.inc");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;

@@ -25,8 +25,8 @@ function setencounter($enc)
         }
     }
 
-    $_SESSION['encounter']=$enc;
-    $encounter=$enc;
+    $_SESSION['encounter'] = $enc;
+    $encounter = $enc;
 
 
     //returns 1 on successful global set, or 0 if there was no
@@ -45,3 +45,50 @@ function fetchCategoryIdByEncounter($encounter)
     $result = sqlQuery($sql, array($encounter));
     return $result['pc_catid'];
 }
+
+function fetchDateByEncounter($encounter)
+{
+    global $attendant_type;
+    $table = $attendant_type == 'pid' ? 'form_encounter' : 'form_groups_encounter';
+    $sql = "SELECT date FROM " . escape_table_name($table) . " WHERE encounter = ? limit 1";
+    $result = sqlQuery($sql, array($encounter));
+    return $result['date'];
+}
+
+function fetchNameByEncounter($pc_catid)
+{
+    global $attendant_type;
+    $table = $attendant_type == 'pid' ? 'openemr_postcalendar_categories' : 'form_groups_encounter';
+    $sql = "SELECT pc_catname FROM " . escape_table_name($table) . " WHERE pc_catid = ? limit 1";
+    $result = sqlQuery($sql, array($pc_catid));
+    return $result['pc_catname'];
+}
+
+//fetches encounter pc_catid by encounter number
+function fetchEventIdByEncounter($encounter)
+{
+    global $attendant_type;
+    $table = $attendant_type == 'pid' ? 'patient_tracker' : 'form_groups_encounter';
+    $sql = "SELECT * FROM " . escape_table_name($table) . " WHERE encounter = ? limit 1";
+    $result = sqlQuery($sql, array($encounter));
+    return $result['eid'];
+}
+
+function getEventDetails($eventId)
+{
+    $sql = "SELECT pc_apptqx, pc_apptqxOI FROM openemr_postcalendar_events WHERE pc_eid = ?";
+    $result = sqlQuery($sql, array($eventId));
+
+    if ($result) {
+        $eventDetails = array(
+            'pc_apptqx' => $result['pc_apptqx'],
+            'pc_apptqxOI' => $result['pc_apptqxOI']
+        );
+
+        return $eventDetails;
+    } else {
+        return false; // No se encontró el evento con el ID proporcionado
+    }
+}
+
+

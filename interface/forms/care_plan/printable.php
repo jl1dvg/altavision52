@@ -274,23 +274,19 @@ $MedicoProcedimiento = $CarePlanSQL['care_plan_type'];
 <P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
     <BR>
 </P>
-<P STYLE="margin-bottom: 0.14in; line-height: 100%"><FONT FACE="Arial, sans-serif"><B>
-            <?php
-            $MedicoSQL = sqlquery("SELECT * FROM users WHERE " .
-                "lname = '$MedicoProcedimiento' ");
-            ?>
-            <span>
-</span><br>
-            <?php echo ($MedicoSQL['suffix'] . " " . $MedicoSQL['fname'] . " " . $MedicoSQL['lname']);
-            ?>
-        </B></FONT></P>
-<P STYLE="margin-bottom: 0.14in; line-height: 100%"><FONT FACE="Arial, sans-serif"><B><?php
-            echo getProviderEspecialidad($MedicoSQL['id']);
-            ?></B></FONT></FONT></P>
-<P STYLE="margin-bottom: 0.14in; line-height: 100%"><FONT FACE="Arial, sans-serif"><B>Centro
-            Oftalmol&oacute;gico AltaVisi&oacute;n</B></FONT></FONT></P>
-<P STYLE="margin-bottom: 0.14in; line-height: 100%"><FONT FACE="Arial, sans-serif"><B>Guayaquil
-            &ndash; Ecuador</B></FONT></FONT></P>
+<P>
+    <B>
+        <?php
+        echo getProviderName($providerID);
+        ?>
+        <br>
+        <?php
+        echo getProviderEspecialidad($providerID);
+        ?>
+        <br>
+        Centro Oftalmol&oacute;gico AltaVisi&oacute;n
+        <br>
+        Guayaquil &ndash; Ecuador</B></P>
 </BODY>
 </HTML>
 <?php

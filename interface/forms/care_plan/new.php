@@ -163,7 +163,7 @@ endforeach;
                                 <?php foreach ($care_plan_type as $value) :
                                     $selected = ($value['value'] == $obj{"care_plan_type"}) ? 'selected="selected"' : '';
                                     ?>
-                                    <option value="<?php echo attr($value['lname']);?>" <?php echo $selected;?>><?php echo text($value['lname'] . " " . $value['fname']);?></option>
+                                    <option value="<?php echo attr($value['fname'] . " " . $value['lname']);?>" <?php echo $selected;?>><?php echo text($value['lname'] . " " . $value['fname']);?></option>
                                 <?php endforeach;?>
                                 </select>
                         </div>
@@ -202,7 +202,7 @@ endforeach;
                                     <?php foreach ($care_plan_type as $value) :
                                         $selected = ($value['value'] == $obj{"care_plan_type"}) ? 'selected="selected"' : '';
                                         ?>
-                                        <option value="<?php echo attr($value['lname']);?>" <?php echo $selected;?>><?php echo text($value['lname'] . " " . $value['fname']);?></option>
+                                        <option value="<?php echo attr($value['fname'] . " " . $value['lname']);?>" <?php echo $selected;?>><?php echo text($value['lname'] . " " . $value['fname']);?></option>
                                     <?php endforeach;?>
                                 </select>
                             </div>

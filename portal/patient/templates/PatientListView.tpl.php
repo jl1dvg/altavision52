@@ -212,16 +212,16 @@ body{
                     </div>
                 </div>
                 <div class="form-group inline" id="countyInputContainer">
-                    <label class="control-label" for="county"><?php echo xlt('County')?></label>
+                    <label class="control-label" for="county"><?php echo xlt('Country')?></label>
                     <div class="controls inline-inputs">
-                        <input type="text" class="form-control" id="county" placeholder="<?php echo xla('County'); ?>" value="<%= _.escape(item.get('county') || '') %>">
+                        <input type="text" class="form-control" id="county" placeholder="<?php echo xla('Country'); ?>" value="<%= _.escape(item.get('county') || '') %>">
                         <span class="help-inline"></span>
                     </div>
                 </div>
                 <div class="form-group inline" id="countryCodeInputContainer">
-                    <label class="control-label" for="countryCode"><?php echo xlt('Country Code')?></label>
+                    <label class="control-label" for="countryCode"><?php echo xlt('Zip Code')?></label>
                     <div class="controls inline-inputs">
-                        <input type="text" class="form-control" id="countryCode" placeholder="<?php echo xla('Country Code'); ?>" value="<%= _.escape(item.get('countryCode') || '') %>">
+                        <input type="text" class="form-control" id="countryCode" placeholder="<?php echo xla('Zip Code'); ?>" value="<%= _.escape(item.get('countryCode') || '') %>">
                         <span class="help-inline"></span>
                     </div>
                 </div>
