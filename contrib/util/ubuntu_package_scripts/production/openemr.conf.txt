@@ -1,0 +1,25 @@
+# OpenEMR Package Apache configuration
+Alias /altavision /var/www/altavision
+<Directory "/var/www/altavision">
+ Options -Indexes
+ AllowOverride None
+ Require all granted
+</Directory>
+<Directory "/var/www/altavision/interface/modules/zend_modules/public">
+ RewriteEngine On
+ RewriteCond %{REQUEST_FILENAME} -s [OR]
+ RewriteCond %{REQUEST_FILENAME} -l [OR]
+ RewriteCond %{REQUEST_FILENAME} -d
+ RewriteRule ^.*$ - [NC,L]
+ RewriteRule ^.*$ /altavision/interface/modules/zend_modules/public/index.php [NC,L]
+</Directory>
+<Directory "/var/www/altavision/portal/patient">
+ RewriteEngine On
+ RewriteCond %{REQUEST_FILENAME} !-f
+ RewriteCond %{REQUEST_FILENAME} !-d
+ RewriteCond %{REQUEST_FILENAME} !-l
+ RewriteRule (.*) /altavision/portal/patient/index.php?_REWRITE_COMMAND=$1 [QSA,L]
+</Directory>
+<Directory "/var/www/altavision/sites/*/documents">
+ Require all denied
+</Directory>
