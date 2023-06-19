@@ -227,4 +227,74 @@ function getReferral($pid, $field_id)
     return "No se encontraron resultados";
 }
 
+function getReason($encounter, $pid)
+{
+    $query = "SELECT reason FROM form_encounter WHERE encounter = ? AND pid = ?";
+    $result = sqlQuery($query, array($encounter, $pid));
+    return $result['reason'];
+}
+
+function fetchEyeMagOrders($form_id, $pid)
+{
+    $query = "SELECT * FROM form_eye_mag_orders WHERE form_id=? AND pid=? ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($plan_row = sqlFetchArray($PLAN_results)) {
+            $IMAGENPropuesta = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'Eye_todo_done_' AND `title` LIKE ? ";
+            $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
+            if ($code_item['codes']) {
+                echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
+        }
+    }
+}
+
+function getPlanTerapeuticoOD($form_id, $pid)
+{
+    $query = "SELECT c.name
+              FROM form_eye_mag_ordenqxod AS o
+              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
+              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
+              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
+              ORDER BY o.id ASC";
+
+    $results = sqlStatement($query, array($form_id, $pid));
+
+    $names = array();
+
+    if (!empty($results)) {
+        while ($row = sqlFetchArray($results)) {
+            $name = $row['name'];
+            $names[] = $name;
+        }
+    }
+
+    return $names;
+}
+
+function getPlanTerapeuticoOI($form_id, $pid)
+{
+    $query = "SELECT c.name
+              FROM form_eye_mag_ordenqxoi AS o
+              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
+              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
+              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
+              ORDER BY o.id ASC";
+
+    $results = sqlStatement($query, array($form_id, $pid));
+
+    $names = array();
+
+    if (!empty($results)) {
+        while ($row = sqlFetchArray($results)) {
+            $name = $row['name'];
+            $names[] = $name;
+        }
+    }
+
+    return $names;
+}
+
 ?>

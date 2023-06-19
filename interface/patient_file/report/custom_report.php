@@ -936,12 +936,25 @@ function postToGet($arin)
                 // Incluir el contenido de examenes.php en el PDF
                 ob_start();
                 include("acta.php");
-                $examenes_content = ob_get_clean();
+                $acta_content = ob_get_clean();
 
                 // Imprimir el valor de $key dentro de un elemento <h1>
                 //$pdf->WriteHTML('<h1>' . $key . '</h1>');
                 // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($examenes_content);
+                $pdf->WriteHTML($acta_content);
+            } elseif (strpos($key, 'eye_mag') === 0) {
+                // Crear una nueva página en el PDF
+                $pdf->AddPage();
+
+                // Incluir el contenido de examenes.php en el PDF
+                ob_start();
+                include("007.php");
+                $inter_content = ob_get_clean();
+
+                // Imprimir el valor de $key dentro de un elemento <h1>
+                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
+                // Imprimir el contenido de examenes.php
+                $pdf->WriteHTML($inter_content);
             } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') !== 0) {
                 // Crear una nueva página en el PDF
                 $pdf->AddPage();
@@ -949,12 +962,12 @@ function postToGet($arin)
                 // Incluir el contenido de examenes.php en el PDF
                 ob_start();
                 include("examenes.php");
-                $protocolo_content = ob_get_clean();
+                $examenes_content = ob_get_clean();
 
                 // Imprimir el valor de $key dentro de un elemento <h1>
                 //$pdf->WriteHTML('<h1>' . $key . '</h1>');
                 // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($protocolo_content);
+                $pdf->WriteHTML($examenes_content);
             } elseif (strpos($key, 'LBFprotocolo') === 0) {
                 // Crear una nueva página en el PDF
                 $pdf->AddPage();
