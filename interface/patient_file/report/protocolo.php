@@ -30,6 +30,8 @@ $prot_hfin_fin_timestamp = $prot_hfin_timestamp + 2700;
 $prot_hfin_nueva = date("H:i", $prot_hfin_nueva_timestamp);
 $prot_hfin_fin = date("H:i", $prot_hfin_fin_timestamp);
 
+$codes = getCPT4Codes($titleres['pricelevel'], $form_id);
+
 ?>
 <html>
 <HEAD>
@@ -131,7 +133,7 @@ $prot_hfin_fin = date("H:i", $prot_hfin_fin_timestamp);
         <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
         <td colspan="3" rowspan="2" class="verde">EDAD</td>
         <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
-                    class="font7">(MARCAR)</font></td>
+                class="font7">(MARCAR)</font></td>
     </tr>
     <tr>
         <td colspan="2" height="17" class="verde">H</td>
@@ -237,7 +239,11 @@ $prot_hfin_fin = date("H:i", $prot_hfin_fin_timestamp);
     <tr>
         <td colspan="2" class="verde_left">Realizado:</td>
         <td class="blanco_left"
-            colspan="18"><?php echo obtenerIntervencionesPropuestas(getFieldValue($form_id, "Prot_opr")) . " ";
+            colspan="18">
+            <?php
+            echo implode('/', $codes);
+            echo "<br>";
+            echo obtenerIntervencionesPropuestas(getFieldValue($form_id, "Prot_opr")) . " ";
             $mensajeOjo = [
                 'OI' => 'Ojo izquierdo',
                 'OjoIzq' => 'Ojo izquierdo',
@@ -533,7 +539,7 @@ $prot_hfin_fin = date("H:i", $prot_hfin_fin_timestamp);
                 <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
                 <td colspan="3" rowspan="2" class="verde">EDAD</td>
                 <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
-                            class="font7">(MARCAR)</font></td>
+                        class="font7">(MARCAR)</font></td>
             </tr>
             <tr>
                 <td colspan="2" height="17" class="verde">H</td>
@@ -581,14 +587,14 @@ $prot_hfin_fin = date("H:i", $prot_hfin_fin_timestamp);
             </tr>
             <tr>
                 <td class="verde" colspan="6">FECHA<br><span
-                            style="font-size:6pt;font-family:Arial;font-weight:normal;">(aaaa-mm-dd)</span>
+                        style="font-size:6pt;font-family:Arial;font-weight:normal;">(aaaa-mm-dd)</span>
                 </td>
                 <td class="verde" colspan="3">HORA<br><span style="font-size:6pt;font-family:Arial;font-weight:normal;">(hh:mm)</span>
                 </td>
                 <td class="verde" colspan="29">NOTAS DE EVOLUCIÓN</td>
                 <td class="blanco_break"></td>
                 <td class="verde" colspan="23">FARMACOTERAPIA E INDICACIONES<span
-                            style="font-size:6pt;font-family:Arial;font-weight:normal;"><br>(Para enfermería y otro profesional de salud)</span>
+                        style="font-size:6pt;font-family:Arial;font-weight:normal;"><br>(Para enfermería y otro profesional de salud)</span>
                 </td>
                 <td class="verde" colspan="5"><span style="font-size:6pt;font-family:Arial;font-weight:normal;">ADMINISTR. <br>FÁRMACOS<br>DISPOSITIVO</span>
                 </td>

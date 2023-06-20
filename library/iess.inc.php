@@ -297,4 +297,35 @@ function getPlanTerapeuticoOI($form_id, $pid)
     return $names;
 }
 
+function getCPT4Codes($convenio, $lbfID)
+{
+    $codes = [];
+
+    $querylbfopr = sqlQuery("SELECT field_value FROM lbf_data WHERE form_id=$lbfID AND field_id='Prot_opr'");
+    $REALIZADA = $querylbfopr['field_value'];
+
+    if ($convenio == 'IESS' && $REALIZADA && $REALIZADA != '0') {
+        $REALIZADA_items = explode('|', $REALIZADA);
+
+        foreach ($REALIZADA_items as $item) {
+            $QXpropuesta = $item;
+            $IntervencionPropuesta = sqlquery("SELECT codes FROM `list_options` WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` = '$QXpropuesta'");
+
+            if (!empty($IntervencionPropuesta)) {
+                $code = $IntervencionPropuesta['codes'];
+                $CPT4 = explode('CPT4:', $code);
+
+                foreach ($CPT4 as $val) {
+                    $cleanedVal = rtrim($val, ';'); // Eliminar el ";" al final del código
+                    if ($cleanedVal > 0) {
+                        $codes[] = $cleanedVal;
+                    }
+                }
+            }
+        }
+    }
+
+    $uniqueCodes = array_unique($codes);
+    return $uniqueCodes;
+}
 ?>
