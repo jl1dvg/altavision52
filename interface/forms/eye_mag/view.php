@@ -56,7 +56,7 @@ $setting_NEURO = prevSetting($uspfx, 'setting_NEURO', 'setting_NEURO', '1');
 $setting_IMPPLAN = prevSetting($uspfx, 'setting_IMPPLAN', 'setting_IMPPLAN', '1');
 
 $query10 = "select  *,form_encounter.date as encounter_date
-              
+
                from forms,form_encounter,form_eye_base,
                 form_eye_hpi,form_eye_ros,form_eye_vitals,
                 form_eye_acuity,form_eye_refraction,form_eye_biometrics,
@@ -347,7 +347,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                     <div id="first" name="first" class="text_clinical">
                         <!-- start    HPI spinner -->
                         <div class="loading" id="HPI_sections_loading" name="HPI_sections_loading"><i
-                                    class="fa fa-spinner fa-spin"></i>
+                                class="fa fa-spinner fa-spin"></i>
                         </div>
                         <!-- end      HPI spinner -->
                         <?php ($CLINICAL == '1') ? ($display_Add = "size100") : ($display_Add = "size50"); ?>
@@ -397,7 +397,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         <tr>
                                                             <td class="pad10" colspan="2">
                                                                 <div class="kb kb_left">CC</div>
-                                                                <b><span title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
+                                                                <b><span
+                                                                        title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
                                                                         1:
                                       </span> </b>
                                                                 <br/>
@@ -447,7 +448,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         <span class="detailed_HPI" name=""><?php echo xlt('Detailed HPI') ?>:</span>
                                         <span class="detail_4_elements"
                                               name=""><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
-                                                                    <span class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
+                                                                    <span
+                                                                        class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
                                       </span>
                                                             </td>
                                                         </tr>
@@ -459,7 +461,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                            cellpadding="0">
                                                         <tr>
                                                             <td class="top pad10" colspan="2">
-                                                                <b><span title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
+                                                                <b><span
+                                                                        title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
                                                                         2:
                                         </span> </b>
                                                                 <br/>
@@ -486,7 +489,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                            cellpadding="0">
                                                         <tr>
                                                             <td class="top pad10" colspan="2">
-                                                                <b><span title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
+                                                                <b><span
+                                                                        title="<?php echo xla('In the patient\'s words'); ?>"><?php echo xlt('Chief Complaint'); ?>
                                                                         3:
                                         </span> </b>
                                                                 <br/>
@@ -530,7 +534,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 <div id="tabs_container">
                                                     <ul id="tabs">
                                                         <li id="tab1_HPI_tab" class="active"><a
-                                                                    type="button" <?php if ($CC1 > '') {
+                                                                type="button" <?php if ($CC1 > '') {
                                                                 echo 'class="fa fa-check" ';
                                                             } ?> href="#tab1"> <?php echo xlt('HPI'); ?> 1</a></li>
                                                         <li id="tab2_HPI_tab"><a <?php if ($CC2 > '') {
@@ -645,8 +649,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                class="CODE_HIGH fa fa-check nodisplay" value="1"></i>
                                                             <span id="CODE_HELP_1">
                                     <span class="detailed_HPI"><?php echo xlt('Detailed HPI') ?>:</span>
-                                    <span class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
-                                                                <span class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
+                                    <span
+                                        class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
+                                                                <span
+                                                                    class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
                                   </span>
                                                         </center>
 
@@ -754,8 +760,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                class="CODE_HIGH fa fa-check nodisplay" value="1"></i>
                                                             <span id="CODE_HELP_2">
                                     <span class="detailed_HPI"><?php echo xlt('Detailed HPI') ?>:</span>
-                                    <span class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
-                                                                <span class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
+                                    <span
+                                        class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
+                                                                <span
+                                                                    class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
                                   </span>
                                                         </center>
                                                     </div>
@@ -859,8 +867,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                class="CODE_HIGH fa fa-check nodisplay" value="1"></i>
                                                             <span ID="CODE_HELP_3">
                                     <span class="detailed_HPI"><?php echo xlt('Detailed HPI') ?>:</span>
-                                    <span class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
-                                                                <span class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
+                                    <span
+                                        class="detail_4_elements"><?php echo xlt('> 3 HPI elements'); ?></span> <?php echo xlt('OR{{as in AND/OR, ie. not an abbreviation}}'); ?>
+                                                                <span
+                                                                    class="chronic_3_elements"><?php echo xlt('the status of three chronic/inactive problems'); ?></span>
                                   </span>
                                                         </center>
                                                     </div>
@@ -912,7 +922,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                 <!-- start  PMH Right -->
                                 <div id="PMH_right" name="PMH_right" class="exam_section_right borderShadow">
                                     <a class="nodisplay left_PMSFH_tab" id="right-panel-link" href="#right-panel">
-                                        <img src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/eye_mag/images/PMSFHx.png">
+                                        <img
+                                            src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/eye_mag/images/PMSFHx.png">
                                     </a>
                                     <span class="fa fa-close pull-right closeButton" id="BUTTON_TEXTD_PMH"
                                           name="BUTTON_TEXTD_PMH" value="1"></span>
@@ -1224,12 +1235,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
 
                                     <tr>
                                         <td colspan=3>
-                                            <img src="../../forms/<?php echo $form_folder; ?>/images/Amsler_<?php echo attr($AMSLEROD); ?>.jpg"
-                                                 id="AmslerOD"/></td>
+                                            <img
+                                                src="../../forms/<?php echo $form_folder; ?>/images/Amsler_<?php echo attr($AMSLEROD); ?>.jpg"
+                                                id="AmslerOD"/></td>
                                         <td></td>
                                         <td colspan=3>
-                                            <img src="../../forms/<?php echo $form_folder; ?>/images/Amsler_<?php echo attr($AMSLEROS); ?>.jpg"
-                                                 id="AmslerOS"/>
+                                            <img
+                                                src="../../forms/<?php echo $form_folder; ?>/images/Amsler_<?php echo attr($AMSLEROS); ?>.jpg"
+                                                id="AmslerOS"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -1479,14 +1492,15 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                     <!-- start of the refraction box -->
                     <span class="anchor" id="REFRACTION_anchor"></span>
                     <div class="loading" id="EXAM_sections_loading" name="REFRACTION_sections_loading"><i
-                                class="fa fa-spinner fa-spin"></i></div>
+                            class="fa fa-spinner fa-spin"></i></div>
                     <div id="REFRACTION_sections" name="REFRACTION_sections" class="row nodisplay clear_both">
                         <div id="LayerVision2">
                             <?php ($RXHX == 1) ? ($display_Add = "") : ($display_Add = "nodisplay"); ?>
                             <div id="LayerVision_RXHX"
                                  class="refraction borderShadow old_refractions ui-draggable ui-draggable-handle <?php echo $display_Add; ?>">
-                                <span title="<?php echo attr('Close this panel and make this a Preference to stay closed'); ?>"
-                                      class="closeButton fa  fa-close" id="Close_RXHX" name="Close_RXHX"></span>
+                                <span
+                                    title="<?php echo attr('Close this panel and make this a Preference to stay closed'); ?>"
+                                    class="closeButton fa  fa-close" id="Close_RXHX" name="Close_RXHX"></span>
                                 <table class="GFS_table">
                                     <tr>
                                         <th class="text-center"><?php echo xlt('Prior Refractions'); ?></th>
@@ -1571,7 +1585,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 title="<?php echo xla('Monocular Pupillary Diameter - Near'); ?>"><?php echo xlt('MPD-N{{abbreviation for Monocular Pupillary Diameter - Near}}'); ?></td>
 
                                             <td rowspan="6" class="right">
-                                                <span class="underline bold"><?php echo xlt('Rx Type{{Type of glasses prescription}}'); ?></span><br/>
+                                                <span
+                                                    class="underline bold"><?php echo xlt('Rx Type{{Type of glasses prescription}}'); ?></span><br/>
                                                 <label for="Single_1"
                                                        class="input-helper input-helper--checkbox"><?php echo xlt('Monofocal'); ?></label>
                                                 <input type="radio" value="0" id="Single_1"
@@ -1716,7 +1731,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to edit list of available Lens Materials'); ?>"
                                                    name="Lens_mat"><span
-                                                            class="underline"><?php echo xlt('Lens Material'); ?></span>
+                                                        class="underline"><?php echo xlt('Lens Material'); ?></span>
                                                     <i class="fa fa-pencil fa-fw"></i> </a>
                                             </td>
                                             <td name="W_wide2" colspan="4" rowspan="4">
@@ -1724,7 +1739,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to edit list of available Lens Treatment Options'); ?>"
                                                    name="Lens_txs"><span
-                                                            class="underline"><?php echo xlt('Lens Treatments'); ?></span>
+                                                        class="underline"><?php echo xlt('Lens Treatments'); ?></span>
                                                     <i class="fa fa-pencil fa-fw"></i> </a>
                                                 <br/>
                                                 <?php echo generate_lens_treatments('1', $LENS_TREATMENTS_1); ?>
@@ -1930,8 +1945,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                  class="refraction autoref borderShadow <?php echo $display_Cyclo; ?>">
                                 <i title="<?php echo xla('Dispense this Rx'); ?>" class="closeButton_2 fa fa-print"
                                    onclick="top.restoreSession();doscript('AR',<?php echo attr($pid); ?>,<?php echo attr($encounter); ?>);return false;"></i>
-                                <span title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
-                                      class="closeButton fa  fa-close" id="Close_CR" name="Close_CR"></span>
+                                <span
+                                    title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
+                                    class="closeButton fa  fa-close" id="Close_CR" name="Close_CR"></span>
                                 <table id="autorefraction">
                                     <th colspan="9"><?php echo xlt('Auto Refraction'); ?></th>
                                     <tr>
@@ -2000,8 +2016,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                    class="closeButton_3 fa fa-list-ul"></i>
                                 <i title="<?php echo xla('Dispense this RX'); ?>" class="closeButton_2 fa fa-print"
                                    onclick="top.restoreSession();doscript('CTL',<?php echo attr($pid); ?>,<?php echo attr($encounter); ?>);return false;"></i>
-                                <span title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
-                                      class="closeButton fa  fa-close" id="Close_CTL" name="Close_CTL"></span>
+                                <span
+                                    title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
+                                    class="closeButton fa  fa-close" id="Close_CTL" name="Close_CTL"></span>
                                 <table id="CTL">
                                     <th colspan="9"><?php echo xlt('Contact Lens Refraction'); ?></th>
                                     <tr>
@@ -2015,21 +2032,21 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                target="RTop"
                                                                title="<?php echo xla('Click here to Edit the Manufacter List'); ?>"
                                                                name="CTL"><?php echo xlt('Manufacturer'); ?> <i
-                                                                        class="fa fa-pencil fa-fw"></i> </a>
+                                                                    class="fa fa-pencil fa-fw"></i> </a>
                                                         </td>
                                                         <td>
                                                             <a href="<?php echo $GLOBALS['webroot']; ?>/interface/super/edit_list.php?list_id=CTLSupplier"
                                                                target="RTop"
                                                                title="<?php echo xla('Click here to Edit the Supplier List'); ?>"
                                                                name="CTL"><?php echo xlt('Supplier'); ?> <i
-                                                                        class="fa fa-pencil fa-fw"></i> </a>
+                                                                    class="fa fa-pencil fa-fw"></i> </a>
                                                         </td>
                                                         <td>
                                                             <a href="<?php echo $GLOBALS['webroot']; ?>/interface/super/edit_list.php?list_id=CTLBrand"
                                                                target="RTop"
                                                                title="<?php echo xla('Click here to Edit the Contact Lens Brand List'); ?>"
                                                                name="CTL"><?php echo xlt('Brand'); ?> <i
-                                                                        class="fa fa-pencil fa-fw"></i> </a>
+                                                                    class="fa fa-pencil fa-fw"></i> </a>
                                                         </td>
                                                     </tr>
                                                     <tr>
@@ -2316,8 +2333,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
 
                             <?php ($VAX == 1) ? ($display_Add = "") : ($display_Add = "nodisplay"); ?>
                             <div id="LayerVision_VAX" class="refraction borderShadow <?php echo $display_Add; ?>">
-                                <span title="<?php echo attr('Close this panel and make this a Preference to stay closed'); ?>"
-                                      class="closeButton fa  fa-close" id="Close_VAX" name="Close_VAX"></span>
+                                <span
+                                    title="<?php echo attr('Close this panel and make this a Preference to stay closed'); ?>"
+                                    class="closeButton fa  fa-close" id="Close_VAX" name="Close_VAX"></span>
                                 <table id="Additional_VA">
                                     <tr>
                                         <th colspan="9"><?php echo xlt('Visual Acuity'); ?></th>
@@ -2450,9 +2468,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                     <!-- start of the exam selection/middle menu row -->
                     <div class="sections" name="mid_menu" id="mid_menu">
                         <span id="EXAM_defaults" name="EXAM_defaults" value="Defaults" class="btn btn-default"><i
-                                    class="fa fa-newspaper-o"></i>&nbsp;<b><?php echo xlt('Defaults'); ?></b></span>
+                                class="fa fa-newspaper-o"></i>&nbsp;<b><?php echo xlt('Defaults'); ?></b></span>
                         <span id="EXAM_TEXT" name="EXAM_TEXT" value="TEXT" class="btn btn-default"><i
-                                    class="fa fa-hospital-o"></i>&nbsp;<b><?php echo xlt('Text'); ?></b></span>
+                                class="fa fa-hospital-o"></i>&nbsp;<b><?php echo xlt('Text'); ?></b></span>
                         <span id="EXAM_DRAW" name="EXAM_DRAW" value="DRAW" class="btn btn-default">
                   <i class="fa fa-paint-brush fa-sm"> </i>&nbsp;<b><?php echo xlt('Draw'); ?></b></span>
                         <span id="EXAM_QP" name="EXAM_QP" title="<?php echo xla('Open the Quick Pick panels'); ?>"
@@ -2538,7 +2556,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             </tr>
                                             <tr>
                                                 <td class="right" title="<?php echo xla('Levator Function'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('LF{{levator function}}'); ?></div><?php echo xlt('Lev Fn{{levator function}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('LF{{levator function}}'); ?></div><?php echo xlt('Lev Fn{{levator function}}'); ?>
                                                 </td>
                                                 <td><input type="text" name="RLF" id="RLF" class="EXT"
                                                            value="<?php echo attr($RLF); ?>"></td>
@@ -2548,7 +2567,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <tr>
                                                 <td class="right"
                                                     title="<?php echo xla('Marginal Reflex Distance'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('MRD{{marginal reflex distance}}'); ?></div><?php echo xlt('MRD{{marginal reflex distance}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('MRD{{marginal reflex distance}}'); ?></div><?php echo xlt('MRD{{marginal reflex distance}}'); ?>
                                                 </td>
                                                 <td><input type="text" size="1" name="RMRD" id="RMRD" class="EXT"
                                                            value="<?php echo attr($RMRD); ?>"></td>
@@ -2558,7 +2578,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <tr>
                                                 <td class="right"
                                                     title="<?php echo xla('Vertical Fissure: central height between lid margins'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('VF{{vertical fissure}}'); ?></div><?php echo xlt('Vert Fissure{{vertical fissure}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('VF{{vertical fissure}}'); ?></div><?php echo xlt('Vert Fissure{{vertical fissure}}'); ?>
                                                 </td>
                                                 <td><input type="text" size="1" name="RVFISSURE" id="RVFISSURE"
                                                            class="EXT" value="<?php echo attr($RVFISSURE); ?>"></td>
@@ -2568,7 +2589,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <tr>
                                                 <td class="right"
                                                     title="<?php echo xla('Any carotid bruits appreciated?'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('CAR{{carotid arteries}}'); ?></div><?php echo xlt('Carotid{{carotid arteries}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('CAR{{carotid arteries}}'); ?></div><?php echo xlt('Carotid{{carotid arteries}}'); ?>
                                                 </td>
                                                 <td><input type="text" name="RCAROTID" id="RCAROTID" class="EXT"
                                                            class="EXT" value="<?php echo attr($RCAROTID); ?>"></td>
@@ -2577,7 +2599,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             </tr>
                                             <tr>
                                                 <td class="right" title="<?php echo xla('Temporal Arteries'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('TA{{temporal arteries}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('TA{{temporal arteries}}'); ?></div>
                                                     <?php echo xlt('Temp. Art.{{temporal arteries}}'); ?></td>
                                                 <td><input type="text" size="1" name="RTEMPART" id="RTEMPART"
                                                            class="EXT" value="<?php echo attr($RTEMPART); ?>"></td>
@@ -2587,7 +2610,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <tr>
                                                 <td class="right"
                                                     title="<?php echo xla('Cranial Nerve 5: Trigeminal Nerve'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('CN5{{cranial nerve five}}'); ?></div><?php echo xlt('CN V{{cranial nerve five}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('CN5{{cranial nerve five}}'); ?></div><?php echo xlt('CN V{{cranial nerve five}}'); ?>
                                                 </td>
                                                 <td><input type="text" size="1" name="RCNV" id="RCNV" class="EXT"
                                                            value="<?php echo attr($RCNV); ?>"></td>
@@ -2597,7 +2621,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <tr>
                                                 <td class="right"
                                                     title="<?php echo xla('Cranial Nerve 7: Facial Nerve'); ?>">
-                                                    <div class="kb kb_left"><?php echo xlt('CN7{{cranial nerve seven}}'); ?></div><?php echo xlt('CN VII{{cranial nerve seven}}'); ?>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('CN7{{cranial nerve seven}}'); ?></div><?php echo xlt('CN VII{{cranial nerve seven}}'); ?>
                                                 </td>
                                                 <td><input type="text" size="1" name="RCNVII" class="EXT" id="RCNVII"
                                                            value="<?php echo attr($RCNVII); ?>"></td>
@@ -2627,13 +2652,16 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             </tr>
                                             <tr>
                                                 <td>
-                                                    <div class="kb kb_center"><?php echo xlt('RH{{right hertel measurement}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_center"><?php echo xlt('RH{{right hertel measurement}}'); ?></div>
                                                 </td>
                                                 <td>
-                                                    <div class="kb kb_center"><?php echo xlt('HERT{{Hertel exophthalmometry}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_center"><?php echo xlt('HERT{{Hertel exophthalmometry}}'); ?></div>
                                                 </td>
                                                 <td>
-                                                    <div class="kb kb_center"><?php echo xlt('LH{{left hertel measurement}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_center"><?php echo xlt('LH{{left hertel measurement}}'); ?></div>
                                                 </td>
                                             </tr>
                                         </table>
@@ -2670,8 +2698,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </td>
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Upper Lids'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RUL{{right upper eyelid}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LUL{{left upper eyelid}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RUL{{right upper eyelid}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LUL{{left upper eyelid}}'); ?></div>
                                                 </td>
                                                 <td><textarea name="LUL" id="LUL"
                                                               class="EXT"><?php echo text($LUL); ?></textarea></td>
@@ -2682,8 +2712,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </td>
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Lower Lids'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RLL{{right lower eyelid}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LLL{{left lower eyelid}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RLL{{right lower eyelid}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LLL{{left lower eyelid}}'); ?></div>
                                                 </td>
                                                 <td><textarea name="LLL" id="LLL"
                                                               class="EXT"><?php echo text($LLL); ?></textarea></td>
@@ -2694,8 +2726,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </td>
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Medial Canthi'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RMC{{right medial canthus}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LMC{{left medial chathus}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RMC{{right medial canthus}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LMC{{left medial chathus}}'); ?></div>
                                                 </td>
                                                 <td><textarea name="LMCT" id="LMCT"
                                                               class="EXT"><?php echo text($LMCT); ?></textarea></td>
@@ -2706,8 +2740,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </td>
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Adnexa'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RAD{{right adnexa}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LAD{{left adnexa}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RAD{{right adnexa}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LAD{{left adnexa}}'); ?></div>
                                                 </td>
                                                 <td><textarea name="LADNEXA" id="LADNEXA"
                                                               class=" EXT"><?php echo text($LADNEXA); ?></textarea></td>
@@ -2717,7 +2753,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     <br/>
                                     <div id="EXT_COMMENTS_DIV" class="QP_lengthen">
                                         <b><?php echo xlt('Comments'); ?>:</b>
-                                        <div class="kb kb_left"><?php echo xlt('ECOM{{external comments abbreviation}}'); ?></div>
+                                        <div
+                                            class="kb kb_left"><?php echo xlt('ECOM{{external comments abbreviation}}'); ?></div>
                                         <br/>
                                         <textarea id="EXT_COMMENTS" name="EXT_COMMENTS"
                                                   class=" EXT"><?php echo text($EXT_COMMENTS); ?></textarea>
@@ -2993,8 +3030,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Conj{{Conjunctiva}}'); ?>
                                                         / <?php echo xlt('Sclera'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RC{{right conjunctiva}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LC{{left conjunctiva}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RC{{right conjunctiva}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LC{{left conjunctiva}}'); ?></div>
                                                 </td>
                                                 <td><textarea name="OSCONJ" id="OSCONJ"
                                                               class="ANTSEG"><?php echo text($OSCONJ); ?></textarea>
@@ -3006,8 +3045,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </td>
                                                 <td>
                                                     <div class="ident"><?php echo xlt('Cornea'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RK{{right cornea}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LK{{left cornea}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RK{{right cornea}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LK{{left cornea}}'); ?></div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSCORNEA" id="OSCORNEA"
@@ -3019,9 +3060,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                               class="right ANTSEG"><?php echo text($ODAC); ?></textarea>
                                                 </td>
                                                 <td>
-                                                    <div class="ident"><?php echo xlt('A/C{{anterior chamber}}'); ?></div>
-                                                    <div class="kb kb_left"><?php echo xlt('RAC{{right anterior chamber}}'); ?></div>
-                                                    <div class="kb kb_right"><?php echo xlt('LAC{{left anterior chamber}}'); ?></div>
+                                                    <div
+                                                        class="ident"><?php echo xlt('A/C{{anterior chamber}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_left"><?php echo xlt('RAC{{right anterior chamber}}'); ?></div>
+                                                    <div
+                                                        class="kb kb_right"><?php echo xlt('LAC{{left anterior chamber}}'); ?></div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSAC" id="OSAC"
@@ -3251,8 +3295,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         <div class="ident"><?php echo xlt('Macula'); ?></div>
-                                                        <div class="kb kb_left"><?php echo xlt('RMAC{{right macula}}'); ?></div>
-                                                        <div class="kb kb_right"><?php echo xlt('LMAC{{left macula}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_left"><?php echo xlt('RMAC{{right macula}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_right"><?php echo xlt('LMAC{{left macula}}'); ?></div>
                                                     </td>
                                                     <td><textarea name="OSMACULA" id="OSMACULA"
                                                                   class="RETINA"><?php echo text($OSMACULA); ?></textarea>
@@ -3264,8 +3310,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         <div class="ident"><?php echo xlt('Vessels'); ?></div>
-                                                        <div class="kb kb_left"><?php echo xlt('RV{{right vessels}}'); ?></div>
-                                                        <div class="kb kb_right"><?php echo xlt('LV{{left vessels}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_left"><?php echo xlt('RV{{right vessels}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_right"><?php echo xlt('LV{{left vessels}}'); ?></div>
                                                     </td>
                                                     <td><textarea name="OSVESSELS" id="OSVESSELS"
                                                                   class="RETINA"><?php echo text($OSVESSELS); ?></textarea>
@@ -3277,8 +3325,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         <div class="ident"><?php echo xlt('Vitreous'); ?></div>
-                                                        <div class="kb kb_left"><?php echo xlt('RVIT{{right vitreous}}'); ?></div>
-                                                        <div class="kb kb_right"><?php echo xlt('LVIT{{left vitreous}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_left"><?php echo xlt('RVIT{{right vitreous}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_right"><?php echo xlt('LVIT{{left vitreous}}'); ?></div>
                                                     </td>
                                                     <td><textarea name="OSVITREOUS" id="OSVITREOUS"
                                                                   class="RETINA"><?php echo text($OSVITREOUS); ?></textarea>
@@ -3289,9 +3339,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                   class="RETINA right"><?php echo text($ODPERIPH); ?></textarea>
                                                     </td>
                                                     <td>
-                                                        <div class="ident"><?php echo xlt('Periph{{peripheral retina}}'); ?></div>
-                                                        <div class="kb kb_left"><?php echo xlt('RP{{right peripheral retina}}'); ?></div>
-                                                        <div class="kb kb_right"><?php echo xlt('LP{{left peripheral retina}}'); ?></div>
+                                                        <div
+                                                            class="ident"><?php echo xlt('Periph{{peripheral retina}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_left"><?php echo xlt('RP{{right peripheral retina}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_right"><?php echo xlt('LP{{left peripheral retina}}'); ?></div>
                                                     </td>
                                                     <td><textarea name="OSPERIPH" id="OSPERIPH"
                                                                   class="RETINA"><?php echo text($OSPERIPH); ?></textarea>
@@ -3423,7 +3476,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
 
                                                 <td class="right">
                                                     <div class="kb kb_left"><?php echo 'CUP'; ?></div>
-                                                        <?php echo xlt('C/D Ratio{{cup to disc ration}}'); ?>:
+                                                    <?php echo xlt('C/D Ratio{{cup to disc ration}}'); ?>:
                                                 </td>
                                                 <td>
                                                     <input type="text" class="NERVIO" name="ODCUP" size="4" id="ODCUP"
@@ -3511,8 +3564,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         <div class="ident"><?php echo xlt('Disc'); ?></div>
-                                                        <div class="kb kb_left"><?php echo xlt('RD{{right disc}}'); ?></div>
-                                                        <div class="kb kb_right"><?php echo xlt('LD{{left disc}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_left"><?php echo xlt('RD{{right disc}}'); ?></div>
+                                                        <div
+                                                            class="kb kb_right"><?php echo xlt('LD{{left disc}}'); ?></div>
                                                     </td>
                                                     <td><textarea name="OSDISC" id="OSDISC"
                                                                   class="NERVIO"><?php echo text($OSDISC); ?></textarea>
@@ -3664,7 +3719,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </tr>
                                                 <tr>
                                                     <td class="right">
-                                                        <span title="Variation in red color discrimination between the eyes (eg. OD=100, OS=75)"><?php echo xlt('Red Desat{{red desaturation}}'); ?>
+                                                        <span
+                                                            title="Variation in red color discrimination between the eyes (eg. OD=100, OS=75)"><?php echo xlt('Red Desat{{red desaturation}}'); ?>
                                                             :</span>
                                                     </td>
                                                     <td>
@@ -3677,14 +3733,15 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         &nbsp; <span
-                                                                title="<?php echo xlt('Insert normals - 100/100'); ?>"
-                                                                class="fa fa-reply" id="NEURO_REDDESAT"
-                                                                name="NEURO_REDDESAT"></span>
+                                                            title="<?php echo xlt('Insert normals - 100/100'); ?>"
+                                                            class="fa fa-reply" id="NEURO_REDDESAT"
+                                                            name="NEURO_REDDESAT"></span>
                                                     </td>
                                                 </tr>
                                                 <tr>
                                                     <td class="right" style="white-space: nowrap;">
-                                                        <span title="<?php echo xlt('Variation in white (muscle) light brightness discrimination between the eyes (eg. OD=$1.00, OS=$0.75)'); ?>"><?php echo xlt('Coins'); ?>
+                                                        <span
+                                                            title="<?php echo xlt('Variation in white (muscle) light brightness discrimination between the eyes (eg. OD=$1.00, OS=$0.75)'); ?>"><?php echo xlt('Coins'); ?>
                                                             :</span>
                                                     </td>
                                                     <td>
@@ -3697,9 +3754,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </td>
                                                     <td>
                                                         &nbsp;<span
-                                                                title="<?php echo xla('Insert normals'); ?> - 100/100"
-                                                                class="fa fa-reply" id="NEURO_COINS"
-                                                                name="NEURO_COINS"></span>
+                                                            title="<?php echo xla('Insert normals'); ?> - 100/100"
+                                                            class="fa fa-reply" id="NEURO_COINS"
+                                                            name="NEURO_COINS"></span>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -3764,7 +3821,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <td style="text-align:middle;"><i
-                                                                                                class="fa fa-reply rotate-left"></i>
+                                                                                            class="fa fa-reply rotate-left"></i>
                                                                                     </td>
                                                                                     <td style="border:1pt solid black;border-left:0pt;">
                                                                                         <textarea id="ACT4SCDIST"
@@ -3840,7 +3897,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <td style="text-align:middle;"><i
-                                                                                                class="fa fa-reply rotate-left"></i>
+                                                                                            class="fa fa-reply rotate-left"></i>
                                                                                     </td>
                                                                                     <td style="border:1pt solid black;border-left:0pt;text-align:right;">
                                                                                         <textarea id="ACT4CCDIST"
@@ -3916,7 +3973,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <td style="text-align:middle;"><i
-                                                                                                class="fa fa-reply rotate-left"></i>
+                                                                                            class="fa fa-reply rotate-left"></i>
                                                                                     </td>
                                                                                     <td style="border:1pt solid black;border-left:0pt;text-align:right;">
                                                                                         <textarea id="ACT4SCNEAR"
@@ -3992,7 +4049,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                                 </tr>
                                                                                 <tr>
                                                                                     <td style="text-align:middle;"><i
-                                                                                                class="fa fa-reply rotate-left"></i>
+                                                                                            class="fa fa-reply rotate-left"></i>
                                                                                     </td>
                                                                                     <td style="border:1pt solid black;border-left:0pt;text-align:right;">
                                                                                         <textarea id="ACT4CCNEAR"
@@ -4052,7 +4109,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 </tr>
                                             </table>
                                             <div id="NPCNPA" name="NPCNPA">
-                                                <table style="position:relative;float:left;text-align:center;margin: 4 2;width:100%;font-size:1.0em;padding:4px;">
+                                                <table
+                                                    style="position:relative;float:left;text-align:center;margin: 4 2;width:100%;font-size:1.0em;padding:4px;">
                                                     <tr style="font-weight:bold;">
                                                         <td style="width:50%;"></td>
                                                         <td><?php echo xlt('OD{{right eye}}'); ?></td>
@@ -4060,7 +4118,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </tr>
                                                     <tr>
                                                         <td class="right"><span
-                                                                    title="<?php xla('Near Point of Accomodation'); ?>"><?php echo xlt('NPA{{near point of accomodation}}'); ?>
+                                                                title="<?php xla('Near Point of Accomodation'); ?>"><?php echo xlt('NPA{{near point of accomodation}}'); ?>
                                                                 :</span></td>
                                                         <td><input type="text" id="ODNPA" style="width:70%;"
                                                                    class="neurosens2" name="ODNPA"
@@ -4071,7 +4129,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </tr>
                                                     <tr>
                                                         <td class="right"><span
-                                                                    title="<?php xla('Near Point of Convergence'); ?>"><?php echo xlt('NPC{{near point of convergence}}'); ?>
+                                                                title="<?php xla('Near Point of Convergence'); ?>"><?php echo xlt('NPC{{near point of convergence}}'); ?>
                                                                 :</span></td>
                                                         <td colspan="2"><input type="text" style="width:85%;"
                                                                                class="neurosens2" id="NPC" name="NPC"
@@ -4980,7 +5038,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     </div>
                                     <div id="NEURO_P_2"><br/>
                                         <div class="borderShadow" class="NEURO_P_21"><span
-                                                    class="underline"><?php echo xlt('Laterality'); ?></span><br/>
+                                                class="underline"><?php echo xlt('Laterality'); ?></span><br/>
                                             <span class="eye_button" id="NEURO_side_R" name="NEURO_side"
                                                   style="padding-left:0.06in;padding-right:0.06in;"
                                                   onclick="$('#NEURO_side').val('R').trigger('change');"><?php echo xlt('Right'); ?></span>
@@ -4993,7 +5051,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <br/>
                                         </div>
                                         <div class="borderShadow" class="NEURO_P_21"><span
-                                                    class="underline"><?php echo xlt('Deviation'); ?></span><br/>
+                                                class="underline"><?php echo xlt('Deviation'); ?></span><br/>
                                             <span class="eye_button" id="NEURO_ACT_strab_E" name="NEURO_ACT_strab"
                                                   title="<?php echo xla('Esophoria'); ?>"
                                                   onclick="$('#NEURO_ACT_strab').val('E').trigger('change');"><?php echo xlt('E{{esophoria}}'); ?></span>
@@ -5039,7 +5097,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     <div id="NEURO_P_3">
                                         &nbsp;
                                         <div class="borderShadow ACT_boxed"><span
-                                                    class="underline"><?php echo xlt('Rx/Distance'); ?></span><br/>
+                                                class="underline"><?php echo xlt('Rx/Distance'); ?></span><br/>
                                             <span class="eye_button <?php if ($ACT_SHOW == 'SCDIST') {
                                                 echo "eye_button_selected";
                                             } ?>" id="NEURO_ACT_zone_SCDIST" name="NEURO_ACT_zone"
@@ -5058,7 +5116,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                   onclick="$('#NEURO_ACT_zone').val('CCNEAR').trigger('change');"> <?php echo xlt('ccNear{{with correction at near}}'); ?> </span>
                                         </div>
                                         <div class="borderShadow ACT_boxed"><span
-                                                    class="underline"><?php echo xlt('Position of Gaze'); ?></span><br/>
+                                                class="underline"><?php echo xlt('Position of Gaze'); ?></span><br/>
                                             <span class="eye_button_blank"> <?php echo xlt('R{{right}}'); ?> </span>
                                             <span class="eye_button" id="NEURO_field_1" name="NEURO_field"
                                                   onclick="$('#NEURO_field').val('1').trigger('change');"> 1 </span>
@@ -5077,7 +5135,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             <span class="eye_button" id="NEURO_field_6" name="NEURO_field"
                                                   onclick="$('#NEURO_field').val('6').trigger('change');">6</span>
                                             <span class="eye_button_blank"><i
-                                                        class="fa fa-1 fa-reply flip-left"></i></span>
+                                                    class="fa fa-1 fa-reply flip-left"></i></span>
 
                                             <span class="eye_button" id="NEURO_field_10" name="NEURO_field"
                                                   onclick="$('#NEURO_field').val('10').trigger('change');">10</span>
@@ -5092,7 +5150,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         </div>
 
                                         <div class="borderShadow ACT_boxed"><span
-                                                    class="underline"><?php echo xlt('Prism Diopters'); ?></span><br/>
+                                                class="underline"><?php echo xlt('Prism Diopters'); ?></span><br/>
                                             <span class="eye_button" id="NEURO_value_ortho" name="NEURO_value"
                                                   onclick="$('#NEURO_value').val('ortho').trigger('change');"><?php echo xlt('Ortho{{orthophoric}}'); ?></span>
                                             <span class="eye_button" id="NEURO_value_1" name="NEURO_value"
@@ -5250,11 +5308,11 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         <br/>
                                         <dl class="building_blocks" id="building_blocks" name="building_blocks">
                                             <dt class="borderShadow"><i
-                                                        title="<?php echo xla('Drag the arrow for each diagnosis to sort the list.');
-                                                        echo "\n";
-                                                        echo xla('Select the diagnoses to include in the Impression/Plan.') . "\n";
-                                                        echo xla('Press this icon to build your Impression/Plan.'); ?>"
-                                                        class="fa fa-reply" id="make_new_IMP" name="make_new_IMP"></i>
+                                                    title="<?php echo xla('Drag the arrow for each diagnosis to sort the list.');
+                                                    echo "\n";
+                                                    echo xla('Select the diagnoses to include in the Impression/Plan.') . "\n";
+                                                    echo xla('Press this icon to build your Impression/Plan.'); ?>"
+                                                    class="fa fa-reply" id="make_new_IMP" name="make_new_IMP"></i>
                                                 <span id="IMP_start"
                                                       name="IMP_start"><?php echo xlt('Impression/Plan Builder'); ?></span>
                                                 <div id="IMP_start2">
@@ -5265,8 +5323,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                            checked="checked"><label for='inc_POH'
                                                                                     class='input-helper input-helper--checkbox'><?php echo xlt('POH{{Past Ocular History}}'); ?></label>&nbsp;
                                                     <input type="checkbox" id="inc_PMH" name="inc_PMH"><label
-                                                            for='inc_PMH'
-                                                            class='input-helper input-helper--checkbox'><?php echo xlt('PMH{{Past Medical History}}') ?></label>&nbsp;
+                                                        for='inc_PMH'
+                                                        class='input-helper input-helper--checkbox'><?php echo xlt('PMH{{Past Medical History}}') ?></label>&nbsp;
                                                 </div>
                                             </dt>
                                             <dd id="IMP_start_acc" name="IMP_start_acc">
@@ -5370,12 +5428,13 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     echo xlt('Limited HPI');
                                     ?> </span><span class="CODE_HIGH nodisplay"><i class="fa fa-check"></i> <?php
                                                                     echo xlt('Detailed HPI'); ?></span><span
-                                                                        class="EXAM_LOW">, <?php echo xlt('Limited Exam'); ?></span>
+                                                                    class="EXAM_LOW">, <?php echo xlt('Limited Exam'); ?></span>
                                                                 <span class="DIL_RISKS nodisplay"><i
-                                                                            class="fa fa-check"></i> <?php echo xlt('Detailed exam'); ?></span>
+                                                                        class="fa fa-check"></i> <?php echo xlt('Detailed exam'); ?></span>
                                                             </td>
                                                             <td class="text-center">
-                                                                <span style="text-decoration:underline;"><?php echo xlt('Modifiers'); ?></span>
+                                                                <span
+                                                                    style="text-decoration:underline;"><?php echo xlt('Modifiers'); ?></span>
                                                             </td>
                                                             <td class="text-center">
                                                                 <span id="Coding_Visit_Codes"
@@ -5469,7 +5528,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                    title="<?php echo xla('Click here to Edit this Doctor\'s Plan options') . ". \n" . xlt('Only entries with a Code are billable') . ". "; ?>"
                                                                    name="provider_testing_codes"
                                                                    style="color:black;font-weight:600;"><i
-                                                                            class="fa fa-pencil fa-fw"></i> </a>
+                                                                        class="fa fa-pencil fa-fw"></i> </a>
                                                             </td>
                                                         </tr>
                                                         <tr>
@@ -5561,7 +5620,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 <div class="indent20">
                                                                     <input type="radio" name="visit_status"
                                                                            id="checked_out" value=">"/><label
-                                                                            for="checked_out">
+                                                                        for="checked_out">
                                                                         <b>></b> <?php echo xlt('Checked Out'); ?>
                                                                     </label>
                                                                     <br/>
@@ -5572,7 +5631,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                     <br/>
                                                                     <input type="radio" name="visit_status"
                                                                            id="send_notes" value="}"/><label
-                                                                            for="send_notes">
+                                                                        for="send_notes">
                                                                         <b>}</b> <?php echo xlt('Send Notes'); ?>
                                                                     </label>
                                                                 </div>
@@ -5581,7 +5640,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 <div class="widget text-center">
                                                                     <b><u><?php echo xlt('Process');
                                                                             echo " " . xlt('Billing'); ?>:</b></u><br/>
-                                                                    <button id="code_me_now"><?php echo xlt('Populate Fee Sheet'); ?></button>
+                                                                    <button
+                                                                        id="code_me_now"><?php echo xlt('Populate Fee Sheet'); ?></button>
                                                                     <button id="open_fee_sheet"
                                                                             onclick="openNewForm('<?php echo $GLOBALS['webroot']; ?>/interface/patient_file/encounter/load_form.php?formname=fee_sheet', 'Fee Sheet')"
                                                                             href="JavaScript:void(0);"
@@ -5631,7 +5691,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>"
                                                    name="provider_todo" style="color:black;font-weight:600;"><i
-                                                            class="fa fa-pencil fa-fw"></i></a>
+                                                        class="fa fa-pencil fa-fw"></i></a>
                                             </dt>
                                             <dd>
                                                 <table>
@@ -5729,7 +5789,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                 title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>
                                                 "
                                                 name="provider_todo" style="color:black;font-weight:600;"><i
-                                                        class="fa fa-pencil fa-fw"></i> </a>
+                                                    class="fa fa-pencil fa-fw"></i> </a>
                                             </dt>
                                             <dd>
                                                 <table>
@@ -5757,13 +5817,13 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 $arrPLANQX[$counter]['codes'] = $row['codes'];
                                                                 $arrPLANQX[$counter]['subtype'] = $row['subtype'];
                                                                 $checked = '';
-                                                                $title = $row['title'];
+                                                                $title = $row['option_id'];
                                                                 if ($here = in_array_r($title, $PLANQX_arr)) {
                                                                     $checked = "checked='yes'";
                                                                     $foundQX++;
                                                                 }
                                                                 // <!-- <i title="Build your plan." class="fa fa-mail-forward fa-flip-horizontal" id="make_blank_PLAN" name="make_blank_PLAN"></i>-->
-                                                                echo "<input type='checkbox' id='PLANQX$counter' name='PLANQX[]' $checked value='" . attr($row['title']) . "'> ";
+                                                                echo "<input type='checkbox' id='PLANQX$counter' name='PLANQX[]' $checked value='" . attr($row['option_id']) . "'> ";
                                                                 $label = text(substr($row['title'], 0, 30));
                                                                 echo "<label for='PLANQX$counter' class='input-helper input-helper--checkbox' title='" . attr($row['notes']) . "'>";
                                                                 echo $label . "</label><br />";
@@ -5841,7 +5901,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>"
                                                    name="provider_todo" style="color:black;font-weight:600;"><i
-                                                            class="fa fa-pencil fa-fw"></i> </a>
+                                                        class="fa fa-pencil fa-fw"></i> </a>
                                             </dt>
                                             <dd>
                                                 <table>
@@ -5869,13 +5929,13 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 $arrPLANQXOI[$counter]['codes'] = $row['codes'];
                                                                 $arrPLANQXOI[$counter]['subtype'] = $row['subtype'];
                                                                 $checked = '';
-                                                                $title = $row['title'];
+                                                                $title = $row['option_id'];
                                                                 if ($here = in_array_r($title, $PLANQXOI_arr)) {
                                                                     $checked = "checked='yes'";
                                                                     $foundQXOI++;
                                                                 }
                                                                 // <!-- <i title="Build your plan." class="fa fa-mail-forward fa-flip-horizontal" id="make_blank_PLAN" name="make_blank_PLAN"></i>-->
-                                                                echo "<input type='checkbox' id='PLANQXOI$counter' name='PLANQXOI[]' $checked value='" . attr($row['title']) . "'> ";
+                                                                echo "<input type='checkbox' id='PLANQXOI$counter' name='PLANQXOI[]' $checked value='" . attr($row['option_id']) . "'> ";
                                                                 $label = text(substr($row['title'], 0, 30));
                                                                 echo "<label for='PLANQXOI$counter' class='input-helper input-helper--checkbox' title='" . attr($row['notes']) . "'>";
                                                                 echo $label . "</label><br />";
@@ -6003,14 +6063,16 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         <tr>
                                                             <td class="bold top"><?php echo xlt('Phone'); ?>:</td>
                                                             <td>
-                                                                <span id="pcp_phone"><?php echo text($pcp_data['phonew1']); ?></span>
+                                                                <span
+                                                                    id="pcp_phone"><?php echo text($pcp_data['phonew1']); ?></span>
                                                                 <span id="pcp_phonew2"><?php if ($pcp_data['phonew2']) {
                                                                         echo "<br />" . text($pcp_data['phonew2']);
                                                                     } ?>
                                                   </span>
                                                             </td>
                                                             <td>
-                                                                <span id="ref_phone"><?php echo text($ref_data['phonew1']); ?></span>
+                                                                <span
+                                                                    id="ref_phone"><?php echo text($ref_data['phonew1']); ?></span>
                                                                 <span id="ref_phonew2"><?php if ($pcp_data['phonew2']) {
                                                                         echo "<br />" . text($pcp_data['phonew2']);
                                                                     } ?>
@@ -6064,7 +6126,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                onclick="top.restoreSession(); create_task('<?php echo attr($pat_data['ref_providerID']); ?>','Fax','ref'); return false;">
                                                                 <?php echo text($ref_data['fax']); ?></a>&nbsp;&nbsp;
                                                             <span id="status_Fax_ref"><i
-                                                                        class="fa fa-fax fa-fw"></i></span>
+                                                                    class="fa fa-fax fa-fw"></i></span>
                                                             <?php
                                                         }
                                                     } ?>
@@ -6184,7 +6246,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             ?>
                                                             </td>
                                                             <td class="top">
-                                                                <button onclick="editScripts('/openemr/controller.php?prescription&list&id=<?php echo attr($pat_data['pid']); ?>');"><?php echo xlt('eRx'); ?></button>
+                                                                <button
+                                                                    onclick="editScripts('/openemr/controller.php?prescription&list&id=<?php echo attr($pat_data['pid']); ?>');"><?php echo xlt('eRx'); ?></button>
                                                             </td>
                                                         </tr>
 
@@ -6216,16 +6279,17 @@ if ($display != "fullscreen") {
 ?>
 <script src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-panelslider/jquery.panelslider.js"></script>
 <!-- Undo code -->
-<script src="<?php echo $GLOBALS['assets_static_relative']; ?>/manual-added-packages/undone.js-0-0-1/undone.js"></script>
-<script src="<?php echo $GLOBALS['assets_static_relative']; ?>/manual-added-packages/undone.js-0-0-1/jquery.undone.js"></script>
+<script
+    src="<?php echo $GLOBALS['assets_static_relative']; ?>/manual-added-packages/undone.js-0-0-1/undone.js"></script>
+<script
+    src="<?php echo $GLOBALS['assets_static_relative']; ?>/manual-added-packages/undone.js-0-0-1/jquery.undone.js"></script>
 <script language="JavaScript">
     function openNewForm(sel, label) {
         top.restoreSession();
         FormNameValueArray = sel.split('formname=');
         if (FormNameValueArray[1] == 'newpatient') {
             parent.frames[0].location.href = sel;
-        }
-        else {
+        } else {
             parent.twAddFrameTab('enctabs', label, sel);
         }
     }

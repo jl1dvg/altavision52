@@ -60,7 +60,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and 
+                    forms.encounter=? and
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -234,128 +234,128 @@ ob_start();
     <?php
     if ($ODVA || $OSVA || $ARODSPH || $AROSSPH || $MRODSPH || $MROSSPH || $CRODSPH || $CROSSPH || $CTLODSPH || $CTLOSSPH) { ?>
     <br/>
-    <table>
-        <tr>
-            <td colspan="9">
-<P
-        class="texto"><b><?php echo xlt('Refracción'); ?>
-    </b></P>
-</td>
-</tr>
-<tr style="text-align:center;padding:5px;text-decoration:underline;">
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Type') . $count_rx; ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Eye'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Sph{{Sphere}}'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Cyl{{Cylinder}}'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Axis{{Axis of a glasses prescription}}'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Prism'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Acuity'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Mid{{Middle Distance Add}}'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('ADD{{Near Add}}'); ?></td>
-    <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Acuity'); ?></td>
-</tr>
-<?php
-$count_rx = '0';
-
-$query = "select * from form_eye_mag_wearing where PID=? and FORM_ID=? and ENCOUNTER=? ORDER BY RX_NUMBER";
-$wear = sqlStatement($query, array($pid, $form_id, $encounter));
-while ($wearing = sqlFetchArray($wear)) {
-    $count_rx++;
-    ${"display_W_$count_rx"} = '';
-    ${"ODSPH_$count_rx"} = $wearing['ODSPH'];
-    ${"ODCYL_$count_rx"} = $wearing['ODCYL'];
-    ${"ODAXIS_$count_rx"} = $wearing['ODAXIS'];
-    ${"OSSPH_$count_rx"} = $wearing['OSSPH'];
-    ${"OSCYL_$count_rx"} = $wearing['OSCYL'];
-    ${"OSAXIS_$count_rx"} = $wearing['OSAXIS'];
-    ${"ODMIDADD_$count_rx"} = $wearing['ODMIDADD'];
-    ${"OSMIDADD_$count_rx"} = $wearing['OSMIDADD'];
-    ${"ODADD_$count_rx"} = $wearing['ODADD'];
-    ${"OSADD_$count_rx"} = $wearing['OSADD'];
-    ${"ODVA_$count_rx"} = $wearing['ODVA'];
-    ${"OSVA_$count_rx"} = $wearing['OSVA'];
-    ${"ODNEARVA_$count_rx"} = $wearing['ODNEARVA'];
-    ${"OSNEARVA_$count_rx"} = $wearing['OSNEARVA'];
-    ${"ODPRISM_$count_rx"} = $wearing['ODPRISM'];
-    ${"OSPRISM_$count_rx"} = $wearing['OSPRISM'];
-    ${"COMMENTS_$count_rx"} = $wearing['COMMENTS'];
-    ${"W_$count_rx"} = '1';
-    ${"RX_TYPE_$count_rx"} = $wearing['RX_TYPE'];
-}
-for ($i = 1; $i <= $count_rx; $i++) {
-    if (${"RX_TYPE_$i"} == "0") {
-        $RX_TYPE = '';
-    } else if (${"RX_TYPE_$i"} == "1") {
-        $RX_TYPE = xlt('Bifocals');
-    } else if (${"RX_TYPE_$i"} == "2") {
-        $RX_TYPE = xlt('Trifocals');
-    } else if (${"RX_TYPE_$i"} == "3") {
-        $RX_TYPE = xlt('Progressive');
-    }
-    ?>
+<table>
     <tr>
-        <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo xlt('Subjetivo') . " #" . $i . ": "; ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OD{{right eye}}'); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODSPH_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODCYL_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODAXIS_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODPRISM_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODVA_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODMIDADD_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODADD_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODNEARVA_$i"}) ?: "-"); ?></td>
+        <td colspan="9">
+            <P
+                class="texto"><b><?php echo xlt('Refracción'); ?>
+                </b></P>
+        </td>
     </tr>
-    <tr>
-        <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo $RX_TYPE; ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OS{{left eye}}'); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSSPH_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSCYL_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSAXIS_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSPRISM_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSVA_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSMIDADD_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSADD_$i"}) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSNEARVA_$i"}) ?: "-"); ?></td>
+    <tr style="text-align:center;padding:5px;text-decoration:underline;">
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Type') . $count_rx; ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Eye'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Sph{{Sphere}}'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Cyl{{Cylinder}}'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Axis{{Axis of a glasses prescription}}'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Prism'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Acuity'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Mid{{Middle Distance Add}}'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('ADD{{Near Add}}'); ?></td>
+        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('Acuity'); ?></td>
     </tr>
     <?php
-    if (${"COMMENTS_$i"}) {
+    $count_rx = '0';
+
+    $query = "select * from form_eye_mag_wearing where PID=? and FORM_ID=? and ENCOUNTER=? ORDER BY RX_NUMBER";
+    $wear = sqlStatement($query, array($pid, $form_id, $encounter));
+    while ($wearing = sqlFetchArray($wear)) {
+        $count_rx++;
+        ${"display_W_$count_rx"} = '';
+        ${"ODSPH_$count_rx"} = $wearing['ODSPH'];
+        ${"ODCYL_$count_rx"} = $wearing['ODCYL'];
+        ${"ODAXIS_$count_rx"} = $wearing['ODAXIS'];
+        ${"OSSPH_$count_rx"} = $wearing['OSSPH'];
+        ${"OSCYL_$count_rx"} = $wearing['OSCYL'];
+        ${"OSAXIS_$count_rx"} = $wearing['OSAXIS'];
+        ${"ODMIDADD_$count_rx"} = $wearing['ODMIDADD'];
+        ${"OSMIDADD_$count_rx"} = $wearing['OSMIDADD'];
+        ${"ODADD_$count_rx"} = $wearing['ODADD'];
+        ${"OSADD_$count_rx"} = $wearing['OSADD'];
+        ${"ODVA_$count_rx"} = $wearing['ODVA'];
+        ${"OSVA_$count_rx"} = $wearing['OSVA'];
+        ${"ODNEARVA_$count_rx"} = $wearing['ODNEARVA'];
+        ${"OSNEARVA_$count_rx"} = $wearing['OSNEARVA'];
+        ${"ODPRISM_$count_rx"} = $wearing['ODPRISM'];
+        ${"OSPRISM_$count_rx"} = $wearing['OSPRISM'];
+        ${"COMMENTS_$count_rx"} = $wearing['COMMENTS'];
+        ${"W_$count_rx"} = '1';
+        ${"RX_TYPE_$count_rx"} = $wearing['RX_TYPE'];
+    }
+    for ($i = 1; $i <= $count_rx; $i++) {
+        if (${"RX_TYPE_$i"} == "0") {
+            $RX_TYPE = '';
+        } else if (${"RX_TYPE_$i"} == "1") {
+            $RX_TYPE = xlt('Bifocals');
+        } else if (${"RX_TYPE_$i"} == "2") {
+            $RX_TYPE = xlt('Trifocals');
+        } else if (${"RX_TYPE_$i"} == "3") {
+            $RX_TYPE = xlt('Progressive');
+        }
         ?>
         <tr>
-            <td></td>
-            <td colspan="2"><?php echo xlt('Comments'); ?>:</td>
-            <td colspan="7"><?php echo text(${"COMMENTS_$i"}); ?></td>
+            <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo xlt('Subjetivo') . " #" . $i . ": "; ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OD{{right eye}}'); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODSPH_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODCYL_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODAXIS_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODPRISM_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODVA_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODMIDADD_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODADD_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"ODNEARVA_$i"}) ?: "-"); ?></td>
+        </tr>
+        <tr>
+            <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo $RX_TYPE; ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OS{{left eye}}'); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSSPH_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSCYL_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSAXIS_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSPRISM_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSVA_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSMIDADD_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSADD_$i"}) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSNEARVA_$i"}) ?: "-"); ?></td>
+        </tr>
+        <?php
+        if (${"COMMENTS_$i"}) {
+            ?>
+            <tr>
+                <td></td>
+                <td colspan="2"><?php echo xlt('Comments'); ?>:</td>
+                <td colspan="7"><?php echo text(${"COMMENTS_$i"}); ?></td>
+            </tr>
+            <?php
+        }
+    }
+    if ($ARODSPH || $AROSSPH) { ?>
+        <tr style="border-bottom:1pt solid black;">
+            <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo xlt('Auto Refracción'); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OD{{right eye}}'); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODSPH) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODCYL) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODAXIS) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODPRISM) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODVA) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODADD) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARNEARODVA) ?: "-"); ?></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="font-weight:400;font-size:10px;text-align:right;"><?php echo xlt('OS{{left eye}}'); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSSPH) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSCYL) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSAXIS) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSPRISM) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSVA) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSADD) ?: "-"); ?></td>
+            <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARNEAROSVA) ?: "-"); ?></td>
         </tr>
         <?php
     }
-}
-if ($ARODSPH || $AROSSPH) { ?>
-    <tr style="border-bottom:1pt solid black;">
-        <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo xlt('Auto Refracción'); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OD{{right eye}}'); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODSPH) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODCYL) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODAXIS) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODPRISM) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODVA) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARODADD) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARNEARODVA) ?: "-"); ?></td>
-    </tr>
-    <tr>
-        <td>&nbsp;</td>
-        <td style="font-weight:400;font-size:10px;text-align:right;"><?php echo xlt('OS{{left eye}}'); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSSPH) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSCYL) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSAXIS) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSPRISM) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSVA) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($AROSADD) ?: "-"); ?></td>
-        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($ARNEAROSVA) ?: "-"); ?></td>
-    </tr>
-    <?php
-}
-?>
+    ?>
 </table>
 <?php } ?>
 
@@ -595,8 +595,41 @@ if ($OSVITREOUS) {
     while ($plan_row = sqlFetchArray($PLAN_results)) {
         echo $plan_row['ORDER_DETAILS'] . ", ";
     }
-
+    echo "<br>";
     }
+
+    $query1 = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
+              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
+              FROM form_eye_mag_ordenqxod AS o
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
+    $PLAN_results1 = sqlStatement($query1, array($form_id, $pid));
+
+    if (!empty($PLAN_results1)) {
+        ?>
+        <b><?php echo xlt('Procedimiento propuesto OD'); ?>: </b>
+        <?php
+        while ($plan_row1 = sqlFetchArray($PLAN_results1)) {
+            echo $plan_row1['name'] . ". ";
+        }
+        echo "<br>";
+    }
+
+    $query2 = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
+              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
+              FROM form_eye_mag_ordenqxoi AS o
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
+    $PLAN_results2 = sqlStatement($query2, array($form_id, $pid));
+    if (!empty($PLAN_results2)) { ?>
+        <b><?php echo xlt('Procedimiento propuesto OI'); ?>: </b>
+        <?php
+        while ($plan_row2 = sqlFetchArray($PLAN_results2)) {
+            echo $plan_row2['name'] . ". ";
+        }
+        echo "<br>";
+    }
+
     ?>
 
 </P>

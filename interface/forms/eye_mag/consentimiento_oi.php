@@ -104,10 +104,11 @@ function getPropositos($form_id, $pid)
 
 function extractItemsFromQuery($form_id, $pid)
 {
-    $query = "SELECT c.name, c.consiste, c.realiza, c.realiza, c.grafico, c.duracion, c.beneficios, c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias FROM form_eye_mag_ordenqxoi AS o
-           LEFT JOIN list_options AS l on o.ORDER_DETAILS = l.title
-           LEFT JOIN consentimiento_informado AS c on c.name = l.notes
-           WHERE o.form_id=? and o.pid=? and l.list_id='cirugia_propuesta_defaults' ORDER BY o.id ASC";
+    $query = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
+              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
+              FROM form_eye_mag_ordenqxoi AS o
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
 
     $results = sqlStatement($query, array($form_id, $pid));
 
