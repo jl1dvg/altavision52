@@ -1087,7 +1087,7 @@ if ($pass_sens_squad &&
                 "' onclick='top.restoreSession()'><span>" . xlt('Protocolo') . "</span></a>";
         }
 
-        if (substr($formdir, 0, 12) == 'LBFprotocolo') {
+        /*if (substr($formdir, 0, 12) == 'LBFprotocolo') {
             // A link for a nice printout of the LBF
             echo "<a target='_blank' " .
                 "href='$rootdir/forms/LBF/transanestesico.php?" .
@@ -1097,43 +1097,7 @@ if ($pass_sens_squad &&
                 "&patientid=" . urlencode($pid) .
                 "' class='css_button_small' title='" . xl('Trans-anestésico') .
                 "' onclick='top.restoreSession()'><span>" . xlt('Trans-anestésico') . "</span></a>";
-        }
-
-        if (substr($formdir, 0, 12) == 'LBFprotocolo') {
-            // A link for a nice printout of the LBF
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/LBF/Formulario005.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Formulario 005') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Formulario 005') . "</span></a>";
-        }
-
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the treatment plan
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/no_invasivo_od.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('No Invasivos OD') .
-                "' onclick='top.restoreSession()'><span>" . xlt('No Invasivos OD') . "</span></a>";
-        }
-
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the treatment plan
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/no_invasivo_oi.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('No Invasivos OI') .
-                "' onclick='top.restoreSession()'><span>" . xlt('No Invasivos OI') . "</span></a>";
-        }
+        }*/
 
         if (substr($formdir, 0, 10) == 'newpatient') {
             // A link for a nice printout of the treatment plan
