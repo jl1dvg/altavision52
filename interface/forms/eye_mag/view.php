@@ -5851,19 +5851,17 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td colspan="2" style="padding-left:20px;padding-top:4px;"><b>Resultado
-                                                                Esperado:</b></td>
+                                                        <td colspan="2" style="padding-left:20px;padding-top:4px;"><b>Lente
+                                                                intraocular:</b></td>
                                                         <td colspan="1" style="padding-left:20px;padding-top:4px;"><b>LIO:</b>
                                                         </td>
                                                     </tr>
                                                     <tr>
                                                         <td colspan="2" style="padding-left:20px;padding-top:4px;">
-                                                            <textarea id="PropositoOD" name="PROPOSITOOD"
-                                                                      style="width: 250px;height: 44px;"><?php echo text($PROPOSITOOD); ?></textarea>
+                                                            <?php echo generate_select_list("PROPOSITOOD", "Lista_de_fabricantes_de_lentes_intraoculares", "$PROPOSITOOD", '', '--LIO Type--', '', 'restoreSession;submit_form();', '', array('style' => 'width:200px')); ?>
                                                         </td>
                                                         <td colspan="1" style="padding-left:20px;padding-top:4px;">
-                                                            <textarea id="LioOD" name="LIOOD"
-                                                                      style="height: 44px;"><?php echo text($LIOOD); ?></textarea>
+                                                            <?php echo generate_select_list("LIOOD", "LIO_power", "$LIOOD", '', '--LIO Power--', '', 'restoreSession;submit_form();', '', array('style' => 'width:120px')); ?>
                                                         </td>
                                                     </tr>
                                                 </table>
@@ -5963,23 +5961,19 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td colspan="2" style="padding-left:20px;padding-top:4px;"><b>Resultado
-                                                                Esperado:</b></td>
+                                                        <td colspan="2" style="padding-left:20px;padding-top:4px;"><b>Lente
+                                                                intraocular:</b></td>
                                                         <td colspan="1" style="padding-left:20px;padding-top:4px;"><b>LIO:</b>
                                                         </td>
                                                     </tr>
                                                     <tr>
                                                         <td colspan="2" style="padding-left:20px;padding-top:4px;">
-                                                            <textarea id="PropositoOI" name="PROPOSITOOI"
-                                                                      style="width: 250px;height: 44px;"><?php echo text($PROPOSITOOI); ?></textarea>
+                                                            <?php echo generate_select_list("PROPOSITOOI", "Lista_de_fabricantes_de_lentes_intraoculares", "$PROPOSITOOI", '', '--LIO Type--', '', 'restoreSession;submit_form();', '', array('style' => 'width:200px')); ?>
                                                         </td>
                                                         <td colspan="1" style="padding-left:20px;padding-top:4px;">
-                                                            <textarea id="LioOI" name="LIOOI"
-                                                                      style="height: 44px;"><?php echo text($LIOOI); ?></textarea>
+                                                            <?php echo generate_select_list("LIOOI", "LIO_power", "$LIOOI", '', '--LIO Power--', '', 'restoreSession;submit_form();', '', array('style' => 'width:120px')); ?>
                                                         </td>
-
                                                     </tr>
-
                                                 </table>
                                             </dd>
 
