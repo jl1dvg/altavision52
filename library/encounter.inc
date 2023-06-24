@@ -91,4 +91,14 @@ function getEventDetails($eventId)
     }
 }
 
+function getLatestEyeFormID($pid)
+{
+    $queryEYE = "SELECT * FROM forms WHERE pid = ?
+                 AND formdir = 'eye_mag' AND deleted = 0
+                 ORDER BY id DESC LIMIT 1";
+    $result1 = sqlQuery($queryEYE, array($pid));
+    $form_id = $result1['form_id'];
+    return $form_id;
+}
+
 

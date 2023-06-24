@@ -98,7 +98,8 @@ $info_msg = "";
 <?php $g_edit = acl_check("groups", "gcalendar", false, 'write'); ?>
 <?php $g_view = acl_check("groups", "gcalendar", false, 'view'); ?>
 
-<?php Header::setupHeader(['common', 'datetime-picker', 'opener']); ?>
+<?php Header::setupHeader(['common', 'datetime-picker', 'opener', 'select2']); ?>
+
 
 <!-- validation library -->
 <!--//Not lbf forms use the new validation, please make sure you have the corresponding values in the list Page validation-->
@@ -268,6 +269,41 @@ function Cirugia_Planificada($pid, $ojo)
         }
     }
     return $plan_details;
+}
+
+function getLIOdetails($pid)
+{
+    $queryEYE = "SELECT * FROM form_eye_base WHERE pid = ? ORDER BY id DESC LIMIT 1";
+    $result1 = sqlQuery($queryEYE, array($pid));
+    $ID = $result1['id'];
+    $queryORDER = "SELECT * FROM form_eye_locking WHERE id = ? ORDER BY id ASC";
+    $result2 = sqlStatement($queryORDER, array($ID));
+
+    $lio_details = array(); // Array para almacenar los detalles de la cirugía planificada
+
+    if (!empty($result2)) {
+        while ($plan_row = sqlFetchArray($result2)) {
+            $item = array(
+                'PropuestaOD' => $plan_row['PROPOSITOOD'],
+                'LIOOD' => $plan_row['LIOOD'],
+                'PropuestaOI' => $plan_row['PROPOSITOOI'],
+                'LIOOI' => $plan_row['LIOOI']
+            );
+
+            $lio_details[] = $item;
+        }
+    }
+
+    return $lio_details;
+}
+
+$lio_details = getLIOdetails($pid);
+
+foreach ($lio_details as $details) {
+    $LIO_OD = $details['PROPOSITOOD'];
+    $LIO_power_OD = $details['LIOOD'];
+    $LIO_OI = $details['PROPOSITOOI'];
+    $LIO_power_OI = $details['LIOOI'];
 }
 
 
@@ -632,8 +668,10 @@ if ($_POST['form_action'] == "save") {
                         "pc_apptstatus = '" . add_escape_custom($_POST['form_apptstatus']) . "', " .
                         "pc_apptqx = '" . add_escape_custom($_POST['form_apptqx']) . "', " .
                         "pc_LIOOD = '" . add_escape_custom($_POST['form_lioOD']) . "', " .
+                        "pc_LIO_type_OD	 = '" . add_escape_custom($_POST['form_lio_type_OD']) . "', " .
                         "pc_apptqxOI = '" . add_escape_custom($_POST['form_apptqxOI']) . "', " .
                         "pc_LIOOI = '" . add_escape_custom($_POST['form_lioOI']) . "', " .
+                        "pc_LIO_type_OI	 = '" . add_escape_custom($_POST['form_lio_type_OI']) . "', " .
                         "pc_examenes = '" . add_escape_custom($_POST['form_examenes']) . "', " .
                         "pc_prefcatid = '" . add_escape_custom($_POST['form_prefcat']) . "' ," .
                         "pc_facility = '" . add_escape_custom((int)$_POST['facility']) . "' ," . // FF stuff
@@ -733,8 +771,10 @@ if ($_POST['form_action'] == "save") {
                     "pc_apptstatus = '" . add_escape_custom($_POST['form_apptstatus']) . "', " .
                     "pc_apptqx = '" . add_escape_custom($_POST['form_apptqx']) . "', " .
                     "pc_LIOOD = '" . add_escape_custom($_POST['form_lioOD']) . "', " .
+                    "pc_LIO_type_OD	 = '" . add_escape_custom($_POST['form_lio_type_OD']) . "', " .
                     "pc_apptqxOI = '" . add_escape_custom($_POST['form_apptqxOI']) . "', " .
                     "pc_LIOOI = '" . add_escape_custom($_POST['form_lioOI']) . "', " .
+                    "pc_LIO_type_OI	 = '" . add_escape_custom($_POST['form_lio_type_OI']) . "', " .
                     "pc_examenes = '" . add_escape_custom($_POST['form_examenes']) . "', " .
                     "pc_prefcatid = '" . add_escape_custom($_POST['form_prefcat']) . "' ," .
                     "pc_facility = '" . add_escape_custom((int)$_POST['facility']) . "' ," . // FF stuff
@@ -1052,6 +1092,28 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
     <style>
         td {
             font-size: 0.8em;
+        }
+
+        .select2-container--default .select2-selection--multiple {
+            cursor: pointer;
+        }
+
+        .select2-search__field {
+            cursor: pointer;
+            width: 0 !important;
+        }
+
+        .select2-selection__choice {
+            font-size: 12px;
+        }
+
+        .select2-container {
+            cursor: pointer;
+            opacity: 0.99 !important;
+        }
+
+        .select2-dropdown {
+            opacity: 0.99 !important;
         }
     </style>
 
@@ -2085,28 +2147,72 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                 <span id='title_cirugia' style='display:none'><b><?php echo xlt('OD'); ?>:</b></span>
                             </td>
                             <td colspan="2" nowrap>
-                                <?php
-                                $apptqxODValue = ($row['pc_apptqx'] == null) ? Cirugia_planificada($patientid, "od") : text($row['pc_apptqx']);
+                                <select name="form_apptqx[]" id='form_apptqx_select' class='typeAddons' multiple>
+                                    <?php
+                                    $apptqxODValue = ($row['pc_apptqx'] == null) ? Cirugia_planificada($patientid, "od") : text($row['pc_apptqx']);
+                                    if (is_array($apptqxODValue)) {
+                                        $apptqxODValue = implode(',', $apptqxODValue);
+                                    }
+                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY subtype, title";
+                                    $ProcedimientosResult = sqlStatement($ProcedimientosSQL);
 
-                                if (is_array($apptqxODValue)) {
-                                    $apptqxODValue = implode(', ', $apptqxODValue);
-                                }
-                                ?>
-                                <input id='form_apptqx' class='input-sm' type='text' size='60' name='form_apptqx'
-                                       style='width:100%'
-                                       value="<?php echo $apptqxODValue; ?>"
-                                       title='<?php echo xla('Optional information about this event'); ?>'/>
+                                    $currentSubtype = null; // Variable para controlar los cambios de subtype
+
+                                    while ($urow = sqlFetchArray($ProcedimientosResult)) {
+                                        $option_id = $urow['option_id'];
+                                        $title = $urow['title'];
+                                        $subtype = $urow['subtype'];
+
+                                        if ($subtype !== $currentSubtype) {
+                                            // Si hay cambio de subtype, cerrar el optgroup anterior (si aplica) y abrir uno nuevo
+                                            if ($currentSubtype !== null) {
+                                                echo '</optgroup>';
+                                            }
+                                            echo '<optgroup label="' . text($subtype) . '">';
+                                            $currentSubtype = $subtype;
+                                        }
+
+                                        $optionPCD = '<option value="' . attr($option_id) . '"';
+
+                                        if ($viewmode && $result['option_id'] == $option_id) {
+                                            $optionPCD .= ' selected';
+                                        } elseif (in_array($option_id, explode(',', $apptqxODValue))) {
+                                            // Verificar si el option_id está en el array $apptqxODValue
+                                            $optionPCD .= ' selected';
+                                        }
+
+                                        $optionPCD .= '>' . text($title) . '</option>';
+
+                                        echo $optionPCD;
+                                    }
+
+                                    if ($currentSubtype !== null) {
+                                        // Cerrar el último optgroup si aplica
+                                        echo '</optgroup>';
+                                    }
+                                    ?>
+                                </select>
                             </td>
+                            <td>
+                                <input id='form_apptqx' class='input-sm' type='hidden' name='form_apptqx'
+                                       value="<?php echo htmlentities($apptqxODValue); ?>">
+                            </td>
+                        </tr>
+                        <tr>
                             <td nowrap>
                                 <span id='title_LIOOD' style='display:none'><b><?php echo xlt('LIO OD'); ?>:</b></span>
                             </td>
                             <td colspan="1" nowrap>
                                 <?php
-                                $lioODValue = ($row['pc_LIOOD'] == null) ? (isset($result2['LIOOD']) ? attr($result2['LIOOD']) : '') : text($row['pc_LIOOD']);
+                                $lioODbrand = ($row['pc_LIO_type_OD'] == null) ? $LIO_OD : text($row['pc_LIO_type_OD']);
+                                echo generate_select_list("form_lio_type_OD", "Lista_de_fabricantes_de_lentes_intraoculares", "$lioODbrand", '', ' ', '', '', '', array('style' => 'width:200px'));
                                 ?>
-                                <input class='input-sm' type='text' size='20' name='form_lioOD' style='width:100%'
-                                       value='<?php echo $lioODValue; ?>'
-                                       title='<?php echo xla('Optional information about this event'); ?>'/>
+                            </td>
+                            <td colspan="1" nowrap>
+                                <?php
+                                $lioODValue = ($row['pc_LIOOD'] == null) ? $LIO_power_OD : text($row['pc_LIOOD']);
+                                echo generate_select_list("form_lioOD", "LIO_power", "$lioODValue", '', ' ', '', '', '', array('style' => 'width:120px'));
+                                ?>
                             </td>
                         </tr>
 
@@ -2118,29 +2224,72 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                 <span id='title_cirugiaOI' style='display:none'><b><?php echo xlt('OI'); ?>:</b></span>
                             </td>
                             <td colspan="2" nowrap>
-                                <?php
-                                $apptqxOIValue = ($row['pc_apptqxOI'] == null) ? Cirugia_planificada($patientid, "oi") : text($row['pc_apptqxOI']);
+                                <select name="form_apptqxOI[]" id='form_apptqxOI_select' class='typeAddonsOI' multiple>
+                                    <?php
+                                    $apptqxOIValue = ($row['pc_apptqxOI'] == null) ? Cirugia_planificada($patientid, "oi") : text($row['pc_apptqxOI']);
+                                    if (is_array($apptqxOIValue)) {
+                                        $apptqxOIValue = implode(',', $apptqxOIValue);
+                                    }
+                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY subtype, title";
+                                    $ProcedimientosResult = sqlStatement($ProcedimientosSQL);
 
-                                if (is_array($apptqxOIValue)) {
-                                    $apptqxOIValue = implode(', ', $apptqxOIValue);
-                                }
-                                ?>
+                                    $currentSubtype = null; // Variable para controlar los cambios de subtype
 
-                                <input id='form_apptqxOI' class='input-sm' type='text' size='60' name='form_apptqxOI'
-                                       style='width:100%'
-                                       value="<?php echo $apptqxOIValue; ?>"
-                                       title='<?php echo xla('Optional information about this event'); ?>'/>
+                                    while ($urow = sqlFetchArray($ProcedimientosResult)) {
+                                        $option_id = $urow['option_id'];
+                                        $title = $urow['title'];
+                                        $subtype = $urow['subtype'];
+
+                                        if ($subtype !== $currentSubtype) {
+                                            // Si hay cambio de subtype, cerrar el optgroup anterior (si aplica) y abrir uno nuevo
+                                            if ($currentSubtype !== null) {
+                                                echo '</optgroup>';
+                                            }
+                                            echo '<optgroup label="' . text($subtype) . '">';
+                                            $currentSubtype = $subtype;
+                                        }
+
+                                        $optionPCD = '<option value="' . attr($option_id) . '"';
+
+                                        if ($result['option_id'] == $option_id) {
+                                            $optionPCD .= ' selected';
+                                        } elseif (in_array($option_id, explode(',', $apptqxOIValue))) {
+                                            // Verificar si el option_id está en el array $apptqxOIValue
+                                            $optionPCD .= ' selected';
+                                        }
+
+                                        $optionPCD .= '>' . text($title) . '</option>';
+
+                                        echo $optionPCD;
+                                    }
+
+                                    if ($currentSubtype !== null) {
+                                        // Cerrar el último optgroup si aplica
+                                        echo '</optgroup>';
+                                    }
+                                    ?>
+                                </select>
                             </td>
+                            <td>
+                                <input id='form_apptqxOI' class='input-sm' type='hidden' name='form_apptqxOI'
+                                       value="<?php echo htmlentities($apptqxOIValue); ?>">
+                            </td>
+                        </tr>
+                        <tr>
                             <td nowrap>
                                 <span id='title_LIOOI' style='display:none'><b><?php echo xlt('LIO OI'); ?>:</b></span>
                             </td>
                             <td colspan="1" nowrap>
                                 <?php
-                                $lioOIValue = ($row['pc_LIOOI'] == null) ? (isset($result2['LIOOI']) ? attr($result2['LIOOI']) : '') : text($row['pc_LIOOI']);
+                                $lioOIbrand = ($row['pc_LIO_type_OI'] == null) ? $LIO_OI : text($row['pc_LIO_type_OI']);
+                                echo generate_select_list("form_lio_type_OI", "Lista_de_fabricantes_de_lentes_intraoculares", "$lioOIbrand", '', ' ', '', '', '', array('style' => 'width:200px'));
                                 ?>
-                                <input class='input-sm' type='text' size='20' name='form_lioOI' style='width:100%'
-                                       value='<?php echo $lioOIValue; ?>'
-                                       title='<?php echo xla('Optional information about this event'); ?>'/>
+                            </td>
+                            <td colspan="1" nowrap>
+                                <?php
+                                $lioOIValue = ($row['pc_LIOOI'] == null) ? $LIO_power_OI : text($row['pc_LIOOI']);
+                                echo generate_select_list("form_lioOI", "LIO_power", "$lioOIValue", '', ' ', '', '', '', array('style' => 'width:120px'));
+                                ?>
                             </td>
                         </tr>
 
@@ -2228,6 +2377,43 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
 </script>
 
 <script language="javascript">
+    <?php echo "var fldOptions = [
+	{id: 'A',text:" . xlj('Age') . ",ctx:['4'],ctxExcp:['0']},
+	{id: 'B',text:" . xlj('Gestational Age') . ",ctx:['4'],ctxExcp:['0']},
+	{id: 'F',text:" . xlj('Add Time to Date') . ",ctx:['4'],ctxExcp:['0']},
+	{id: 'C',text:" . xlj('Capitalize') . ",ctx:['0'],ctxExcp:['4','15','40']},
+	{id: 'D',text:" . xlj('Dup Check') . "},
+	{id: 'E',text:" . xlj('Dup Check on only Edit') . "},
+	{id: 'W',text:" . xlj('Dup Check on only New') . "},
+	{id: 'G',text:" . xlj('Graphable') . "},
+	{id: 'I',text:" . xlj('Initially Open Group') . "},
+	{id: 'J',text:" . xlj('Jump to Next Row') . "},
+	{id: 'K',text:" . xlj('Prepend Blank Row') . "},
+	{id: 'L',text:" . xlj('Lab Order') . "},
+	{id: 'M',text:" . xlj('Radio Group Master') . "},
+	{id: 'm',text:" . xlj('Radio Group Member') . "},
+	{id: 'N',text:" . xlj('New Patient Form') . "},
+	{id: 'O',text:" . xlj('Order Processor') . "},
+	{id: 'P',text:" . xlj('Default to previous value') . "},
+	{id: 'R',text:" . xlj('Distributor') . "},
+	{id: 'T',text:" . xlj('Description is default text') . "},
+	{id: 'U',text:" . xlj('Capitalize all') . "},
+	{id: 'V',text:" . xlj('Vendor') . "},
+	{id: 'X',text:" . xlj('Do Not Print') . "},
+    {id:'grp',text:" . xlj('Stylings') . ",children:[
+        {id: 'RS',text:" . xlj('Add Bottom Border Row') . "},
+        {id: 'RO',text:" . xlj('Outline Entire Row') . "},
+        {id: 'DS',text:" . xlj('Add Data Bottom Border') . "},
+        {id: 'DO',text:" . xlj('Outline Data Col') . "},
+        {id: 'SP',text:" . xlj('Span Entire Row') . "}
+    ]},
+    {id: '0',text:" . xlj('Read Only') . "},
+	{id: '1',text:" . xlj('Write Once') . "},
+	{id: '2',text:" . xlj('Billing Code Descriptions') . "}];\n";
+
+    // Language direction for select2
+    echo 'var langDirection = ' . js_escape($_SESSION['language_direction']) . ';';
+    ?>
     // jQuery stuff to make the page a little easier to use
 
     $(function () {
@@ -2448,6 +2634,58 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
         return true;
     }
 
+    $(function () {
+        $('.typeAddons').select2({
+            theme: 'default',
+            multiple: true,
+            closeOnSelect: false,
+            width: '100%',
+            minimumResultsForSearch: 'Infinity',
+            containerCssClass: ':all:',
+            allowClear: false,
+            <?php require($GLOBALS['srcdir'] . '/js/xl/select2.js.php'); ?>
+        });
+        $('.typeAddons').on('change', function () {
+            var selectedOptions = $(this).val();
+            $('#form_apptqx').val(selectedOptions);
+        });
+    });
+    // Populate field option selects
+    $(function () {
+        $('.typeAddons').each(function (i, obj) {
+            var v = $(this).data('set')
+            if (typeof v !== 'undefined' && v > "") {
+                $(this).val(v).trigger("change")
+            }
+        });
+        somethingChanged = false;
+    });
+    $(function () {
+        $('.typeAddonsOI').select2({
+            theme: 'default',
+            multiple: true,
+            closeOnSelect: false,
+            width: '100%',
+            minimumResultsForSearch: 'Infinity',
+            containerCssClass: ':all:',
+            allowClear: false,
+            <?php require($GLOBALS['srcdir'] . '/js/xl/select2.js.php'); ?>
+        });
+        $('.typeAddonsOI').on('change', function () {
+            var selectedOptions = $(this).val();
+            $('#form_apptqxOI').val(selectedOptions);
+        });
+    });
+    // Populate field option selects
+    $(function () {
+        $('.typeAddonsOI').each(function (i, obj) {
+            var v = $(this).data('set')
+            if (typeof v !== 'undefined' && v > "") {
+                $(this).val(v).trigger("change")
+            }
+        });
+        somethingChanged = false;
+    });
 </script>
 
 </html>

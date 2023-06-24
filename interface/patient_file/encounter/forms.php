@@ -793,10 +793,34 @@ if ($is_group && !acl_check("groups", "glog", false, array('view', 'write'))) {
                             <?php
                             if ($pc_catid == 15) {
                                 echo "<h2>Día Quirúrgico</h2>";
+                                echo "</td></tr><tr><td>";
                                 if ($eventDetails) {
                                     // El evento se encontró, se pueden acceder a los valores de pc_apptqx y pc_apptqxOI
-                                    echo "OD: " . $eventDetails['pc_apptqx'] . "<br>";
+                                    ?>
+                                    <?php
+                                    echo "OD: " . $eventDetails['pc_apptqx'] . " ";
+                                    echo "</td><td>";
+                                    echo "<a target='_blank' " .
+                                        "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
+                                        "formname=" . urlencode($formdir) .
+                                        "&formid=" . urlencode(getLatestEyeFormID($pid)) .
+                                        "&visitid=" . urlencode($encounter) .
+                                        "&patientid=" . urlencode($pid) .
+                                        "&procedid=" . urlencode($eventDetails['pc_apptqx']) .
+                                        "' class='css_button_small' title='" . xl('Documentos OD') .
+                                        "' onclick='top.restoreSession()'><span>" . xlt('Documentos OD') . "</span></a>";
+                                    echo "</td></tr><tr><td>";
                                     echo "OI: " . $eventDetails['pc_apptqxOI'];
+                                    echo "</td><td>";
+                                    echo "<a target='_blank' " .
+                                        "href='$rootdir/forms/eye_mag/consentimiento_oi.php?" .
+                                        "formname=" . urlencode($formdir) .
+                                        "&formid=" . urlencode(getLatestEyeFormID($pid)) .
+                                        "&visitid=" . urlencode($encounter) .
+                                        "&patientid=" . urlencode($pid) .
+                                        "&procedid=" . urlencode($eventDetails['pc_apptqxOI']) .
+                                        "' class='css_button_small' title='" . xl('Documentos OI') .
+                                        "' onclick='top.restoreSession()'><span>" . xlt('Documentos OI') . "</span></a>";
                                 } else {
                                     // El evento no se encontró
                                     echo "No se encontró datos del procedimiento programado ";
@@ -1102,9 +1126,9 @@ if ($pass_sens_squad &&
         if (substr($formdir, 0, 10) == 'newpatient') {
             // A link for a nice printout of the treatment plan
             echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/consentimiento_od_.php?" .
+                "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
                 "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
+                "&formid=" . urlencode(getLatestEyeFormID($pid)) .
                 "&visitid=" . urlencode($encounter) .
                 "&patientid=" . urlencode($pid) .
                 "&procedid=" . urlencode($eventDetails['pc_apptqx']) .

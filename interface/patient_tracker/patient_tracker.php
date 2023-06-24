@@ -724,8 +724,30 @@ if (!$_REQUEST['flb_table']) {
                         // reason for visit
                         if ($GLOBALS['ptkr_visit_reason']) {
                             $reason_visit = $appointment['pc_hometext'] . " ";
-                            $cirugiaOD = "OD: " . $appointment['pc_apptqx']. " " . $appointment['pc_LIOOD'];
-                            $cirugiaOI = "OI: " . $appointment['pc_apptqxOI']. " " . $appointment['pc_LIOOI'];
+                            $cirugiaSQL = "SELECT title FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' AND option_id = ?";
+                            $LIOsql = "SELECT title FROM list_options WHERE list_id = 'LIO_power' AND option_id = ?";
+                            $LIObrandSQL = "SELECT title FROM list_options WHERE list_id = 'Lista_de_fabricantes_de_lentes_intraoculares' AND option_id = ?";
+                            $cirugiaOD = "OD: ";
+                            $cirugiaOI = "OI: ";
+
+                            $surgeryOD = sqlStatement($cirugiaSQL, array($appointment['pc_apptqx']));
+                            $surgeryOI = sqlStatement($cirugiaSQL, array($appointment['pc_apptqxOI']));
+                            $lioOD = sqlQuery($LIOsql, array($appointment['pc_LIOOD']));
+                            $lioOI = sqlQuery($LIOsql, array($appointment['pc_LIOOI']));
+                            $lioBrandOD = sqlQuery($LIObrandSQL, array($appointment['pc_LIO_type_OD']));
+                            $lioBrandOI = sqlQuery($LIObrandSQL, array($appointment['pc_LIO_type_OI']));
+
+                            if (!empty($surgeryOD)) {
+                                while ($row = sqlFetchArray($surgeryOD)) {
+                                    $cirugiaOD .= $row['title'] . "<br>" . $lioBrandOD['title'] . " " . $lioOD['title'];
+                                }
+                            }
+
+                            if (!empty($surgeryOI)) {
+                                while ($row = sqlFetchArray($surgeryOI)) {
+                                    $cirugiaOI .= $row['title'] . "<br>" . $lioBrandOI['title'] . " " . $lioOI['title'];
+                                }
+                            }
                             $examenes = $appointment['pc_examenes'];
                         }
                         $newarrive = collect_checkin($tracker_id);

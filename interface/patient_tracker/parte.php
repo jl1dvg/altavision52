@@ -17,6 +17,15 @@ $formid = $_GET['provider'];
 $PDF_OUTPUT = $formid;
 //$PDF_OUTPUT = false; // debugging
 
+function extractDataParte($sql, $params)
+{
+    $result = sqlStatement($sql, $params);
+    if (!empty($result)) {
+        return sqlFetchArray($result);
+    }
+    return null;
+}
+
 if ($PDF_OUTPUT) {
     $config_mpdf = array(
         'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
@@ -121,6 +130,8 @@ if ($PDF_OUTPUT) {
                 'cirugiaOI' => $ip_list['pc_apptqxOI'],
                 'LIOod' => $ip_list['pc_LIOOD'],
                 'LIOoi' => $ip_list['pc_LIOOI'],
+                'LIObrandOD' => $ip_list['pc_LIO_type_OD'],
+                'LIObrandOI' => $ip_list['pc_LIO_type_OI'],
                 'Event' => $ip_list['pc_eventDate'],
                 'Hora' => $ip_list['pc_startTime'],
                 'provider' => $ip_list['pc_aid'],
@@ -149,6 +160,21 @@ if ($PDF_OUTPUT) {
                     echo "</tr>";
                     foreach ($PARTE_items as $key) {
                         if ($key2['Event'] == $key['Event'] && $key1['provider'] == $key['provider'] && $key['title'] == 'Quirúrgico') {
+
+                            $cirugiaSQL = "SELECT title FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' AND option_id = ?";
+                            $LIOsql = "SELECT title FROM list_options WHERE list_id = 'LIO_power' AND option_id = ?";
+                            $LIObrandSQL = "SELECT title FROM list_options WHERE list_id = 'Lista_de_fabricantes_de_lentes_intraoculares' AND option_id = ?";
+
+                            $cirugiaOD = "OD: ";
+                            $cirugiaOI = "OI: ";
+
+                            $surgeryOD = extractDataParte($cirugiaSQL, array($key['cirugia']));
+                            $surgeryOI = extractDataParte($cirugiaSQL, array($key['cirugiaOI']));
+                            $lioOD = extractDataParte($LIOsql, array($key['LIOod']));
+                            $lioOI = extractDataParte($LIOsql, array($key['LIOoi']));
+                            $lioBrandOD = extractDataParte($LIObrandSQL, array($key['LIObrandOD']));
+                            $lioBrandOI = extractDataParte($LIObrandSQL, array($key['LIObrandOI']));
+
                             echo "<tr><td>";
                             if ($key['pricelevel'] == 'standard') {
                                 $ptpricelevel = 'Particular';
@@ -162,16 +188,16 @@ if ($PDF_OUTPUT) {
                             echo "</td>";
                             echo "<td>";
                             if ($key['cirugia'] == $key['cirugiaOI']) {
-                                echo $key['cirugia'];
+                                echo $surgeryOD['title'];
                             } else {
                                 if ($key['cirugia']) {
-                                    echo text($key['cirugia']);
+                                    echo text($surgeryOD['title']);
                                 }
                                 if ($key['cirugia'] && $key['cirugiaOI']) {
                                     echo "<br />";
                                 }
                                 if ($key['cirugiaOI']) {
-                                    echo text($key['cirugiaOI']);
+                                    echo text($surgeryOI['title']);
                                 }
                             }
                             echo "</td>";
@@ -192,15 +218,16 @@ if ($PDF_OUTPUT) {
                             echo "</td>";
                             echo "<td>";
                             if ($key['cirugia']) {
-                                echo text($key['LIOod']);
+                                echo "<b>" . text($lioOD['title']) . "</b> " . text($lioBrandOD['title']);
                             }
                             if ($key['cirugiaOI']) {
-                                echo text($key['LIOoi']);
+                                echo "<b>" . text($lioOI['title']) . "</b> " . text($lioBrandOI['title']);
                             }
                             echo "</td>";
                             echo "<td>" . text($key['hometext']) . "</td></tr>";
                         }
                     }
+
                 }
             }
         }
