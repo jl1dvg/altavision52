@@ -727,27 +727,12 @@ if (!$_REQUEST['flb_table']) {
                             $cirugiaSQL = "SELECT title FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' AND option_id = ?";
                             $LIOsql = "SELECT title FROM list_options WHERE list_id = 'LIO_power' AND option_id = ?";
                             $LIObrandSQL = "SELECT title FROM list_options WHERE list_id = 'Lista_de_fabricantes_de_lentes_intraoculares' AND option_id = ?";
-                            $cirugiaOD = "OD: ";
-                            $cirugiaOI = "OI: ";
-
-                            $surgeryOD = sqlStatement($cirugiaSQL, array($appointment['pc_apptqx']));
-                            $surgeryOI = sqlStatement($cirugiaSQL, array($appointment['pc_apptqxOI']));
+                            $explodeOD = explode(",", $appointment['pc_apptqx']);
+                            $explodeOI = explode(",", $appointment['pc_apptqxOI']);
                             $lioOD = sqlQuery($LIOsql, array($appointment['pc_LIOOD']));
                             $lioOI = sqlQuery($LIOsql, array($appointment['pc_LIOOI']));
                             $lioBrandOD = sqlQuery($LIObrandSQL, array($appointment['pc_LIO_type_OD']));
                             $lioBrandOI = sqlQuery($LIObrandSQL, array($appointment['pc_LIO_type_OI']));
-
-                            if (!empty($surgeryOD)) {
-                                while ($row = sqlFetchArray($surgeryOD)) {
-                                    $cirugiaOD .= $row['title'] . "<br>" . $lioBrandOD['title'] . " " . $lioOD['title'];
-                                }
-                            }
-
-                            if (!empty($surgeryOI)) {
-                                while ($row = sqlFetchArray($surgeryOI)) {
-                                    $cirugiaOI .= $row['title'] . "<br>" . $lioBrandOI['title'] . " " . $lioOI['title'];
-                                }
-                            }
                             $examenes = $appointment['pc_examenes'];
                         }
                         $newarrive = collect_checkin($tracker_id);
@@ -818,14 +803,36 @@ if (!$_REQUEST['flb_table']) {
                                 if ($appointment['pc_examenes'] && $appointment['pc_catid'] == 14){
                                     echo $examenes;
                                 }
-                                if($appointment['pc_apptqx'] && $appointment['pc_apptqxOI'] && $appointment['pc_catid'] == 15){
-                                  echo $cirugiaOD . "<br>" . $cirugiaOI;
+                                if(!empty($appointment['pc_apptqx']) && !empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15){
+                                    echo "OD: ";
+                                    foreach ($explodeOD as $value) {
+                                        $surgeryOD = sqlQuery($cirugiaSQL, array($value));
+                                        echo $surgeryOD['title'] . ", ";
+                                    }
+                                    echo $lioBrandOD['title'] . " " . $lioOD['title'];
+                                    echo "<br>";
+                                    echo "OI: ";
+                                    foreach ($explodeOI as $value) {
+                                        $surgeryOI = sqlQuery($cirugiaSQL, array($value));
+                                        echo $surgeryOI['title'] . ", ";
+                                    }
+                                    echo $lioBrandOI['title'] . " " . $lioOI['title'];
                                 }
-                                elseif($appointment['pc_apptqx'] && $appointment['pc_catid'] == 15){
-                                  echo $cirugiaOD;
+                                elseif(!empty($appointment['pc_apptqx']) && $appointment['pc_catid'] == 15){
+                                    echo "OD: ";
+                                    foreach ($explodeOD as $value) {
+                                        $surgeryOD = sqlQuery($cirugiaSQL, array($value));
+                                        echo $surgeryOD['title'] . ", ";
+                                    }
+                                    echo $lioBrandOD['title'] . " " . $lioOD['title'];
                                 }
-                                elseif($appointment['pc_apptqxOI'] && $appointment['pc_catid'] == 15){
-                                  echo $cirugiaOI;
+                                elseif(!empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15){
+                                  echo "OI: ";
+                                    foreach ($explodeOI as $value) {
+                                        $surgeryOI = sqlQuery($cirugiaSQL, array($value));
+                                        echo $surgeryOI['title'] . ", ";
+                                    }
+                                    echo $lioBrandOI['title'] . " " . $lioOI['title'];
                                 }
                                 ?>
                             </td>

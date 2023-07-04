@@ -255,9 +255,8 @@ function getPlanTerapeuticoOD($form_id, $pid)
 {
     $query = "SELECT c.name
               FROM form_eye_mag_ordenqxod AS o
-              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
-              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
-              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id = ? AND o.pid = ?
               ORDER BY o.id ASC";
 
     $results = sqlStatement($query, array($form_id, $pid));
@@ -278,9 +277,8 @@ function getPlanTerapeuticoOI($form_id, $pid)
 {
     $query = "SELECT c.name
               FROM form_eye_mag_ordenqxoi AS o
-              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
-              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
-              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id = ? AND o.pid = ?
               ORDER BY o.id ASC";
 
     $results = sqlStatement($query, array($form_id, $pid));
@@ -328,4 +326,5 @@ function getCPT4Codes($convenio, $lbfID)
     $uniqueCodes = array_unique($codes);
     return $uniqueCodes;
 }
+
 ?>

@@ -629,7 +629,6 @@ foreach ($ar as $key => $val) {
                                 }
                             }
                         }
-
                         ?>
                     </TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"

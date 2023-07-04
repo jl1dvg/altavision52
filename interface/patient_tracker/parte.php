@@ -168,12 +168,12 @@ if ($PDF_OUTPUT) {
                             $cirugiaOD = "OD: ";
                             $cirugiaOI = "OI: ";
 
-                            $surgeryOD = extractDataParte($cirugiaSQL, array($key['cirugia']));
-                            $surgeryOI = extractDataParte($cirugiaSQL, array($key['cirugiaOI']));
                             $lioOD = extractDataParte($LIOsql, array($key['LIOod']));
                             $lioOI = extractDataParte($LIOsql, array($key['LIOoi']));
                             $lioBrandOD = extractDataParte($LIObrandSQL, array($key['LIObrandOD']));
                             $lioBrandOI = extractDataParte($LIObrandSQL, array($key['LIObrandOI']));
+                            $explodeOD = explode(",", $key['cirugia']);
+                            $explodeOI = explode(",", $key['cirugiaOI']);
 
                             echo "<tr><td>";
                             if ($key['pricelevel'] == 'standard') {
@@ -187,17 +187,29 @@ if ($PDF_OUTPUT) {
                             echo text($key['lname']) . " " . text($key['lname2']) . ", " . text($key['fname']);
                             echo "</td>";
                             echo "<td>";
-                            if ($key['cirugia'] == $key['cirugiaOI']) {
-                                echo $surgeryOD['title'];
-                            } else {
-                                if ($key['cirugia']) {
-                                    echo text($surgeryOD['title']);
+                            if (!empty($key['cirugia']) && !empty($key['cirugiaOI'])) {
+                                echo "OD: ";
+                                foreach ($explodeOD as $value) {
+                                    $surgeryOD = sqlQuery($cirugiaSQL, array($value));
+                                    echo $surgeryOD['title'] . ", ";
                                 }
-                                if ($key['cirugia'] && $key['cirugiaOI']) {
-                                    echo "<br />";
+                                echo "<br>";
+                                echo "OI: ";
+                                foreach ($explodeOI as $value) {
+                                    $surgeryOI = sqlQuery($cirugiaSQL, array($value));
+                                    echo $surgeryOI['title'] . ", ";
                                 }
-                                if ($key['cirugiaOI']) {
-                                    echo text($surgeryOI['title']);
+                            } elseif (!empty($key['cirugia'])) {
+                                echo "OD: ";
+                                foreach ($explodeOD as $value) {
+                                    $surgeryOD = sqlQuery($cirugiaSQL, array($value));
+                                    echo $surgeryOD['title'] . ", ";
+                                }
+                            } elseif (!empty($key['cirugiaOI'])) {
+                                echo "OI: ";
+                                foreach ($explodeOI as $value) {
+                                    $surgeryOI = sqlQuery($cirugiaSQL, array($value));
+                                    echo $surgeryOI['title'] . ", ";
                                 }
                             }
                             echo "</td>";

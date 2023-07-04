@@ -108,17 +108,17 @@ function getPropositos($form_id, $pid)
     return $propositos;
 }
 
-function extractItemsFromQuery($form_id, $pid, $encounter)
+function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
 {
     $pc_eid = fetchEventIdByEncounter($encounter);
     $eventDetails = getEventDetails($pc_eid);
 
-    if (!empty($eventDetails['pc_apptqx'])) {
+    if (!empty($proced_id)) {
         $query = "SELECT name, consiste, realiza, grafico, duracion, beneficios,
               riesgos, riesgos_graves, alternativas, post, consecuencias
               FROM consentimiento_informado
               WHERE Id=? ";
-        $results = sqlStatement($query, array($eventDetails['pc_apptqx']));
+        $results = sqlStatement($query, array($proced_id));
 
         $items = array();
     } else {
@@ -393,7 +393,7 @@ ob_start();
         </td>
         <td colspan="49" class="blanco_left">
             <?php
-            $items = extractItemsFromQuery($form_id, $pid, $encounter);
+            $items = extractItemsFromQuery($form_id, $pid, $encounter, $proced_id);
 
             // Realizar acciones con los items extraídos
             foreach ($items
@@ -558,7 +558,6 @@ ob_start();
         <td colspan="46" class="blanco_left" style="border-right: 5px solid #808080; border-bottom: 5px solid #808080;">
             <?php
             echo $item['consecuencias'];
-            }
             ?>
         </td>
     </tr>
@@ -583,7 +582,9 @@ ob_start();
         <tr>
             <td colspan="11" class="verde">FECHA
             </td>
-            <td colspan="56" class="blanco_left"></td>
+            <td colspan="56" class="blanco_left">
+                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+            </td>
         </tr>
         <tr>
             <td colspan="67" style="font-size: 6pt">
@@ -692,7 +693,9 @@ ob_start();
         <tr>
             <td colspan="11" class="verde">FECHA
             </td>
-            <td colspan="56" class="blanco_left"></td>
+            <td colspan="56" class="blanco_left">
+                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+            </td>
         </tr>
         <tr>
             <td colspan="67" style="font-size: 6pt">
@@ -819,7 +822,9 @@ ob_start();
         <tr>
             <td colspan="11" class="verde">FECHA
             </td>
-            <td colspan="56" class="blanco_left"></td>
+            <td colspan="56" class="blanco_left">
+                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+            </td>
         </tr>
         <tr>
             <td colspan="67" style="font-size: 6pt">
@@ -974,32 +979,39 @@ ob_start();
                 <td class="morado" colspan="67">B. REGISTRO DE VALORACIÓN PREANESTÉSICA</td>
             </tr>
             <tr>
-                <td class="verde" colspan="11" rowspan="2">DIAGNÓSTICOS</td>
-                <td class="blanco_left" colspan="48"></td>
-                <td class="verde" colspan="3" rowspan="2">CIE</td>
-                <td class="blanco_left" colspan="5"></td>
+                <td class="verde" colspan="11">DIAGNÓSTICOS</td>
+                <td class="blanco_left" colspan="48">
+                    <?php
+                    foreach ($codedescs as $codedesc) {
+                        echo $codedesc . "<br>";
+                    }
+                    ?>
+                </td>
+                <td class="verde" colspan="3">CIE</td>
+                <td class="blanco_left" colspan="5">
+                    <?php foreach ($codes as $code) {
+                        echo $code . "<br>";
+                    } ?>
+                </td>
             </tr>
             <tr>
-                <td class="blanco_left" colspan="48"></td>
-                <td class="blanco_left" colspan="5"></td>
-            </tr>
-            <tr>
-                <td class="verde" colspan="11" rowspan="2">PROCEDIMIENTO/S PROPUESTO /S:</td>
-                <td class="blanco_left" colspan="56"></td>
-            </tr>
-            <tr>
-                <td class="blanco_left" colspan="56"></td>
+                <td class="verde" colspan="11">PROCEDIMIENTO/S PROPUESTO /S:</td>
+                <td class="blanco_left" colspan="56">
+                    <?php
+                    echo $item['name'];
+                    ?> en ojo derecho.
+                </td>
             </tr>
             <tr>
                 <td class="verde" colspan="6">Electiva</td>
-                <td class="blanco_left" colspan="3"></td>
+                <td class="blanco_left" colspan="3">X</td>
                 <td class="verde" colspan="8">Emergencia</td>
                 <td class="blanco_left" colspan="3"></td>
                 <td class="verde" colspan="6">Urgencia</td>
                 <td class="blanco_left" colspan="3"></td>
                 <td class="verde" colspan="9">RIESGO QUIRÚRGICO:</td>
                 <td class="verde" colspan="6">Bajo</td>
-                <td class="blanco_left" colspan="3"></td>
+                <td class="blanco_left" colspan="3">X</td>
                 <td class="verde" colspan="8">Moderado</td>
                 <td class="blanco_left" colspan="3"></td>
                 <td class="verde" colspan="6">Alto</td>
@@ -1082,7 +1094,7 @@ ob_start();
             </tr>
             <tr>
                 <td class="verde" colspan="11" rowspan="3">ANESTÉSICOS</td>
-                <td class="blanco_left" colspan="56"></td>
+                <td class="blanco_left" colspan="56">No refiere complicaciones</td>
             </tr>
             <tr>
                 <td class="blanco_left" colspan="56"></td>
@@ -1152,6 +1164,9 @@ ob_start();
                 </TD>
             </TR>
         </TABLE>
+        <?php
+        }
+        ?>
         <pagebreak>
             <table>
                 <tr>
@@ -1160,17 +1175,17 @@ ob_start();
                 <tr>
                     <td class="verde" colspan="12" style="height: 15px">CONSTANTES VITALES</td>
                     <td class="verde" colspan="3" style="height: 15px">TA</td>
-                    <td class="blanco" colspan="6" style="height: 15px"></td>
+                    <td class="blanco" colspan="6" style="height: 15px">120/80</td>
                     <td class="verde" colspan="4" style="height: 15px">FC</td>
-                    <td class="blanco" colspan="6" style="height: 15px"></td>
+                    <td class="blanco" colspan="6" style="height: 15px">70</td>
                     <td class="verde" colspan="4" style="height: 15px">FR</td>
-                    <td class="blanco" colspan="6" style="height: 15px"></td>
+                    <td class="blanco" colspan="6" style="height: 15px">12</td>
                     <td class="verde" colspan="4" style="height: 15px">T°</td>
-                    <td class="blanco" colspan="3" style="height: 15px"></td>
+                    <td class="blanco" colspan="3" style="height: 15px">36</td>
                     <td class="verde" colspan="5" style="height: 15px">SAT 02</td>
-                    <td class="blanco" colspan="4" style="height: 15px"></td>
+                    <td class="blanco" colspan="4" style="height: 15px">99</td>
                     <td class="verde" colspan="7" style="height: 15px">GLASGOW</td>
-                    <td class="blanco" colspan="3" style="height: 15px"></td>
+                    <td class="blanco" colspan="3" style="height: 15px">15</td>
                 </tr>
                 <tr>
                     <td class="verde" colspan="12" style="height: 15px">ANTROPOMETRÍA</td>
@@ -1195,7 +1210,7 @@ ob_start();
                     <td class="blanco" colspan="4" style="height: 15px">2,6 - 3</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="3" style="height: 15px">&gt;3</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="3" style="height: 15px">&lt;6</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="4" style="height: 15px">6 - 6,5</td>
@@ -1205,7 +1220,7 @@ ob_start();
                     <td class="blanco" colspan="2" style="height: 15px">I</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="2" style="height: 15px">II</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="2" style="height: 15px">III</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="2" style="height: 15px">IV</td>
@@ -1222,25 +1237,25 @@ ob_start();
                     <td class="blanco" colspan="3" style="height: 15px">&lt;0</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="4" style="height: 15px">0</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="4" style="height: 15px">&gt;0</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="3" style="height: 15px">&lt;40</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="4" style="height: 15px">&gt;40</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="3" style="height: 15px">&lt;35</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="4" style="height: 15px">&gt;35</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="2" style="height: 15px">SI</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="2" style="height: 15px">NO</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="blanco" colspan="2" style="height: 15px">SI</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="blanco" colspan="2" style="height: 15px">NO</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                 </tr>
                 <tr>
                     <td class="verde" colspan="9" rowspan="2">OTROS</td>
@@ -1251,27 +1266,40 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">TÓRAX</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Respiración normal sin sonidos adicionales o anormales durante la auscultación
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">CORAZÓN</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Se escuchan ruidos cardíacos regulares sin la presencia de soplos adicionales durante la
+                        auscultación cardíaca
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">PULMONES</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Normal
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">ABDOMEN</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Normal
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">EXTREMIDADES</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Sin Edema
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">SISTEMA NERVIOSO CENTRAL</td>
-                    <td class="blanco" colspan="46" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="46" style="height: 15px">
+                        Glasgow 15/15
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="21" style="height: 15px">EQUIVALENTE METABÓLICO (METS)</td>
@@ -1297,7 +1325,7 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">HCTO</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">GRUPO</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">AST</td>
@@ -1313,7 +1341,7 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">HB</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">FACTOR</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">ALT</td>
@@ -1330,9 +1358,9 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">TP</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">GLUCOSA</td>
-                    <td class="blanco" colspan="6" style="height: 15px;"></td>
+                    <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">LDH</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">Ca</td>
@@ -1344,9 +1372,9 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">TTP</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">UREA</td>
-                    <td class="blanco" colspan="6" style="height: 15px;"></td>
+                    <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">BT</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">Mg</td>
@@ -1362,9 +1390,9 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">INR</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">CREATININA</td>
-                    <td class="blanco" colspan="6" style="height: 15px;"></td>
+                    <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">BD</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="blanco" colspan="7" style="height: 15px;"></td>
@@ -1377,7 +1405,7 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_normal" colspan="6" style="height: 15px;">LEUCOCITOS</td>
-                    <td class="blanco" colspan="5" style="height: 15px;"></td>
+                    <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
                     <td class="verde_normal" colspan="6" style="height: 15px;">OTROS:</td>
                     <td class="blanco" colspan="6" style="height: 15px;"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px;">BI</td>
@@ -1392,15 +1420,21 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="11" style="height: 15px">EKG</td>
-                    <td class="blanco" colspan="56" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="56" style="height: 15px">
+                        Ritmo sinusal, ondas P, complejos QRS y ondas T normales, sin cambios significativos en la
+                        repolarización
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="11" style="height: 15px">RX TÓRAX</td>
-                    <td class="blanco" colspan="56" style="height: 15px"></td>
+                    <td class="blanco_left" colspan="56" style="height: 15px">
+                        Normal muestra una estructura cardíaca y pulmonar sin anomalías significativas. No se observan
+                        infiltrados, derrames o colapso pulmonar
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="11" style="height: 15px">ESPIROMETRÍA</td>
-                    <td class="blanco" colspan="56" style="height: 15px"></td>
+                    <td class="blanco" colspan="56" style="height: 15px">No</td>
                 </tr>
                 <tr>
                     <td class="verde_left" colspan="11" rowspan="2" style="height: 15px">OTROS</td>
@@ -1418,7 +1452,7 @@ ob_start();
                     <td class="verde_normal" colspan="2" style="height: 15px">I</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px">II</td>
-                    <td class="blanco" colspan="2" style="height: 15px"></td>
+                    <td class="blanco" colspan="2" style="height: 15px">X</td>
                     <td class="verde_normal" colspan="2" style="height: 15px">III</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="verde_normal" colspan="2" style="height: 15px">IV</td>
@@ -1428,13 +1462,13 @@ ob_start();
                     <td class="verde_normal" colspan="2" style="height: 15px">VI</td>
                     <td class="blanco" colspan="2" style="height: 15px"></td>
                     <td class="verde" colspan="15" style="height: 15px">RIESGO CARDÍACO</td>
-                    <td class="blanco" colspan="16" style="height: 15px"></td>
+                    <td class="blanco" colspan="16" style="height: 15px">Bajo</td>
                 </tr>
                 <tr>
                     <td class="verde" colspan="12" style="height: 15px">RIESGO PULMONAR</td>
-                    <td class="blanco" colspan="24" style="height: 15px"></td>
+                    <td class="blanco" colspan="24" style="height: 15px">Bajo</td>
                     <td class="verde" colspan="15" style="height: 15px">RIESGO TROMBOEMBÓLICO</td>
-                    <td class="blanco" colspan="16" style="height: 15px"></td>
+                    <td class="blanco" colspan="16" style="height: 15px">Bajo</td>
                 </tr>
                 <tr style="height: 17px">
                     <td class="verde" colspan="12" style="height: 15px">OTROS</td>
@@ -1465,11 +1499,13 @@ ob_start();
                 </tr>
                 <tr>
                     <td class="verde" colspan="2" style="height: 15px">1.</td>
-                    <td class="blanco" colspan="65" style="height: 15px"></td>
+                    <td class="blanco" colspan="65" style="height: 15px">NPO 6 horas antes de la cirugía</td>
                 </tr>
                 <tr>
                     <td class="verde" colspan="2" style="height: 15px">2.</td>
-                    <td class="blanco" colspan="65" style="height: 15px"></td>
+                    <td class="blanco" colspan="65" style="height: 15px">
+                        No suspender tratamiento habitual
+                    </td>
                 </tr>
                 <tr>
                     <td class="verde" colspan="2" style="height: 15px">3.</td>
@@ -1501,7 +1537,9 @@ ob_start();
                     <td class="morado" style="height: 15px;" colspan="67">H. PLAN ANESTÉSICO</td>
                 </tr>
                 <tr>
-                    <td class="blanco" style="height: 15px;" colspan="67"></td>
+                    <td class="blanco" style="height: 15px;" colspan="67">
+                        Anestesia local (Bloqueo periférico)
+                    </td>
                 </tr>
                 <tr>
                     <td class="blanco" style="height: 15px;" colspan="67"></td>
@@ -1536,11 +1574,14 @@ ob_start();
                     <td colspan="16" class="verde" style="height: 15px;">SEGUNDO APELLIDO</td>
                 </tr>
                 <tr>
-                    <td colspan="8" class="blanco" style="height: 15px;"><?php echo date("d/m/Y", $timestamp); ?></td>
+                    <td colspan="8" class="blanco"
+                        style="height: 15px;">
+                        <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+                    </td>
                     <td colspan="7" class="blanco" style="height: 15px;"></td>
-                    <td colspan="21" class="blanco" style="height: 15px;">Mario</td>
-                    <td colspan="19" class="blanco" style="height: 15px;">Pólit</td>
-                    <td colspan="16" class="blanco" style="height: 15px;">Macias</td>
+                    <td colspan="21" class="blanco" style="height: 15px;">María</td>
+                    <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
+                    <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
                 </tr>
                 <tr>
                     <td colspan="15" class="verde" style="height: 15px;">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -1548,7 +1589,7 @@ ob_start();
                     <td colspan="30" class="verde" style="height: 15px;">SELLO</td>
                 </tr>
                 <tr>
-                    <td colspan="15" class="blanco" style="height: 40px"></td>
+                    <td colspan="15" class="blanco" style="height: 40px">0963691662</td>
                     <td colspan="26" class="blanco" style="height: 15px;">&nbsp;</td>
                     <td colspan="30" class="blanco" style="height: 15px;">&nbsp;</td>
                 </tr>

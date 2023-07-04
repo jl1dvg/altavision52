@@ -515,7 +515,7 @@ $res = sqlStatement($query, $sqlBindArray);
                                     }
 
                                     if ($enc['formdir'] == 'LBFprotocolo') {
-                                        $encnames .= '<br><span><img src="ico_cirugia.png" height="20" width="20"></span>';
+                                        $encnames .= '<br><span><img src="https://cdn-icons-png.flaticon.com/512/8206/8206801.png" height="20" width="20"></span>';
                                     }
 
                                     if ($encnames) {
