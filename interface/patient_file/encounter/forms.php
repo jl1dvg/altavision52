@@ -1111,7 +1111,7 @@ if ($pass_sens_squad &&
                 "' onclick='top.restoreSession()'><span>" . xlt('Protocolo') . "</span></a>";
         }
 
-        /*if (substr($formdir, 0, 12) == 'LBFprotocolo') {
+        if (substr($formdir, 0, 12) == 'LBFprotocolo') {
             // A link for a nice printout of the LBF
             echo "<a target='_blank' " .
                 "href='$rootdir/forms/LBF/transanestesico.php?" .
@@ -1121,19 +1121,6 @@ if ($pass_sens_squad &&
                 "&patientid=" . urlencode($pid) .
                 "' class='css_button_small' title='" . xl('Trans-anestésico') .
                 "' onclick='top.restoreSession()'><span>" . xlt('Trans-anestésico') . "</span></a>";
-        }*/
-
-        if (substr($formdir, 0, 10) == 'newpatient') {
-            // A link for a nice printout of the treatment plan
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode(getLatestEyeFormID($pid)) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "&procedid=" . urlencode($eventDetails['pc_apptqx']) .
-                "' class='css_button_small' title='" . xl('Consentimiento OD') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OD') . "</span></a>";
         }
 
         if (substr($formdir, 0, 7) == 'eye_mag') {

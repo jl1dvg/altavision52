@@ -1239,8 +1239,8 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
             var style_cirugiaOI = document.getElementById('title_cirugiaOI').style;
             var style_LIOOD = document.getElementById('title_LIOOD').style;
             var style_LIOOI = document.getElementById('title_LIOOI').style;
-            var style_QXOD = document.getElementById('form_apptqx').style;
-            var style_QXOI = document.getElementById('form_apptqxOI').style;
+            var style_QXOD = document.getElementById('cirugiaOD').style;
+            var style_QXOI = document.getElementById('cirugiaOI').style;
             var style_datos_cirugia = document.getElementById('title_datos_cirugia').style;
 
             // Mostrar u ocultar elementos según la categoría seleccionada
@@ -1268,8 +1268,10 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                 style_QXOI.display = '';
                 style_LIOOD.display = '';
                 f.form_lioOD.style.display = '';
+                f.form_lio_type_OD.style.display = '';
                 style_LIOOI.display = '';
                 f.form_lioOI.style.display = '';
+                f.form_lio_type_OI.style.display = '';
 
             } else {
                 style_datos_cirugia.display = 'none';
@@ -1279,8 +1281,10 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                 style_QXOI.display = 'none';
                 style_LIOOD.display = 'none';
                 f.form_lioOD.style.display = 'none';
+                f.form_lio_type_OD.style.display = 'none';
                 style_LIOOI.display = 'none';
                 f.form_lioOI.style.display = 'none';
+                f.form_lio_type_OI.style.display = 'none';
             }
         }
 
@@ -2142,7 +2146,7 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                       style='display:none'><b><?php echo xlt('Datos para Procedimiento'); ?>:</b></span>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="cirugiaOD">
                             <td nowrap>
                                 <span id='title_cirugia' style='display:none'><b><?php echo xlt('OD'); ?>:</b></span>
                             </td>
@@ -2153,7 +2157,7 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                     if (is_array($apptqxODValue)) {
                                         $apptqxODValue = implode(',', $apptqxODValue);
                                     }
-                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY subtype, title";
+                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY mapping, subtype, title";
                                     $ProcedimientosResult = sqlStatement($ProcedimientosSQL);
 
                                     $currentSubtype = null; // Variable para controlar los cambios de subtype
@@ -2219,7 +2223,7 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                         <?php
                         // PLAN OJO IZQUIERDO
                         ?>
-                        <tr>
+                        <tr id="cirugiaOI">
                             <td nowrap>
                                 <span id='title_cirugiaOI' style='display:none'><b><?php echo xlt('OI'); ?>:</b></span>
                             </td>
@@ -2230,7 +2234,7 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                     if (is_array($apptqxOIValue)) {
                                         $apptqxOIValue = implode(',', $apptqxOIValue);
                                     }
-                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY subtype, title";
+                                    $ProcedimientosSQL = "SELECT option_id, title, subtype FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' ORDER BY mapping, subtype, title";
                                     $ProcedimientosResult = sqlStatement($ProcedimientosSQL);
 
                                     $currentSubtype = null; // Variable para controlar los cambios de subtype
@@ -2377,40 +2381,7 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
 </script>
 
 <script language="javascript">
-    <?php echo "var fldOptions = [
-	{id: 'A',text:" . xlj('Age') . ",ctx:['4'],ctxExcp:['0']},
-	{id: 'B',text:" . xlj('Gestational Age') . ",ctx:['4'],ctxExcp:['0']},
-	{id: 'F',text:" . xlj('Add Time to Date') . ",ctx:['4'],ctxExcp:['0']},
-	{id: 'C',text:" . xlj('Capitalize') . ",ctx:['0'],ctxExcp:['4','15','40']},
-	{id: 'D',text:" . xlj('Dup Check') . "},
-	{id: 'E',text:" . xlj('Dup Check on only Edit') . "},
-	{id: 'W',text:" . xlj('Dup Check on only New') . "},
-	{id: 'G',text:" . xlj('Graphable') . "},
-	{id: 'I',text:" . xlj('Initially Open Group') . "},
-	{id: 'J',text:" . xlj('Jump to Next Row') . "},
-	{id: 'K',text:" . xlj('Prepend Blank Row') . "},
-	{id: 'L',text:" . xlj('Lab Order') . "},
-	{id: 'M',text:" . xlj('Radio Group Master') . "},
-	{id: 'm',text:" . xlj('Radio Group Member') . "},
-	{id: 'N',text:" . xlj('New Patient Form') . "},
-	{id: 'O',text:" . xlj('Order Processor') . "},
-	{id: 'P',text:" . xlj('Default to previous value') . "},
-	{id: 'R',text:" . xlj('Distributor') . "},
-	{id: 'T',text:" . xlj('Description is default text') . "},
-	{id: 'U',text:" . xlj('Capitalize all') . "},
-	{id: 'V',text:" . xlj('Vendor') . "},
-	{id: 'X',text:" . xlj('Do Not Print') . "},
-    {id:'grp',text:" . xlj('Stylings') . ",children:[
-        {id: 'RS',text:" . xlj('Add Bottom Border Row') . "},
-        {id: 'RO',text:" . xlj('Outline Entire Row') . "},
-        {id: 'DS',text:" . xlj('Add Data Bottom Border') . "},
-        {id: 'DO',text:" . xlj('Outline Data Col') . "},
-        {id: 'SP',text:" . xlj('Span Entire Row') . "}
-    ]},
-    {id: '0',text:" . xlj('Read Only') . "},
-	{id: '1',text:" . xlj('Write Once') . "},
-	{id: '2',text:" . xlj('Billing Code Descriptions') . "}];\n";
-
+    <?php
     // Language direction for select2
     echo 'var langDirection = ' . js_escape($_SESSION['language_direction']) . ';';
     ?>

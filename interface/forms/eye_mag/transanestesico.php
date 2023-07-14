@@ -9825,7 +9825,7 @@ ob_start();
                 <td class="s14" colspan="3">HORA</td>
                 <td class="s28" colspan="5"></td>
                 <td class="s14" colspan="12">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
-                <td class="s28" colspan="18"></td>
+                <td class="s28" colspan="18">MARIA JIMENEZ CORONADO</td>
                 <td class="s14" colspan="4">FIRMA</td>
                 <td class="s28" colspan="12"></td>
                 <td class="s14" colspan="4">SELLO Y CÓDIGO</td>

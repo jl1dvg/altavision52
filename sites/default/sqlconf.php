@@ -5,8 +5,8 @@
 $host	= 'localhost';
 $port	= '3306';
 $login	= 'root';
-$pass	= 'root';
-$dbase	= 'av';
+$pass	= 'JorgeAMI2018';
+$dbase	= 'openemr';
 
 //Added ability to disable
 //utf8 encoding - bm 05-2009

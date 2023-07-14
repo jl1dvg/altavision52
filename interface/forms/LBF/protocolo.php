@@ -40,7 +40,7 @@ $titleres = getPatientData($pid, "pubpid,fname,mname,lname, lname2, sex, pricele
 
 $providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
-$dated = new DateTime($encounter_date);
+$dated = fetchDateByEncounter($encounter);
 $visit_date = oeFormatShortDate($dated);
 $resultado = getProtocolDate($_GET['formid'], $_GET['visitid']);
 

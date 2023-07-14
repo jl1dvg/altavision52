@@ -225,7 +225,7 @@ function display_PRIOR_section($zone, $orig_id, $id_to_show, $pid, $report = '0'
     }
 
     $query = "SELECT  *
-               from form_eye_base, 
+               from form_eye_base,
                 form_eye_hpi,form_eye_ros,form_eye_vitals,
                 form_eye_acuity,form_eye_refraction,form_eye_biometrics,
                 form_eye_external, form_eye_antseg,form_eye_postseg,
@@ -3435,7 +3435,7 @@ if ($number_rows == 22) { ?>
                     data-target="SELECT_CANVAS_' . attr($zone) . '"
                     data-direction="newest"
                     title="' . xla('Forward to current canvas') . '"></span>
-                    
+
         </div>';
             }
         }
@@ -3611,8 +3611,8 @@ if ($number_rows == 22) { ?>
         global $form_id;
 
         $query = "select  *,form_encounter.date as encounter_date
-              
-               from forms,form_encounter,form_eye_base, 
+
+               from forms,form_encounter,form_eye_base,
                 form_eye_hpi,form_eye_ros,form_eye_vitals,
                 form_eye_acuity,form_eye_refraction,form_eye_biometrics,
                 form_eye_external,form_eye_antseg,form_eye_postseg,
@@ -5651,7 +5651,7 @@ if ($number_rows == 22) { ?>
                                         ';
                             } else {
                                 $old_OCTs .= '<tr><td class="hideme_OCTs nodisplay GFS_td_1">
-                                                <a onclick="openNewForm(\'' . $GLOBALS['webroot'] . '/controller.php?document&view&patient_id=' . attr($pid) . '&doc_id=' . attr($OCT['id']) . '\',\'Documents\');"><img src="../../forms/' . $form_folder . '/images/jpg.png" class="little_image" style="width:15px; height:15px;" /></a> 
+                                                <a onclick="openNewForm(\'' . $GLOBALS['webroot'] . '/controller.php?document&view&patient_id=' . attr($pid) . '&doc_id=' . attr($OCT['id']) . '\',\'Documents\');"><img src="../../forms/' . $form_folder . '/images/jpg.png" class="little_image" style="width:15px; height:15px;" /></a>
                                                 </td><td class="hideme_OCTs nodisplay GFS_td_1">' . $OCT['docdate'] . '</td></tr>';
                             }
                             $count++;
@@ -6934,10 +6934,10 @@ function getIOPTARGETS($pid, $id, $provider_id)
             return array($row['ODIOPTARGET'], $row['OSIOPTARGET']);
         }
     }
-    $query = "SELECT * FROM `list_options` 
-            WHERE 
-            `list_id` LIKE ? AND 
-            (   option_id = 'ODIOPTARGET' OR  
+    $query = "SELECT * FROM `list_options`
+            WHERE
+            `list_id` LIKE ? AND
+            (   option_id = 'ODIOPTARGET' OR
                 option_id = 'OSIOPTARGET'  )
              ";
     $result = sqlQuery($query, array("Eye_defaults_" . $provider_id));

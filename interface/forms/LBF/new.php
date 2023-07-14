@@ -548,8 +548,8 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
         <?php
         if (isset($fs)) {
         // jsLineItemValidation() function for the fee sheet stuff.
-            echo $fs->jsLineItemValidation('form_fs_bill', 'form_fs_prod');
-            ?>
+        echo $fs->jsLineItemValidation('form_fs_bill', 'form_fs_prod');
+        ?>
 
         // Add a service line item.
         function fs_append_service(code_type, code, desc, price) {
@@ -715,17 +715,67 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
         }
 
         // This is called back by code_attributes_ajax.php to complete the appending of a line item.
+        //function code_attributes_handler(codetype, code, desc, price, warehouses) {
+            //if (codetype == 'PROD') {
+                //fs_append_product(codetype, code, desc, price, warehouses);
+            //}
+            //else if (codetype == 'ICD9' || codetype == 'ICD10') {
+                //fs_append_diag(codetype, code, desc);
+            //}
+            //else {
+                //fs_append_service(codetype, code, desc, price);
+            //}
+        //}
         function code_attributes_handler(codetype, code, desc, price, warehouses) {
-            if (codetype == 'PROD') {
-                fs_append_product(codetype, code, desc, price, warehouses);
-            }
-            else if (codetype == 'ICD9' || codetype == 'ICD10') {
-                fs_append_diag(codetype, code, desc);
-            }
-            else {
-                fs_append_service(codetype, code, desc, price);
+            var telem = document.getElementById('fs_services_table');
+            var existingRow = findExistingRow(telem, codetype, code);
+
+            if (existingRow) {
+                var unitsInput = existingRow.querySelector("input[name^='form_fs_bill['][name$='[units]']");
+                if (unitsInput) {
+                    var existingUnits = parseInt(unitsInput.value);
+                    unitsInput.value = existingUnits + 1;
+                }
+            } else {
+                var lino = telem.rows.length - 1;
+                var trelem = telem.insertRow(telem.rows.length);
+                trelem.innerHTML =
+                    "<td class='text'>" + code + "&nbsp;</td>" +
+                    "<td class='text'>" + desc + "&nbsp;</td>" +
+                    "<td class='text'>" +
+                    "<select name='form_fs_bill[" + lino + "][provid]'>" +
+                    "<?php echo addslashes($fs->genProviderOptionList('-- ' . xl('Default') . ' --')) ?>" +
+                    "</select>&nbsp;" +
+                    "</td>" +
+                    "<td class='text'>" +
+                    "<select name='form_fs_bill[" + lino + "][pricelevel]'>" +
+                    "<?php echo addslashes($fs->generatePriceLevelOptionList('-- ' . xl('Default') . ' --')) ?>" +
+                    "</select>&nbsp;" +
+                    "</td>" +
+                    "<td class='text' align='right'><input type='text' name='form_fs_bill[" + lino + "][units]' size='2' value='1' /></td>" +
+                    "<td class='text' align='right'><input type='text' name='form_fs_bill[" + lino + "][price]' size='2' value='" + price + "' /></td>" +
+                    "<td class='text' align='right'>" +
+                    "<input type='hidden' name='form_fs_bill[" + lino + "][price]'     value='" + price + "' />" +
+                    "<input type='checkbox' name='form_fs_bill[" + lino + "][del]' value='1' />" +
+                    "<input type='hidden' name='form_fs_bill[" + lino + "][code_type]' value='" + codetype + "' />" +
+                    "<input type='hidden' name='form_fs_bill[" + lino + "][code]'      value='" + code + "' />" +
+                    "</td>";
             }
         }
+
+        function findExistingRow(table, codetype, code) {
+            var rows = table.getElementsByTagName('tr');
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var codeCell = row.querySelector("td:first-child");
+                var codetypeCell = row.querySelector("input[name^='form_fs_bill['][name$='[code_type]']");
+                if (codeCell && codetypeCell && codeCell.textContent.trim() === code && codetypeCell.value === codetype) {
+                    return row;
+                }
+            }
+            return null;
+        }
+
 
         function warehouse_changed(sel) {
             if (!confirm(<?php echo xlj('Do you really want to change Warehouse?'); ?>)) {
@@ -748,7 +798,7 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
 
 <body class="body_top"<?php if ($from_issue_form) {
     echo " style='background-color:#ffffff'";
-                      } ?>>
+} ?>>
 <div class='container'>
     <?php
     echo "<form method='post' " .
@@ -760,7 +810,7 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
 
 
     if (!$from_trend_form) {
-        $enrow = sqlQuery("SELECT p.fname, p.mname, p.lname, p.cmsportal_login, " .
+    $enrow = sqlQuery("SELECT p.fname, p.mname, p.lname, p.cmsportal_login, " .
         "fe.date FROM " .
         "form_encounter AS fe, forms AS f, patient_data AS p WHERE " .
         "p.pid = ? AND f.pid = p.pid AND f.encounter = ? AND " .
@@ -792,29 +842,27 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                         "SELECT id, username FROM users WHERE " .
                         "username = ? AND authorized = 1",
                         array($_SESSION["authUser"])
-                      );
+                    );
 
                     echo "&nbsp;&nbsp;";
                     echo xlt('Provider') . ": ";
 
                     // TBD: Refactor this function out of the FeeSheetHTML class as that is not the best place for it.
-                    if($form_provider_id == null){
+                    if ($form_provider_id == null) {
                         $proveedor = $proveedorAUT['id'];
-                    }
-                    else{
+                    } else {
                         $proveedor = $form_provider_id;
                     }
                     echo FeeSheetHtml::genProviderSelect('form_provider_id', '-- ' . xl("Please Select") . ' --', $proveedor);
-                    echo xlt('Date of Service') . ": ";?>
+                    echo xlt('Date of Service') . ": "; ?>
                     <input type='date' name='form_date_id' id='form_date_id'
-                     value='<?php if ($firow['date'] == null) {
-                       echo substr($enrow['date'], 0, 10);
-                     }
-                     else {
-                       echo substr($firow['date'], 0, 10);
-                     } ?>'
-                     title='<?php echo xla('Date of service'); ?>' />
-<?php
+                           value='<?php if ($firow['date'] == null) {
+                               echo substr($enrow['date'], 0, 10);
+                           } else {
+                               echo substr($firow['date'], 0, 10);
+                           } ?>'
+                           title='<?php echo xla('Date of service'); ?>'/>
+                    <?php
                     // If appropriate build a drop-down selector of issues of this type for this patient.
                     // We skip this if in an issue form tab because removing and adding visit form tabs is
                     // beyond the current scope of that code.
@@ -841,16 +889,16 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
             </div>
 
             <?php $cmsportal_login = $enrow['cmsportal_login'];
-    } // end not from trend form
+            } // end not from trend form
 
             // If loading data from portal, get the data.
-    if ($GLOBALS['gbl_portal_cms_enable'] && $portalid) {
-        $portalres = cms_portal_call(array('action' => 'getpost', 'postid' => $portalid));
-        if ($portalres['errmsg']) {
-            die(text($portalres['errmsg']));
-        }
-    }
-    ?>
+            if ($GLOBALS['gbl_portal_cms_enable'] && $portalid) {
+                $portalres = cms_portal_call(array('action' => 'getpost', 'postid' => $portalid));
+                if ($portalres['errmsg']) {
+                    die(text($portalres['errmsg']));
+                }
+            }
+            ?>
 
             <!-- This is where a chart might display. -->
             <div id="chart"></div>
@@ -1014,7 +1062,7 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                     // If group name is blank, no checkbox or div.
                     if (strlen($gname)) {
                         echo "<br /><span class='bold'><input type='checkbox' name='form_cb_" . attr($group_seq) . "' value='1' " .
-                            "onclick='return divclick(this," . attr_js('div_'.$group_seq) . ");'";
+                            "onclick='return divclick(this," . attr_js('div_' . $group_seq) . ");'";
                         if ($display_style == 'block') {
                             echo " checked";
                         }
@@ -1309,10 +1357,9 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
                     }
                     echo " <tr ";
                     if ($li['codetype'] == 'CPT42') {
-                      echo "bgcolor='#82E0AA'";
-                    }
-                    elseif ($li['codetype'] == 'CPT4A') {
-                      echo "bgcolor='#3498DB'";
+                        echo "bgcolor='#82E0AA'";
+                    } elseif ($li['codetype'] == 'CPT4A') {
+                        echo "bgcolor='#3498DB'";
                     }
                     echo " >\n";
                     echo "  <td class='text'>" . text($li['code']) . "&nbsp;</td>\n";

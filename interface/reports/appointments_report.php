@@ -443,7 +443,13 @@ if ($_POST['form_refresh'] || $_POST['form_orderby']) {
 
         <td class="detail">&nbsp;<?php echo text($appointment['pubpid']) ?></td>
 
-        <td class="detail">&nbsp;<?php echo text($appointment['pc_eid']) ?></td>
+        <td class="detail">&nbsp;
+            <?php
+            echo text($appointment['pc_eid']) . "<br />";
+            echo text($appointment['pc_apptqx']) . "<br />";
+            echo text($appointment['pc_apptqxOI']) . "<br />";
+            ?>
+        </td>
 
         <td class="detail">&nbsp;<?php echo text($appointment['phone_cell']) ?></td>
 
