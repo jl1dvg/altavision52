@@ -929,20 +929,7 @@ function postToGet($arin)
         foreach ($ar as $key => $value) {
             $form_encounter = $value;
             // Verificar si el elemento del arreglo comienza con "LBF"
-            if (strpos($key, 'newpatient') === 0) {
-                // Crear una nueva página en el PDF
-                $pdf->AddPage();
-
-                // Incluir el contenido de examenes.php en el PDF
-                ob_start();
-                include("acta.php");
-                $acta_content = ob_get_clean();
-
-                // Imprimir el valor de $key dentro de un elemento <h1>
-                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
-                // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($acta_content);
-            } elseif (strpos($key, 'eye_mag') === 0) {
+            if (strpos($key, 'eye_mag') === 0) {
                 // Crear una nueva página en el PDF
                 $pdf->AddPage();
 
