@@ -327,4 +327,106 @@ function getCPT4Codes($convenio, $lbfID)
     return $uniqueCodes;
 }
 
+function obtenerCodigosImpPlan($pid, $encounter)
+{
+    // Obtener el form_id más alto para el paciente
+    $query = "SELECT MAX(form_id) AS max_form_id FROM forms WHERE pid = ? AND formdir = 'eye_mag' AND encounter <= ? AND deleted = 0";
+    $result = sqlFetchArray(sqlStatement($query, array($pid, $encounter)));
+    $max_form_id = $result['max_form_id'];
+
+    // Obtener los datos asociados al form_id más alto
+    $query = "SELECT * FROM form_eye_mag_impplan WHERE pid=? AND form_id=?";
+    $result = sqlStatement($query, array($pid, $max_form_id));
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    $codigosImpPlan = array();
+
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+
+        $pattern = '/Code/';
+        if (preg_match($pattern, $newdata['code'])) {
+            $newdata['code'] = '';
+        }
+
+        if ($newdata['codetext'] > '') {
+            $codigosImpPlan[] = $newdata;
+        }
+    }
+
+    return $codigosImpPlan;
+}
+
+function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
+{
+    $pc_eid = fetchEventIdByEncounter($encounter);
+    $eventDetails = getEventDetails($pc_eid);
+
+    if (!empty($proced_id)) {
+        $query = "SELECT name, consiste, realiza, grafico, duracion, beneficios,
+              riesgos, riesgos_graves, alternativas, post, consecuencias
+              FROM consentimiento_informado
+              WHERE Id=? ";
+        $results = sqlStatement($query, array($proced_id));
+
+        $items = array();
+    } else {
+        $query = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
+              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
+              FROM form_eye_mag_ordenqxod AS o
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
+        $results = sqlStatement($query, array($form_id, $pid));
+
+        $items = array();
+    }
+
+    if (!empty($results)) {
+        while ($row = sqlFetchArray($results)) {
+            // Extraer los datos de cada item
+            $name = $row['name'];
+            $consiste = $row['consiste'];
+            $realiza = $row['realiza'];
+            $grafico = $row['grafico'];
+            $duracion = $row['duracion'];
+            $beneficios = $row['beneficios'];
+            $riesgos = $row['riesgos'];
+            $riesgos_graves = $row['riesgos_graves'];
+            $alternativas = $row['alternativas'];
+            $post = $row['post'];
+            $consecuencias = $row['consecuencias'];
+
+            // Crear un array con los datos extraídos del item
+            $item = array(
+                'name' => $name,
+                'consiste' => $consiste,
+                'realiza' => $realiza,
+                'grafico' => $grafico,
+                'duracion' => $duracion,
+                'beneficios' => $beneficios,
+                'riesgos' => $riesgos,
+                'riesgos_graves' => $riesgos_graves,
+                'alternativas' => $alternativas,
+                'post' => $post,
+                'consecuencias' => $consecuencias
+            );
+
+            // Agregar el item al array de items
+            $items[] = $item;
+        }
+    }
+
+    return $items;
+}
+
 ?>

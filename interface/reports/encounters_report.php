@@ -26,6 +26,7 @@ require_once "$srcdir/patient_tracker.inc.php";
 require_once "$srcdir/user.inc";
 require_once "$srcdir/MedEx/API.php";
 
+
 use OpenEMR\Billing\BillingUtilities;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -58,6 +59,16 @@ function show_doc_total($lastdocname, $doc_encounters)
         echo "  <td class='detail'>" . text($lastdocname) . "</td>\n";
         echo "  <td class='detail' align='right'>" . text($doc_encounters) . "</td>\n";
         echo " </tr>\n";
+    }
+}
+
+function getFieldValue($form_id, $field_id)
+{
+    $querylbfdxpre = sqlQuery("SELECT field_value FROM lbf_data WHERE form_id=? AND field_id=?", array($form_id, $field_id));
+
+    if ($querylbfdxpre) {
+        $field_value = $querylbfdxpre['field_value'];
+        return $field_value;
     }
 }
 
@@ -514,15 +525,16 @@ $res = sqlStatement($query, $sqlBindArray);
                                         $encnames .= '<br><span><img src="Laser.png" height="16" width="32"></span>';
                                     }
 
-                                    if ($enc['formdir'] == 'LBFprotocolo') {
-                                        $encnames .= '<br><span><img src="https://cdn-icons-png.flaticon.com/512/8206/8206801.png" height="20" width="20"></span>';
-                                    }
-
                                     if ($encnames) {
                                         $encnames .= '<br />';
                                     }
+                                    if ($enc['formdir'] == 'LBFprotocolo') {
+                                        $encnames .= '<span><img src="https://cdn-icons-png.flaticon.com/512/8206/8206801.png" height="16" width="20"> </span>';
+                                        $encnames .= '<b>' . text(getFieldValue($enc['form_id'], "Prot_opp")) . '</b>';
+                                    } else {
+                                        $encnames .= text($enc['form_name']);
+                                    }
 
-                                    $encnames .= text($enc['form_name']);
                                 }
                             }
 
@@ -576,7 +588,13 @@ $res = sqlStatement($query, $sqlBindArray);
                                     }
                                 }
 
-                                $coded = substr($coded, 0, strlen($coded) - 2);
+                                $coded = substr($coded, 0, 100); // Truncar a 100 caracteres
+                                $coded = rtrim($coded, ', '); // Eliminar la última coma y el espacio si es necesario
+                            }
+
+                            // Si la variable $coded está vacía, mostrar el mensaje 'Encuentro sin codificar'
+                            if (empty($coded)) {
+                                $coded = 'Encuentro sin codificar';
                             }
 
                             // Figure product sales into billing status.
@@ -643,7 +661,7 @@ $res = sqlStatement($query, $sqlBindArray);
                                     &nbsp;
                                 </td>
                                 <td>
-                                    <?php echo text($coded); ?>
+                                    <?php echo $coded; ?>
                                 </td>
                             </tr>
                             <?php

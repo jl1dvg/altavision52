@@ -5,6 +5,7 @@ require_once("$srcdir/forms.inc");
 require_once("$srcdir/encounter.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
+require_once("$srcdir/iess.inc.php");
 require_once("$srcdir/patient.inc");
 require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
 include_once($GLOBALS["srcdir"] . "/api.inc");
@@ -12,12 +13,7 @@ require_once(dirname(__FILE__) . "/../../../library/lists.inc");
 
 use OpenEMR\Services\FacilityService;
 
-$form_name = "eye_mag";
-$form_folder = "eye_mag";
-
 $facilityService = new FacilityService();
-
-require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
 if ($_REQUEST['ptid']) {
     $pid = $_REQUEST['ptid'];
@@ -41,173 +37,12 @@ if ($_REQUEST['procedid']) {
 
 
 //Datos del PACIENTE
-$titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,sex,pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
-
-//Fecha del form_eye_mag
-$query = "select form_encounter.date as encounter_date,form_eye_mag.id as form_id,form_encounter.*, form_eye_mag.*
-        from form_eye_mag ,forms,form_encounter
-        where
-        form_encounter.encounter =? and
-        form_encounter.encounter = forms.encounter and
-        form_eye_mag.id=forms.form_id and
-        forms.deleted != '1' and
-        form_eye_mag.pid=? ";
-$queryform = "select * from forms
-                where
-                pid=? and
-                encounter=? and
-                formdir = 'eye_mag' and
-                deleted = 0";
-
-$fechaINGRESO = sqlQuery($queryform, array($_GET['patientid'], $_GET['visitid']));
-$encounter_data = sqlQuery($query, array($encounter, $pid));
-@extract($encounter_data);
 $providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
-$providerRegistro = getProviderRegistro($providerID);
-$dated = new DateTime($encounter_date);
-$dateddia = date("d", strtotime($fechaINGRESO['date']));
-$datedmes = date("F", strtotime($fechaINGRESO['date']));
-$datedano = date("Y", strtotime($fechaINGRESO['date']));
-$visit_date = oeFormatShortDate($dated);
-$mes = date('F', $timestamp);
-$meses_ES = array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre");
-$meses_EN = array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-$nombreMes = str_replace($meses_EN, $meses_ES, $datedmes);
+$titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,sex,pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
 
-$facility = null;
-if ($_SESSION['pc_facility']) {
-    $facility = $facilityService->getById($_SESSION['pc_facility']);
-} else {
-    $facility = $facilityService->getPrimaryBillingLocation();
-}
-//Fin fecha del form_eye_mag
+$resultado = obtenerCodigosImpPlan($pid, $encounter);
 
-//Obtener en que consiste el procedimiento
-function getPropositos($form_id, $pid)
-{
-    $query1 = "SELECT id, form_id, pid, ORDER_DETAILS, option_id, notes FROM form_eye_mag_ordenqxoi
-               LEFT JOIN list_options on ORDER_DETAILS = title
-               WHERE form_id=? and pid=? and list_id=? ORDER BY id ASC";
-    $PLAN_results1 = sqlStatement($query1, array($form_id, $pid, 'cirugia_propuesta_defaults'));
-
-    $propositos = array();
-
-    if (!empty($PLAN_results1)) {
-        while ($plan_row1 = sqlFetchArray($PLAN_results1)) {
-            $Proposito = "SELECT * FROM list_options
-                          WHERE list_id = 'Proposito_Riesgo' and option_id = ? ";
-            $propositoITEM = sqlQuery($Proposito, array($plan_row1['option_id']));
-
-            if (!empty($propositoITEM)) {
-                $propositos[] = $propositoITEM['title'];
-            }
-        }
-    }
-
-    return $propositos;
-}
-
-function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
-{
-    $pc_eid = fetchEventIdByEncounter($encounter);
-    $eventDetails = getEventDetails($pc_eid);
-
-    if (!empty($proced_id)) {
-        $query = "SELECT name, consiste, realiza, grafico, duracion, beneficios,
-              riesgos, riesgos_graves, alternativas, post, consecuencias
-              FROM consentimiento_informado
-              WHERE Id=? ";
-        $results = sqlStatement($query, array($proced_id));
-
-        $items = array();
-    } else {
-        $query = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
-              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
-              FROM form_eye_mag_ordenqxoi AS o
-              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
-              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
-        $results = sqlStatement($query, array($form_id, $pid));
-
-        $items = array();
-    }
-
-    if (!empty($results)) {
-        while ($row = sqlFetchArray($results)) {
-            // Extraer los datos de cada item
-            $name = $row['name'];
-            $consiste = $row['consiste'];
-            $realiza = $row['realiza'];
-            $grafico = $row['grafico'];
-            $duracion = $row['duracion'];
-            $beneficios = $row['beneficios'];
-            $riesgos = $row['riesgos'];
-            $riesgos_graves = $row['riesgos_graves'];
-            $alternativas = $row['alternativas'];
-            $post = $row['post'];
-            $consecuencias = $row['consecuencias'];
-
-            // Crear un array con los datos extraídos del item
-            $item = array(
-                'name' => $name,
-                'consiste' => $consiste,
-                'realiza' => $realiza,
-                'grafico' => $grafico,
-                'duracion' => $duracion,
-                'beneficios' => $beneficios,
-                'riesgos' => $riesgos,
-                'riesgos_graves' => $riesgos_graves,
-                'alternativas' => $alternativas,
-                'post' => $post,
-                'consecuencias' => $consecuencias
-            );
-
-            // Agregar el item al array de items
-            $items[] = $item;
-        }
-    }
-
-    return $items;
-}
-
-function obtenerCodigosImpPlan($form_folder, $form_id, $pid)
-{
-    $query = "SELECT * FROM form_" . $form_folder . "_impplan WHERE form_id=? AND pid=? ORDER BY IMPPLAN_order ASC";
-    $result = sqlStatement($query, array($form_id, $pid));
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    $codigosImpPlan = array();
-
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-
-        $pattern = '/Code/';
-        if (preg_match($pattern, $newdata['code'])) {
-            $newdata['code'] = '';
-        }
-
-        if ($newdata['codetext'] > '') {
-            $codigosImpPlan['code'][] = $newdata['code'];
-            $codigosImpPlan['codedesc'][] = $newdata['codedesc'];
-        }
-    }
-
-    return $codigosImpPlan;
-}
-
-$resultado = obtenerCodigosImpPlan($form_folder, $form_id, $pid);
-$codes = $resultado['code']; // Array con los valores de 'code'
-$codedescs = $resultado['codedesc']; // Array con los valores de 'codedesc'
 
 //Inicio PDF
 $FONTSIZE = 9;
@@ -223,8 +58,6 @@ if (is_file("$webserver_root/$ma_logo_path")) {
 
 use Mpdf\Mpdf;
 
-// Font size in points for table cell data.
-$FONTSIZE = 9;
 $formid = $_GET['formid'];
 
 // Html2pdf fails to generate checked checkboxes properly, so write plain HTML
@@ -426,16 +259,21 @@ ob_start();
         </td>
         <td colspan="44" class="blanco_left">
             <?php
-            foreach ($codedescs as $codedesc) {
+            // Imprimir los datos para el form_id más alto
+            foreach ($resultado as $data) {
+                $codedesc = $data['codedesc'];
                 echo $codedesc . "<br>";
             }
             ?>
         </td>
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
-            <?php foreach ($codes as $code) {
+            <?php
+            foreach ($resultado as $data) {
+                $code = $data['code'];
                 echo $code . "<br>";
-            } ?>
+            }
+            ?>
         </td>
     </tr>
     <tr>
@@ -634,7 +472,7 @@ ob_start();
         <tr>
             <td colspan="27" style="font-size: 7pt; border-top: 1px solid black">
                 <?php
-                echo getProviderName($providerID);
+                echo $providerNAME;
                 ?>
             </td>
             <td></td>
@@ -982,16 +820,20 @@ ob_start();
                 <td class="verde" colspan="11">DIAGNÓSTICOS</td>
                 <td class="blanco_left" colspan="48">
                     <?php
-                    foreach ($codedescs as $codedesc) {
+                    foreach ($resultado as $data) {
+                        $codedesc = $data['codedesc'];
                         echo $codedesc . "<br>";
                     }
                     ?>
                 </td>
                 <td class="verde" colspan="3">CIE</td>
                 <td class="blanco_left" colspan="5">
-                    <?php foreach ($codes as $code) {
+                    <?php
+                    foreach ($resultado as $data) {
+                        $code = $data['code'];
                         echo $code . "<br>";
-                    } ?>
+                    }
+                    ?>
                 </td>
             </tr>
             <tr>
@@ -1658,8 +1500,8 @@ ob_start();
                 <P ALIGN=JUSTIFY STYLE="margin-bottom: 0.11in; margin-left: 2.5cm; margin-right: 2.5cm">OTROS:</P>
                 <P ALIGN=JUSTIFY STYLE="margin-bottom: 0.11in; margin-left: 2.5cm; margin-right: 2.5cm">M&eacute;dico
                     tratante: <?php
-                    echo getProviderName($providerID);
-                    ?>
+                    echo $providerNAME;
+                    ?><br>
                     Tel&eacute;fono: 2286080</P>
                 <P ALIGN=JUSTIFY STYLE="margin-bottom: 0.11in; margin-left: 2.5cm; margin-right: 2.5cm"><U><B>INFORME DE
                             EGRESO DE ENFERMERIA</B></U>:</P>

@@ -284,7 +284,7 @@ function printPatientBilling($pid)
 
 function printPatientPreBilling($pid, $encounter)
 {
-    $res = sqlStatement("SELECT * FROM billing WHERE pid=? AND encounter=? AND (code_type='RXCUI' OR code_type='INSUM' OR (code_type='CPT4' AND code IN ('800014', '700027', '700028', '700029', '700030')))
+    $res = sqlStatement("SELECT * FROM billing WHERE pid=? AND encounter=? AND (code_type='RXCUI' OR code_type='INSUM' OR (code_type='CPT4' AND code IN ('800014', '700027', '700028', '700029', '700030', '700031', '700002')))
                       AND activity=1 ORDER BY code_type, date", array($pid, $encounter));
     $lastCodeType = '';
     while ($result = sqlFetchArray($res)) {

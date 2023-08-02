@@ -791,7 +791,7 @@ if ($is_group && !acl_check("groups", "glog", false, array('view', 'write'))) {
                     <tr>
                         <td>
                             <?php
-                            if ($pc_catid == 15) {
+                            if ($pc_catid == 15 || $pc_catid == 19) {
                                 echo "<h2>Día Quirúrgico</h2>";
                                 echo "</td></tr><tr><td>";
                                 if ($eventDetails) {
@@ -1123,29 +1123,29 @@ if ($pass_sens_squad &&
                 "' onclick='top.restoreSession()'><span>" . xlt('Trans-anestésico') . "</span></a>";
         }
 
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the treatment plan
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Consentimiento OD') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OD') . "</span></a>";
-        }
+        //if (substr($formdir, 0, 7) == 'eye_mag') {
+        // A link for a nice printout of the treatment plan
+        //    echo "<a target='_blank' " .
+        //        "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
+        //        "formname=" . urlencode($formdir) .
+        //        "&formid=" . urlencode($iter['form_id']) .
+        //        "&visitid=" . urlencode($encounter) .
+        //        "&patientid=" . urlencode($pid) .
+        //        "' class='css_button_small' title='" . xl('Consentimiento OD') .
+        //        "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OD') . "</span></a>";
+        //}
 
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the treatment plan
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/consentimiento_oi.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Consentimiento OI') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OI') . "</span></a>";
-        }
+        //if (substr($formdir, 0, 7) == 'eye_mag') {
+        // A link for a nice printout of the treatment plan
+        //    echo "<a target='_blank' " .
+        //        "href='$rootdir/forms/eye_mag/consentimiento_oi.php?" .
+        //        "formname=" . urlencode($formdir) .
+        //        "&formid=" . urlencode($iter['form_id']) .
+        //        "&visitid=" . urlencode($encounter) .
+        //        "&patientid=" . urlencode($pid) .
+        //        "' class='css_button_small' title='" . xl('Consentimiento OI') .
+        //        "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OI') . "</span></a>";
+        //}
 
         if (substr($formdir, 0, 9) == 'care_plan') {
             // A link for a nice printout of the treatment plan

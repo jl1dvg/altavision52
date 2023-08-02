@@ -139,12 +139,17 @@ while ($irow = sqlFetchArray($ires)) {
                         $list_id = $irow['id'];
                         $tcode = $irow['type'];
                         if ($tcode == "medical_problem") {
-                            $selectedIssues[] = text(substr($irow['diagnosis'], 6, 40));
+                            $diagnosis = text($irow['diagnosis']); // Obtener el diagnóstico completo
+                            $selectedIssues[] = str_replace('ICD10:', '', $diagnosis); // Eliminar "ICD10:" del texto y agregar al arreglo
                         }
                     }
 
+                    // Eliminar valores duplicados en el array
+                    $selectedIssues = array_unique($selectedIssues);
+
                     // Imprimir los valores seleccionados separados por comas
                     echo implode(", ", $selectedIssues);
+
                     ?>
                 </td>
             </tr>

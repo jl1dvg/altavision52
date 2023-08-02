@@ -116,7 +116,7 @@ function ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $L
         if ($OSVITREOUS) {
             $ExamOFT = $ExamOFT . ("Vítreo " . $OSVITREOUS . ", ");
         }
-        return wordwrap($ExamOFT, 160, "</TD></TR><TR><TD class='linearesumen'>");
+        return wordwrap($ExamOFT, 160, "</TD></TR>");
     }
 
 
@@ -245,7 +245,9 @@ function getDXoftalmo($form_id, $pid, $dxnum)
 
 function getDXoftalmoCIE10($form_id, $pid, $dxnum)
 {
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $query = "select * from form_eye_mag_impplan
+              where codetype = 'ICD10' and form_id=? and pid=? and IMPPLAN_order = ?
+              order by IMPPLAN_order ASC LIMIT 1";
     $result = sqlStatement($query, array($form_id, $pid, $dxnum));
     $i = '0';
     $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
@@ -629,6 +631,7 @@ foreach ($ar as $key => $val) {
                                 }
                             }
                         }
+
                         ?>
                     </TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
@@ -755,25 +758,23 @@ foreach ($ar as $key => $val) {
     <TR>
         <TD class="lineatitulo"><b>2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</b></TD>
     </TR>
-    <TR>
-        <TD class="linearesumen">
-            <?php
-            natsort($ar);
-            foreach ($ar as $key => $val) {
-                // Aqui los hallazgos relevantes de la contrarreferencia
-                // in the format: <formdirname_formid>=<encounterID>
-                if ($key == 'pdf') {
-                    continue;
-                }
-                if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-                    $form_encounter = $val;
-                    preg_match('/^(.*)_(\d+)$/', $key, $res);
-                    $form_id = $res[2];
-                    $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-                    $dateres = getEncounterDateByEncounter($form_encounter);
-                    $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-                    if ($res[1] == 'eye_mag') {
-                        $query = "  select  *,form_encounter.date as encounter_date
+    <?php
+    natsort($ar);
+    foreach ($ar as $key => $val) {
+        // Aqui los hallazgos relevantes de la contrarreferencia
+        // in the format: <formdirname_formid>=<encounterID>
+        if ($key == 'pdf') {
+            continue;
+        }
+        if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
+            $form_encounter = $val;
+            preg_match('/^(.*)_(\d+)$/', $key, $res);
+            $form_id = $res[2];
+            $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
+            $dateres = getEncounterDateByEncounter($form_encounter);
+            $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
+            if ($res[1] == 'eye_mag') {
+                $query = "  select  *,form_encounter.date as encounter_date
                             from forms,form_encounter,form_eye_base,
                             form_eye_hpi,form_eye_ros,form_eye_vitals,
                             form_eye_acuity,form_eye_refraction,form_eye_biometrics,
@@ -797,20 +798,21 @@ foreach ($ar as $key => $val) {
                             forms.form_id=form_eye_locking.id and
                             forms.encounter=? and
                             forms.pid=? ";
-                        $encounter_data = sqlQuery($query, array($val, $pid));
-                        @extract($encounter_data);
-                        echo ExamOftal($form_encounter, $form_id, $res[1], $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                            $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
-                    }
-                    if (substr($res[1], 0, 3) == 'LBF') {
-                        echo "<tr><td class='linearesumen'>";
-                        echo "<b>" . ImageStudyName($pid, $form_encounter, $form_id, $res[1]) . ": </b>";
-                        echo ExamenesImagenes($pid, $form_encounter, $form_id, $res[1]);
-                    }
-                }
+                $encounter_data = sqlQuery($query, array($val, $pid));
+                @extract($encounter_data);
+                echo "<tr><td class='linearesumen'>";
+                echo ExamOftal($form_encounter, $form_id, $res[1], $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
+                    $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
             }
-            ?>
-        </TD>
+            if (substr($res[1], 0, 3) == 'LBF' && substr($res[1], 0, 12) !== 'LBFprotocolo') {
+                echo "<tr><td class='linearesumen'>";
+                echo "<b>" . ImageStudyName($pid, $form_encounter, $form_id, $res[1]) . ": </b>";
+                echo ExamenesImagenes($pid, $form_encounter, $form_id, $res[1]);
+            }
+        }
+    }
+    ?>
+    </TD>
     </TR>
     <TR>
         <TD class="ultimalinea" colspan="1"><BR></TD>
