@@ -29,15 +29,34 @@ if (!empty($_GET)) {
     }
 }
 
+function getReferral($pid)
+{
+    $referralQuery = sqlStatement("SELECT lbt_data.field_value
+                                   FROM transactions
+                                   JOIN lbt_data ON transactions.id = lbt_data.form_id
+                                   WHERE pid = ? AND field_id = 'body'
+                                   ORDER BY transactions.date DESC
+                                   LIMIT 1", array($pid));
+
+    if ($referralQuery && $referralQuery->numRows() > 0) {
+        $row = sqlFetchArray($referralQuery);
+        $fieldValue = $row['field_value'];
+        // Limpieza de HTML u otras medidas de seguridad aquí si es necesario
+        return $fieldValue;
+    } else {
+        return ""; // Retorna una cadena vacía si no se encuentra ninguna referencia
+    }
+}
+
 # Get the information for fields
 $tracker_id = $_GET['tracker_id'];
 $trow = sqlQuery("SELECT apptdate, appttime, patient_tracker_element.room AS lastroom, " .
-                        "patient_tracker_element.status AS laststatus, eid, random_drug_test, encounter, pid " .
-                        "FROM patient_tracker " .
-                        "LEFT JOIN patient_tracker_element " .
-                        "ON patient_tracker.id = patient_tracker_element.pt_tracker_id " .
-                        "AND patient_tracker.lastseq = patient_tracker_element.seq " .
-                        "WHERE patient_tracker.id =?", array($_GET['tracker_id']));
+    "patient_tracker_element.status AS laststatus, eid, random_drug_test, encounter, pid " .
+    "FROM patient_tracker " .
+    "LEFT JOIN patient_tracker_element " .
+    "ON patient_tracker.id = patient_tracker_element.pt_tracker_id " .
+    "AND patient_tracker.lastseq = patient_tracker_element.seq " .
+    "WHERE patient_tracker.id =?", array($_GET['tracker_id']));
 
 $tkpid = $trow['pid'];
 $appttime = $trow['appttime'];
@@ -47,9 +66,9 @@ $theroom = '';
 ?>
 
 <html>
-    <head>
-        <?php Header::setupHeader(['common','opener']); ?>
-    </head>
+<head>
+    <?php Header::setupHeader(['common', 'opener']); ?>
+</head>
 
 <?php
 if ($_POST['statustype'] != '') {
@@ -72,7 +91,13 @@ if ($_POST['statustype'] != '') {
             # Gather information for encounter fields
             $genenc = sqlQuery("select pc_catid as category, pc_hometext as reason, pc_apptqx as cirugia, pc_aid as provider, pc_facility as facility, pc_billing_location as billing_facility " .
                 "from openemr_postcalendar_events where pc_eid =? ", array($pceid));
-            $encounter = todaysEncounterCheck($tkpid, $apptdate, $genenc['reason'], $genenc['facility'], $genenc['billing_facility'], $genenc['provider'], $genenc['category'], false);
+            if ($genenc['category'] != 15 && empty($genenc['reason'])) {
+                $reason = getReferral($tkpid);
+            } else {
+                $reason = !empty($genenc['reason']) ? $genenc['reason'] : '';
+            }
+
+            $encounter = todaysEncounterCheck($tkpid, $apptdate, $reason, $genenc['facility'], $genenc['billing_facility'], $genenc['provider'], $genenc['category'], false);
             # Capture the appt status and room number for patient tracker. This will map the encounter to it also.
             if (!empty($pceid)) {
                 manage_tracker_status($apptdate, $appttime, $pceid, $tkpid, $_SESSION["authUser"], $status, $theroom, $docnotes, $encounter);

@@ -16,6 +16,7 @@ require_once("$srcdir/group.inc");
 require_once("$srcdir/calendar.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/patient.inc");
+require_once("$srcdir/forms.inc");
 require_once("$srcdir/amc.php");
 require_once $GLOBALS['srcdir'] . '/ESign/Api.php';
 require_once("$srcdir/../controllers/C_Document.class.php");
@@ -38,6 +39,24 @@ $attendant_id = $attendant_type == 'pid' ? $pid : $therapy_group;
 if ($is_group && !acl_check("groups", "glog", false, array('view', 'write'))) {
     echo xlt("access not allowed");
     exit();
+}
+
+function createFormWithFieldValues($patient_id, $visitid, $formtitle, $formname, $userauthorized, $fieldValueList)
+{
+    // Creating a new form. Get the new form_id by inserting and deleting a dummy row.
+    // This is necessary to create the form instance even if it has no native data.
+    $newid = sqlInsert("INSERT INTO lbf_data (field_id, field_value) VALUES (?, ?)", array('', ''));
+
+    sqlStatement("DELETE FROM lbf_data WHERE form_id = ? AND field_id = ''", array($newid));
+
+    // Assuming addForm function exists and provides necessary parameters
+    addForm($visitid, $formtitle, $newid, $formname, $patient_id, $userauthorized);
+
+    // Insert the provided field_id and field_value pairs
+    foreach ($fieldValueList as $field_id => $field_value) {
+        sqlStatement("INSERT INTO lbf_data (form_id, field_id, field_value) VALUES (?, ?, ?)",
+            array($newid, $field_id, $field_value));
+    }
 }
 
 ?>
@@ -367,6 +386,23 @@ if ($is_group && !acl_check("groups", "glog", false, array('view', 'write'))) {
     </script>
 
     <style type="text/css">
+        .procedure-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .procedure-table td {
+            padding: 8px;
+            border: none;
+            text-align: left;
+        }
+
+        .procedure-label {
+            font-weight: bold;
+            text-align: left;
+        }
+
         div.tab {
             min-height: 50px;
             padding: 8px;
@@ -793,37 +829,106 @@ if ($is_group && !acl_check("groups", "glog", false, array('view', 'write'))) {
                             <?php
                             if ($pc_catid == 15 || $pc_catid == 19) {
                                 echo "<h2>Día Quirúrgico</h2>";
-                                echo "</td></tr><tr><td>";
+
                                 if ($eventDetails) {
-                                    // El evento se encontró, se pueden acceder a los valores de pc_apptqx y pc_apptqxOI
                                     ?>
+                                    <table class="procedure-table">
+                                        <?php if (!empty($eventDetails['pc_apptqx'])) { ?>
+                                            <tr>
+                                                <td class="procedure-label">OD:</td>
+                                                <td><?php echo $eventDetails['pc_apptqx']; ?></td>
+                                                <td>
+                                                    <a target='_blank'
+                                                       href='<?php echo "$rootdir/forms/eye_mag/consentimiento_od.php?" .
+                                                           "catid=" . urlencode($pc_catid) .
+                                                           "&formid=" . urlencode(getLatestEyeFormID($pid)) .
+                                                           "&visitid=" . urlencode($encounter) .
+                                                           "&patientid=" . urlencode($pid) .
+                                                           "&procedid=" . urlencode($eventDetails['pc_apptqx']); ?>'
+                                                       class='css_button_small'
+                                                       title='<?php echo xl('Documentos OD'); ?>'
+                                                       onclick='top.restoreSession()'>
+                                                        <span><?php echo xlt('Documentos OD'); ?></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php } ?>
+
+                                        <?php if (!empty($eventDetails['pc_apptqxOI'])) { ?>
+                                            <tr>
+                                                <td class="procedure-label">OI:</td>
+                                                <td><?php echo $eventDetails['pc_apptqxOI']; ?></td>
+                                                <td>
+                                                    <a target='_blank'
+                                                       href='<?php echo "$rootdir/forms/eye_mag/consentimiento_oi.php?" .
+                                                           "catid=" . urlencode($pc_catid) .
+                                                           "&formid=" . urlencode(getLatestEyeFormID($pid)) .
+                                                           "&visitid=" . urlencode($encounter) .
+                                                           "&patientid=" . urlencode($pid) .
+                                                           "&procedid=" . urlencode($eventDetails['pc_apptqxOI']); ?>'
+                                                       class='css_button_small'
+                                                       title='<?php echo xl('Documentos OI'); ?>'
+                                                       onclick='top.restoreSession()'>
+                                                        <span><?php echo xlt('Documentos OI'); ?></span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php } ?>
+                                    </table>
                                     <?php
-                                    echo "OD: " . $eventDetails['pc_apptqx'] . " ";
-                                    echo "</td><td>";
-                                    echo "<a target='_blank' " .
-                                        "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
-                                        "formname=" . urlencode($formdir) .
-                                        "&formid=" . urlencode(getLatestEyeFormID($pid)) .
-                                        "&visitid=" . urlencode($encounter) .
-                                        "&patientid=" . urlencode($pid) .
-                                        "&procedid=" . urlencode($eventDetails['pc_apptqx']) .
-                                        "' class='css_button_small' title='" . xl('Documentos OD') .
-                                        "' onclick='top.restoreSession()'><span>" . xlt('Documentos OD') . "</span></a>";
-                                    echo "</td></tr><tr><td>";
-                                    echo "OI: " . $eventDetails['pc_apptqxOI'];
-                                    echo "</td><td>";
-                                    echo "<a target='_blank' " .
-                                        "href='$rootdir/forms/eye_mag/consentimiento_oi.php?" .
-                                        "formname=" . urlencode($formdir) .
-                                        "&formid=" . urlencode(getLatestEyeFormID($pid)) .
-                                        "&visitid=" . urlencode($encounter) .
-                                        "&patientid=" . urlencode($pid) .
-                                        "&procedid=" . urlencode($eventDetails['pc_apptqxOI']) .
-                                        "' class='css_button_small' title='" . xl('Documentos OI') .
-                                        "' onclick='top.restoreSession()'><span>" . xlt('Documentos OI') . "</span></a>";
                                 } else {
-                                    // El evento no se encontró
-                                    echo "No se encontró datos del procedimiento programado ";
+                                    echo "No se encontraron datos del procedimiento programado.";
+                                }
+                                // Verifica si se ha hecho clic en el botón
+                                if ($eventDetails['pc_apptqx'] == 'faco' || $eventDetails['pc_apptqxOI'] == 'faco') {
+                                    if (isset($_POST['agregar_formulario'])) {
+                                        // Llama a la función addForm con los valores adecuados
+                                        $newid = 0;
+                                        $formname_prot = 'LBFprotocolo';
+                                        $newid = sqlInsert("INSERT INTO lbf_data (field_id, field_value) VALUES (?, ?)", array('', ''));
+                                        addForm($encounter, 'Protocolos', $newid, $formname_prot, $pid, $userauthorized);
+
+                                        // Agregar los field_id y field_value específicos al nuevo formulario
+                                        $fieldValueList = array(
+                                            "Prot_anestesiologo" => "61",
+                                            "Prot_Cirujano" => "22",
+                                            "Prot_dieresis" => "incisioncroneal",
+                                            "Prot_dxpost" => "ICD10:Z96.1",
+                                            "Prot_dxpre" => "ICD10:H25",
+                                            "Prot_expo" => "CamAnt",
+                                            "Prot_halla" => "Cristalino Cataratoso",
+                                            "Prot_hfin" => "9:00",
+                                            "Prot_hini" => "7:00",
+                                            "Prot_Instrumentistas" => "Si",
+                                            "Prot_ojo" => "OD",
+                                            "Prot_opp" => "faco",
+                                            "Prot_opr" => "faco",
+                                            "Prot_proced" => "ASEPSIA Y ANTISEPSIA<br>CAMPOS BLEFARO Y LAVADO<br>BAJO &amp;lt;b&amp;gt;MICROSCOPIO QUIRURGICO Y SISTEMA DE VISUALIZACION&amp;lt;/b&amp;gt; ... (continúa)"
+                                        );
+
+                                        // Insertar los field_id y field_value al nuevo formulario
+                                        foreach ($fieldValueList as $field_id => $field_value) {
+                                            sqlStatement("INSERT INTO lbf_data (form_id, field_id, field_value) VALUES (?, ?, ?)",
+                                                array($newid, $field_id, $field_value));
+                                        }
+
+                                        // Actualizar el provider_id si es necesario
+                                        if ($providerIDres > 0) {
+                                            sqlStatement(
+                                                "UPDATE forms SET provider_id = ? WHERE formdir = ? AND form_id = ? AND deleted = 0",
+                                                array($providerIDres, $formname_prot, $newid)
+                                            );
+                                        }
+
+                                        echo 'Formulario agregado con éxito.' . text($providerIDres);
+                                    }
+
+
+                                    ?>
+                                    <form method="post">
+                                        <input type="submit" name="agregar_formulario" value="Agregar Formulario">
+                                    </form>
+                                    <?php
                                 }
                             }
                             ?>

@@ -1,0 +1,90 @@
+p {
+    text-align: justify;
+}
+
+table {
+    width: 100%;
+    border: 5px solid #808080;
+    border-collapse: collapse;
+    margin-bottom: 5px;
+    table-layout: fixed;
+}
+
+td.morado {
+    text-align: left;
+    vertical-align: middle;
+    background-color: #CCCCFF;
+    font-size: 11;
+    font-weight: bold;
+    height: 24px;
+}
+
+td.amarillo {
+    height: 23px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #FFFFCC;
+    font-size: 7pt;
+    font-weight: bold;
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+}
+
+td.verde {
+    height: 23px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #CCFFCC;
+    font-size: 7pt;
+    font-weight: bold;
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+}
+
+td.verde_left {
+    height: 23px;
+    text-align: left;
+    vertical-align: middle;
+    background-color: #CCFFCC;
+    font-size: 7pt;
+    font-weight: bold;
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+}
+
+td.verde_normal {
+    height: 23px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #CCFFCC;
+    font-size: 7pt;
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+}
+
+td.blanco {
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+    height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 8.5;
+}
+
+td.blanco_break {
+    border-left: 3px solid #808080;
+    border-right: 3px solid #808080;
+    height: 20px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 8.5;
+}
+
+td.blanco_left {
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+    height: 20px;
+    text-align: justify;
+    vertical-align: middle;
+    font-size: 8.5;
+}

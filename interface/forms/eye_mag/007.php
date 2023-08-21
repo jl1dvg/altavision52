@@ -367,47 +367,40 @@ function extractItemsFromQuery($form_id, $pid)
 
 function getPlanTerapeuticoOD($form_id, $pid)
 {
-    $query = "SELECT c.name
-              FROM form_eye_mag_ordenqxod AS o
-              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
-              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
-              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
-              ORDER BY o.id ASC";
-
-    $results = sqlStatement($query, array($form_id, $pid));
-
-    $names = array();
-
-    if (!empty($results)) {
-        while ($row = sqlFetchArray($results)) {
-            $name = $row['name'];
-            $names[] = $name;
+    $query = "SELECT * FROM form_eye_mag_ordenqxod
+              WHERE form_id = ? AND pid = ?
+              ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($row = sqlFetchArray($PLAN_results)) {
+            $Plan_propuesto = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` LIKE ?";
+            $item = sqlQuery($Plan_propuesto, array($row['ORDER_DETAILS']));
+            if (!empty($item)) {
+                echo $item['notes'] . " en ojo derecho";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
         }
     }
-
-    return $names;
 }
+
 function getPlanTerapeuticoOI($form_id, $pid)
 {
-    $query = "SELECT c.name
-              FROM form_eye_mag_ordenqxoi AS o
-              LEFT JOIN list_options AS l ON o.ORDER_DETAILS = l.title
-              LEFT JOIN consentimiento_informado AS c ON c.name = l.notes
-              WHERE o.form_id = ? AND o.pid = ? AND l.list_id = 'cirugia_propuesta_defaults'
-              ORDER BY o.id ASC";
-
-    $results = sqlStatement($query, array($form_id, $pid));
-
-    $names = array();
-
-    if (!empty($results)) {
-        while ($row = sqlFetchArray($results)) {
-            $name = $row['name'];
-            $names[] = $name;
+    $query = "SELECT * FROM form_eye_mag_ordenqxoi
+              WHERE form_id = ? AND pid = ?
+              ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($row = sqlFetchArray($PLAN_results)) {
+            $Plan_propuesto = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` LIKE ?";
+            $item = sqlQuery($Plan_propuesto, array($row['ORDER_DETAILS']));
+            if (!empty($item)) {
+                echo $item['notes'] . " en ojo izquierdo";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
         }
     }
-
-    return $names;
 }
 
 //provider name explode
@@ -556,7 +549,7 @@ ob_start();
         <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
         <td colspan="3" rowspan="2" class="verde">EDAD</td>
         <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
-                    class="font7">(MARCAR)</font></td>
+                class="font7">(MARCAR)</font></td>
     </tr>
     <tr>
         <td colspan="2" height="17" class="verde">H</td>
@@ -693,28 +686,9 @@ ob_start();
     <tr>
         <td colspan="71" class="blanco_left">
             <?php
-            $planTerapeuticoOD = getPlanTerapeuticoOD($form_id, $pid);
-
-            // Mostrar los nombres uno por uno
-            if (empty($planTerapeuticoOD)) {
-                echo "</td></tr>";
-            } else {
-                // Mostrar los resultados con un bucle foreach
-                foreach ($planTerapeuticoOD as $resultado) {
-                    echo $resultado . " en ojo derecho</td></tr><tr><td colspan=\"71\" class=\"blanco_left\">";
-                }
-            }
-            $planTerapeuticoOI = getPlanTerapeuticoOI($form_id, $pid);
-
-            // Mostrar los nombres uno por uno
-            if (empty($planTerapeuticoOI)) {
-                echo "</td></tr>";
-            } else {
-                // Mostrar los resultados con un bucle foreach
-                foreach ($planTerapeuticoOI as $resultado) {
-                    echo $resultado . " en ojo izquierdo</td></tr><tr><td colspan=\"71\" class=\"blanco_left\">";
-                }
-            } ?>
+            echo getPlanTerapeuticoOD($form_id, $pid);
+            echo getPlanTerapeuticoOI($form_id, $pid);
+            ?>
         </td>
     </tr>
     <tr>

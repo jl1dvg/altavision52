@@ -1,288 +1,6 @@
 <!DOCTYPE HTML>
 <?php
 require_once("$srcdir/iess.inc.php");
-
-function ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                   $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS)
-{
-    $dateform = getEncounterDateByFormID($form_encounter, $form_id, $formdir);
-    $ExamOFT = "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform["date"]))) . ") " . "</b>";
-
-    if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $SCODVA || $SCOSVA || $ODIOPAP || $OSIOPAP || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
-        $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
-        if ($SCODVA) {
-            $ExamOFT = $ExamOFT . ("OD: " . $SCODVA . ", ");
-        }
-        if ($SCOSVA) {
-            $ExamOFT = $ExamOFT . ("OI: " . $SCOSVA . ", ");
-        }
-        if ($ODIOPAP) {
-            $ExamOFT = $ExamOFT . ("OD: " . $ODIOPAP . ", ");
-        }
-        if ($OSIOPAP) {
-            $ExamOFT = $ExamOFT . ("OI: " . $OSIOPAP . ", ");
-        }
-        $ExamOFT = $ExamOFT . "Biomicroscopía: ";
-        if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
-            $ExamOFT = $ExamOFT . "Examen Externo: ";
-            if ($RBROW || $RUL || $RLL || $RMCT || $RADNEXA) {
-                $ExamOFT = $ExamOFT . "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
-            }
-            if ($LBROW || $LUL || $LLL || $LMCT || $LADNEXA) {
-                $ExamOFT = $ExamOFT . "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
-            }
-            $ExamOFT = $ExamOFT . $EXT_COMMENTS;
-        }
-        if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
-            $ExamOFT = $ExamOFT . "OD: ";
-        }
-        if ($ODCONJ) {
-            $ExamOFT = $ExamOFT . ("Conjuntiva " . $ODCONJ . ", ");
-        }
-        if ($ODCORNEA) {
-            $ExamOFT = $ExamOFT . ("Córnea " . $ODCORNEA . ", ");
-        }
-        if ($ODAC) {
-            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $ODAC . ", ");
-        }
-        if ($ODLENS) {
-            $ExamOFT = $ExamOFT . ("Cristalino " . $ODLENS . ", ");
-        }
-        if ($ODIRIS) {
-            $ExamOFT = $ExamOFT . ("Iris " . $ODIRIS . ", ");
-        }
-        if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
-            $ExamOFT = $ExamOFT . "OI: ";
-        }
-        if ($OSCONJ) {
-            $ExamOFT = $ExamOFT . ("Conjuntiva " . $OSCONJ . ", ");
-        }
-        if ($OSCORNEA) {
-            $ExamOFT = $ExamOFT . ("Córnea " . $OSCORNEA . ", ");
-        }
-        if ($OSAC) {
-            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $OSAC . ", ");
-        }
-        if ($OSLENS) {
-            $ExamOFT = $ExamOFT . ("Cristalino " . $OSLENS . ", ");
-        }
-        if ($OSIRIS) {
-            $ExamOFT = $ExamOFT . ("Iris " . $OSIRIS . ", ");
-        }
-        if ($ODDISC || $OSDISC || $ODCUP || $OSCUP || $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
-            $ExamOFT = $ExamOFT . "Al fondo de ojo: ";
-        }
-        //Retina Ojo Derecho
-        if ($ODDISC || $ODCUP || $ODMACULA || $ODVESSELS || $ODPERIPH || $ODVITREOUS) {
-            $ExamOFT = $ExamOFT . "OD: ";
-        }
-        if ($ODDISC) {
-            $ExamOFT = $ExamOFT . ("Disco " . $ODDISC . ", ");
-        }
-        if ($ODCUP) {
-            $ExamOFT = $ExamOFT . ("Copa " . $ODCUP . ", ");
-        }
-        if ($ODMACULA) {
-            $ExamOFT = $ExamOFT . ("Mácula " . $ODMACULA . ", ");
-        }
-        if ($ODVESSELS) {
-            $ExamOFT = $ExamOFT . ("Vasos " . $ODVESSELS . ", ");
-        }
-        if ($ODPERIPH) {
-            $ExamOFT = $ExamOFT . ("Periferia " . $ODPERIPH . ", ");
-        }
-        if ($ODVITREOUS) {
-            $ExamOFT = $ExamOFT . ("Vítreo " . $ODVITREOUS . ", ");
-        }
-        //Retina Ojo Izquierdo
-        if ($OSDISC || $OSCUP || $OSMACULA || $OSVESSELS || $OSPERIPH || $OSVITREOUS) {
-            $ExamOFT = $ExamOFT . "OI: ";
-        }
-        if ($OSDISC) {
-            $ExamOFT = $ExamOFT . ("Disco " . $OSDISC . ", ");
-        }
-        if ($OSCUP) {
-            $ExamOFT = $ExamOFT . ("Copa " . $OSCUP . ", ");
-        }
-        if ($OSMACULA) {
-            $ExamOFT = $ExamOFT . ("Mácula " . $OSMACULA . ", ");
-        }
-        if ($OSVESSELS) {
-            $ExamOFT = $ExamOFT . ("Vasos " . $OSVESSELS . ", ");
-        }
-        if ($OSPERIPH) {
-            $ExamOFT = $ExamOFT . ("Periferia " . $OSPERIPH . ", ");
-        }
-        if ($OSVITREOUS) {
-            $ExamOFT = $ExamOFT . ("Vítreo " . $OSVITREOUS . ", ");
-        }
-        return wordwrap($ExamOFT, 160, "</TD></TR>");
-    }
-
-
-}
-
-function ExamenesImagenes($pid, $encounter, $formid, $formdir)
-{
-
-    $query = sqlStatement("SELECT * FROM forms AS f
-                                           LEFT JOIN lbf_data AS lbf ON (lbf.form_id = f.form_id)
-                                           LEFT JOIN layout_options AS lo ON (lo.field_id = lbf.field_id)
-                                           WHERE f.pid=? AND f.encounter=? AND f.form_id=? AND f.formdir LIKE '%LBF%' AND f.formdir NOT LIKE 'LBFprotocolo'
-                                           AND f.deleted = 0 AND lbf.field_id NOT LIKE 'p1' AND lbf.field_id NOT LIKE 'p2' AND lbf.field_id NOT LIKE 'OCTNO_Equi'
-                                           AND lbf.field_id NOT LIKE 'equipo'
-                                           ORDER BY lo.group_id ASC, lo.seq ASC ", array($pid, $encounter, $formid));
-    while ($info = sqlFetchArray($query)) {
-        $lbf = array(
-            'etiqueta' => $info['title'],
-            'informe' => $info['field_value'],
-        );
-        $lb[$formdir] = $lbf;
-        foreach ($lb as $inf) {
-            echo $inf['etiqueta'] . ": " . $inf['informe'] . " ";
-        }
-    }
-    //$Exam = $Examen . $ExamenContent;
-    echo "</TD></TR>";
-}
-
-function protocolo($form_id, $form_encounter, $formdir)
-{
-    $REALIZADA = getFieldValue($form_id, 'Prot_opr');
-    $ojoValue = getFieldValue($form_id, 'Prot_ojo');
-    $dateform = getEncounterDateByFormID($form_encounter, $form_id, $formdir);
-
-    echo "<b>(" . text(oeFormatSDFT(strtotime($dateform['date']))) . ") </b>";
-
-    if ($REALIZADA && $OjoOperado != '0') {
-        $REALIZADA_items = explode('|', $REALIZADA);
-        $notesArray = [];
-
-        foreach ($REALIZADA_items as $value) {
-            $QXpropuesta = $value;
-            $IntervencionPropuesta = sqlquery("SELECT notes FROM `list_options`
-                                               WHERE `list_id` = 'cirugia_propuesta_defaults'
-                                               AND `option_id` = '$QXpropuesta' ");
-
-            $notesArray[] = $IntervencionPropuesta['notes'];
-        }
-
-        $notesString = implode(" + ", $notesArray);
-
-        if (!empty($notesString)) {
-            echo $notesString;
-        }
-
-        $mensajeOjo = [
-            'OI' => 'Ojo izquierdo',
-            'OjoIzq' => 'Ojo izquierdo',
-            'OD' => 'Ojo derecho',
-            'OjoDer' => 'Ojo derecho',
-            'AO' => 'Ambos ojos',
-            'OjoAmb' => 'Ambos ojos'
-        ];
-
-        if (isset($mensajeOjo[$ojoValue])) {
-            echo " " . $mensajeOjo[$ojoValue];
-        } else {
-            echo " Valor no válido";
-        }
-        echo "</td></tr><tr><td class='linearesumen'>";
-    }
-}
-
-function noInvasivos($form_id, $form_encounter, $formdir)
-{
-    $NoInvasivoQuery = sqlQuery("SELECT * from form_care_plan
-                                    WHERE id = $form_id
-                                    AND encounter = $form_encounter ");
-
-    $procedimiento = $NoInvasivoQuery['codetext'];
-    $dateform = $NoInvasivoQuery['date'];
-    $ojo_atendido = 'ojo ' . $NoInvasivoQuery['description'];
-    echo "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform))) . ") " . "</b>";
-    echo $procedimiento . ' ' . $ojo_atendido;
-    echo "</TD></TR><TR><TD class='linearesumen'>";
-}
-
-function getDXoftalmo($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['codedesc'] . ". ";
-        }
-
-    }
-}
-
-function getDXoftalmoCIE10($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan
-              where codetype = 'ICD10' and form_id=? and pid=? and IMPPLAN_order = ?
-              order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['code'] . ". ";
-        }
-
-    }
-}
-
 ?>
 
 <html>
@@ -385,6 +103,7 @@ function getDXoftalmoCIE10($form_id, $pid, $dxnum)
         }
 
     </STYLE>
+    <link rel="stylesheet" type="text/css" href="reports.css">
 </head>
 <body>
 <?php
@@ -610,28 +329,29 @@ foreach ($ar as $key => $val) {
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
                         COLSPAN=8 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE SDVAL="43056" SDNUM="1033;1033;D-MMM-YY">
                         <?php
+                        $max_form_id = -1; // Inicializar con un valor negativo para garantizar que se tomará un valor mayor
+
                         foreach ($ar as $key => $val) {
                             // Aqui los hallazgos relevantes de la contrarreferencia
                             // in the format: <formdirname_formid>=<encounterID>
-                            if ($key == 'pdf') {
-                                continue;
+                            if ($key == 'pdf' || $key == 'include_demographics') {
+                                continue; // Ignorar las claves 'pdf' y 'include_demographics'
                             }
-                            if ($key == 'include_demographics') {
-                                continue;
-                            }
-                            if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-                                $form_encounter = $val;
-                                preg_match('/^(.*)_(\d+)$/', $key, $res);
-                                $form_id = $res[2];
+                            preg_match('/^(.*)_(\d+)$/', $key, $res);
+                            $form_id = $res[2];
 
-                                if ($res[1] == 'treatment_plan') {
-                                    $plan_sql = "SELECT * FROM form_treatment_plan WHERE id = ?";
+                            // Verificar si el form_id actual es mayor al máximo encontrado hasta ahora
+                            if ($form_id > $max_form_id) {
+                                $max_form_id = $form_id;
+
+                                if ($res[1] == 'newpatient') {
+                                    $plan_sql = "SELECT * FROM forms WHERE form_id = ? AND formdir = 'newpatient'
+                                                 ORDER BY date DESC LIMIT 1";
                                     $plan = sqlQuery($plan_sql, array($form_id));
-                                    echo date("d/m/Y", strtotime($plan['admit_date']));
+                                    echo date("d/m/Y", strtotime($plan['date']));
                                 }
                             }
                         }
-
                         ?>
                     </TD>
                     <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
@@ -692,39 +412,24 @@ foreach ($ar as $key => $val) {
                         COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;0;000-00-0000">
                         <B><?php echo text($titleres['genericval1']); ?></B></TD>
                 </TR>
+            </TABLE>
+            <table>
                 <TR>
-                    <TD colspan="64" HEIGHT=5 ALIGN=CENTER VALIGN=MIDDLE></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=12 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ESTABLECIMIENTO
-                            AL QUE SE
-                            ENV&Iacute;A LA CONTRARREFERENCIA</FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=16 ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1><?php
-                            echo text($titleres['genericname1']);
-                            ?></FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SERVICIO QUE
-                            CONTRAREFIERE</FONT>
+                    <TD class="verde" width="20%">ESTABLECIMIENTO
+                        AL QUE SE
+                        ENV&Iacute;A LA CONTRARREFERENCIA
                     </TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=10 ALIGN=LEFT VALIGN=MIDDLE><FONT SIZE=1>OFTALMOLOGIA</FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=6 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1><BR></FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                                        COLOR="#DD0806"><BR></FONT></B>
+                    <TD class="blanco" width="20%"><?php
+                        echo text($titleres['genericname1']);
+                        ?></TD>
+                    <TD class="verde" width="20%">SERVICIO QUE
+                        CONTRAREFIERE
                     </TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=6 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1><BR></FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                                        COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                </TR>
-                <TR>
-                    <TD colspan="64" HEIGHT=5 ALIGN=CENTER VALIGN=MIDDLE></TD>
+                    <TD class="blanco" width="20%">OFTALMOLOGIA</TD>
+                    <TD class="verde" width="5%"><BR></FONT></TD>
+                    <TD class="blanco" width="5%"><BR></TD>
+                    <TD class="verde" width="5%"><BR></FONT></TD>
+                    <TD class="blanco" width="5%"><BR></TD>
                 </TR>
             </table>
 
@@ -734,19 +439,16 @@ foreach ($ar as $key => $val) {
             $reason = sqlQuery($reason_sql, array($first_encounter));
             ?>
 
-            <table CELLSPACING=0 COLS=1 RULES=NONE BORDER=0 WIDTH=100%>
+            <table>
                 <TR>
-                    <TD class="lineatitulo" COLSPAN=1><B>1 RESUMEN DEL CUADRO CLÍNICO</B></TD>
+                    <TD class="morado" COLSPAN=1><B>1 RESUMEN DEL CUADRO CLÍNICO</B></TD>
                 </TR>
                 <TR>
-                    <TD class="linearesumen" colspan=1>
+                    <TD class="blanco_left" colspan=1>
                         <?php
-                        echo wordwrap($reason['reason'], 160, "</TD></TR><TR><TD class='linearesumen'>");
+                        echo wordwrap($reason['reason'], 160, "</TD></TR><TR><TD class='blanco_left'>");
                         ?>
                     </TD>
-                </TR>
-                <TR>
-                    <TD class="ultimalinea" colspan="1"><BR></TD>
                 </TR>
             </table>
             <?php
@@ -754,309 +456,176 @@ foreach ($ar as $key => $val) {
     }
 }
 ?>
-<table CELLSPACING=0 COLS=1 RULES=NONE BORDER=0 WIDTH=100%>
+<table>
     <TR>
-        <TD class="lineatitulo"><b>2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</b></TD>
+        <TD class="morado"><b>2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</b></TD>
     </TR>
     <?php
+    // Ordena el arreglo por clave de manera natural
     natsort($ar);
+
     foreach ($ar as $key => $val) {
-        // Aqui los hallazgos relevantes de la contrarreferencia
-        // in the format: <formdirname_formid>=<encounterID>
+        // Ignorar claves 'pdf'
         if ($key == 'pdf') {
             continue;
         }
-        if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-            $form_encounter = $val;
-            preg_match('/^(.*)_(\d+)$/', $key, $res);
-            $form_id = $res[2];
-            $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-            $dateres = getEncounterDateByEncounter($form_encounter);
-            $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-            if ($res[1] == 'eye_mag') {
-                $query = "  select  *,form_encounter.date as encounter_date
-                            from forms,form_encounter,form_eye_base,
-                            form_eye_hpi,form_eye_ros,form_eye_vitals,
-                            form_eye_acuity,form_eye_refraction,form_eye_biometrics,
-                            form_eye_external, form_eye_antseg,form_eye_postseg,
-                            form_eye_neuro,form_eye_locking
-                            where
-                            forms.deleted != '1'  and
-                            forms.formdir='eye_mag' and
-                            forms.encounter=form_encounter.encounter  and
-                            forms.form_id=form_eye_base.id and
-                            forms.form_id=form_eye_hpi.id and
-                            forms.form_id=form_eye_ros.id and
-                            forms.form_id=form_eye_vitals.id and
-                            forms.form_id=form_eye_acuity.id and
-                            forms.form_id=form_eye_refraction.id and
-                            forms.form_id=form_eye_biometrics.id and
-                            forms.form_id=form_eye_external.id and
-                            forms.form_id=form_eye_antseg.id and
-                            forms.form_id=form_eye_postseg.id and
-                            forms.form_id=form_eye_neuro.id and
-                            forms.form_id=form_eye_locking.id and
-                            forms.encounter=? and
-                            forms.pid=? ";
-                $encounter_data = sqlQuery($query, array($val, $pid));
+
+        // Extraer form_id y formdir de la clave
+        preg_match('/^(.*)_(\d+)$/', $key, $res);
+        $form_id = $res[2];
+        $formdir = $res[1];
+
+        // Manejar casos específicos
+        if ($formdir === 'eye_mag') {
+            $encounter_data = getEyeMagEncounterData($val, $pid);
+            if ($encounter_data) {
                 @extract($encounter_data);
-                echo "<tr><td class='linearesumen'>";
-                echo ExamOftal($form_encounter, $form_id, $res[1], $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                    $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                $examOutput = ExamOftal($val, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
+                    $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $OSCONJ, $ODCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS,
+                    $ODDISC, $OSDISC, $ODCUP, $OSCUP, $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                if (!empty($examOutput)) {
+                    echo "<tr><td class='blanco_left'>";
+                    echo $examOutput;
+                }
             }
-            if (substr($res[1], 0, 3) == 'LBF' && substr($res[1], 0, 12) !== 'LBFprotocolo') {
-                echo "<tr><td class='linearesumen'>";
-                echo "<b>" . ImageStudyName($pid, $form_encounter, $form_id, $res[1]) . ": </b>";
-                echo ExamenesImagenes($pid, $form_encounter, $form_id, $res[1]);
-            }
+        } elseif (substr($formdir, 0, 3) == 'LBF' && substr($formdir, 0, 12) !== 'LBFprotocolo') {
+            echo "<tr><td class='blanco_left'>";
+            echo "<b>" . ImageStudyName($pid, $val, $form_id, $formdir) . ": </b>";
+            echo ExamenesImagenes($pid, $val, $form_id, $formdir);
         }
     }
+
     ?>
     </TD>
     </TR>
-    <TR>
-        <TD class="ultimalinea" colspan="1"><BR></TD>
-    </TR>
 </table>
-
-<table CELLSPACING=0 COLS=13 RULES=NONE BORDER=0 WIDTH=100%>
+<table>
     <TR>
-        <TD class="lineatitulo"><B>3 TRATAMIENTO Y PROCEDIMIENTOS TERAPÉUTICOS REALIZADOS</B></TD>
+        <TD class="morado"><B>3 TRATAMIENTO Y PROCEDIMIENTOS TERAPÉUTICOS REALIZADOS</B></TD>
     </TR>
     <TR>
-        <TD class="linearesumen" COLSPAN=1>
+        <TD class="blanco_left" COLSPAN=1>
             <?php
             foreach ($ar as $key => $val) {
-                if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-                    $form_encounter = $val;
-                    preg_match('/^(.*)_(\d+)$/', $key, $res);
-                    $form_id = $res[2];
-                    $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-                    $dateres = getEncounterDateByEncounter($form_encounter);
-                    $dateform = getEncounterDateByFormID($form_encounter, $form_id, $res[1]);
-                    $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-                    if ($res[1] == 'LBFprotocolo') {
-                        echo protocolo($form_id, $form_encounter, 'LBFprotocolo');
-                    } elseif ($res[1] == 'care_plan') {
-                        echo noInvasivos($form_id, $form_encounter, 'care_plan');
-                    }
-
+                $form_encounter = $val;
+                preg_match('/^(.*)_(\d+)$/', $key, $res);
+                $form_id = $res[2];
+                if ($res[1] == 'LBFprotocolo') {
+                    echo protocolo($form_id, $form_encounter, 'LBFprotocolo');
+                } elseif ($res[1] == 'care_plan') {
+                    echo noInvasivos($form_id, $form_encounter);
                 }
             }
             ?>
         </TD>
     </TR>
-    <TR>
-        <TD class="ultimalinea" colspan="13" ALIGN=LEFT><BR></TD>
-    </TR>
 </table>
 
 <?php
-
 krsort($ar);
 foreach ($ar as $key => $val) {
-    // Aqui los hallazgos relevantes de la contrarreferencia
-    // in the format: <formdirname_formid>=<encounterID>
-    if ($key == 'pdf') {
-        continue;
-    }
-    if ($key == 'include_demographics') {
-        continue;
-    }
-    if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-        $form_encounter = $val;
-        preg_match('/^(.*)_(\d+)$/', $key, $res);
-        $form_id = $res[2];
-        $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-        $dateres = getEncounterDateByEncounter($form_encounter);
-        $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-        if ($res[1] == 'eye_mag') {
-            ?>
-
-            <table CELLSPACING=0 RULES=NONE BORDER=0 WIDTH=100%>
-                <TR>
-                    <TD class="lineatituloDX1" width="2%"><B>4</B></TD>
-                    <TD class="lineatituloDX" width="17.5%"><B>DIAGN&Oacute;STICOS</B></TD>
-                    <TD class="lineatituloCIE" width="17.5%"><B>PRE= PRESUNTIVO DEF= DEFINITIVO</B></TD>
-                    <TD class="lineatituloCIE" width="6%"><B>CIE</B></TD>
-                    <TD class="lineatituloCIE" width="3.5%"><B>PRE</B></TD>
-                    <TD class="lineatituloCIE" width="3.5%"><B>DEF</B></TD>
-                    <TD class="lineatituloDX" width="2%"><B><BR></B></TD>
-                    <TD class="lineatituloDX" width="17.5%"><B><BR></B></TD>
-                    <TD class="lineatituloDX" width="17.5%"><BR></TD>
-                    <TD class="lineatituloCIE" width="6%"><B>CIE</B></TD>
-                    <TD class="lineatituloCIE" width="3.5%"><B>PRE</B></TD>
-                    <TD class="lineatituloCIEfinal" width="3.5%"><B>DEF</B></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="1" SDNUM="1033;"><B><FONT
-                                SIZE=1>1</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "0"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "0")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="4" SDNUM="1033;"><B><FONT
-                                SIZE=1>4</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "3"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "3")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="2" SDNUM="1033;"><B><FONT
-                                SIZE=1>2</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "1"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "1")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="5" SDNUM="1033;"><B><FONT
-                                SIZE=1>5</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmo($form_id, $pid, "4"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><B><FONT
-                                SIZE=1><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "4")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="3" SDNUM="1033;"><B><FONT
-                                SIZE=1>3</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT
-                            SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "2"); ?></B></FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><FONT
-                            SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></B></FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "2")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="6" SDNUM="1033;"><B><FONT
-                                SIZE=1>6</FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        colspan="2" ALIGN=LEFT VALIGN=MIDDLE><FONT
-                            SIZE=1><B><?php echo getDXoftalmo($form_id, $pid, "5"); ?></B></FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE><FONT
-                            SIZE=1><B><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></B></FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4 COLOR="#DD0806"><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFF99"><B><FONT SIZE=4
-                                                                              COLOR="#DD0806"><?php if (getDXoftalmo($form_id, $pid, "5")) {
-                                    echo "x";
-                                } ?></FONT></B></TD>
-                </TR>
-                <tr>
-                    <td class="ultimalinea" colspan="12">
-
-                    </td>
-                </tr>
-
-            </table>
-
-
+    $form_encounter = $val;
+    preg_match('/^(.*)_(\d+)$/', $key, $res);
+    $form_id = $res[2];
+    if ($res[1] == 'eye_mag') {
+        ?>
+        <table>
+            <TR>
+                <TD class="lineatituloDX1" width="2%"><B>4</B></TD>
+                <TD class="lineatituloDX" width="17.5%"><B>DIAGN&Oacute;STICOS</B></TD>
+                <TD class="lineatituloCIE" width="17.5%"><B>PRE= PRESUNTIVO DEF= DEFINITIVO</B></TD>
+                <TD class="lineatituloCIE" width="6%"><B>CIE</B></TD>
+                <TD class="lineatituloCIE" width="3.5%"><B>PRE</B></TD>
+                <TD class="lineatituloCIE" width="3.5%"><B>DEF</B></TD>
+                <TD class="lineatituloDX" width="2%"><B><BR></B></TD>
+                <TD class="lineatituloDX" width="17.5%"><B><BR></B></TD>
+                <TD class="lineatituloDX" width="17.5%"><BR></TD>
+                <TD class="lineatituloCIE" width="6%"><B>CIE</B></TD>
+                <TD class="lineatituloCIE" width="3.5%"><B>PRE</B></TD>
+                <TD class="lineatituloCIEfinal" width="3.5%"><B>DEF</B></TD>
+            </TR>
             <?php
-            break;
-        }
+            $dxTypes = array("0", "1", "2", "3", "4", "5");
+            for ($i = 0; $i < count($dxTypes); $i += 2) {
+                echo "<tr>";
+
+                // Columna para el índice par
+                echo "<td class='verde'>" . ($dxTypes[$i] + 1) . "</td>";
+                $dx = getDXoftalmo($form_id, $pid, $dxTypes[$i]);
+                $cie10 = getDXoftalmoCIE10($form_id, $pid, $dxTypes[$i]);
+                echo "<td class='blanco_left' colspan='2'>" . $dx . "</td>";
+                echo "<td class='blanco'>" . $cie10 . "</td>";
+                echo "<td class='amarillo'><BR></td>";
+                $hasDiagnosis = !empty($dx);
+                if ($hasDiagnosis) {
+                    echo "<td class='amarillo'>x</td>";
+                } else {
+                    echo "<td class='amarillo'><br></td>";
+                }
+
+                // Columna para el índice impar
+                if ($i + 1 < count($dxTypes)) {
+                    echo "<td class='verde'>" . ($dxTypes[$i + 1] + 1) . "</td>";
+                    $dx = getDXoftalmo($form_id, $pid, $dxTypes[$i + 1]);
+                    $cie10 = getDXoftalmoCIE10($form_id, $pid, $dxTypes[$i + 1]);
+                    echo "<td class='blanco_left' colspan='2'>" . $dx . "</td>";
+                    echo "<td class='blanco'>" . $cie10 . "</td>";
+                    echo "<td class='amarillo'><BR></td>";
+                    $hasDiagnosis = !empty($dx);
+                    if ($hasDiagnosis) {
+                        echo "<td class='amarillo'>x</td>";
+                    } else {
+                        echo "<td class='amarillo'><br></td>";
+                    }
+                }
+
+                echo "</tr>";
+            }
+            ?>
+        </table>
+        <?php
+        break;
     }
 }
 ?>
 <?php
 //5 PLAN DE TRATAMIENTO RECOMENDADO
 foreach ($ar as $key => $val) {
-    // Aqui los hallazgos relevantes de la contrarreferencia
-    // in the format: <formdirname_formid>=<encounterID>
+// Aqui los hallazgos relevantes de la contrarreferencia
+// in the format: <formdirname_formid>=<encounterID>
     if ($key == 'pdf') {
         continue;
     }
     if ($key == 'include_demographics') {
         continue;
     }
-    if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-        $form_encounter = $val;
-        preg_match('/^(.*)_(\d+)$/', $key, $res);
-        $form_id = $res[2];
-        $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-        $dateres = getEncounterDateByEncounter($form_encounter);
-        $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-        if ($res[1] == 'treatment_plan') {
-            ?>
-            <table CELLSPACING=0 COLS=1 RULES=NONE BORDER=0 WIDTH=100%>
-                <TR>
-                    <TD class="lineatitulo"><b>5 PLAN DE TRATAMIENTO RECOMENDADO</B></TD>
-                </TR>
-                <TR>
-                    <TD class="linearesumen">
-                        <?php
-                        $plan_sql = "SELECT * FROM form_treatment_plan WHERE id = ?";
-                        $plan = sqlQuery($plan_sql, array($form_id));
-                        echo wordwrap($plan['recommendation_for_follow_up'], 160, "</TD></TR><TR><TD class='linearesumen'>");
-                        ?>
-                    </TD>
-                </TR>
-                <TR>
-                    <TD class="linearesumen"></TD>
-                </TR>
-                <TR>
-                    <TD class="linearesumen"></TD>
-                </TR>
-                <TR>
-                    <TD class="ultimalinea"><BR></TD>
-                </TR>
-            </table>
-            <?php
-            break;
-        }
+    $form_encounter = $val;
+    preg_match('/^(.*)_(\d+)$/', $key, $res);
+    $form_id = $res[2];
+    if ($res[1] == 'treatment_plan') {
+        ?>
+        <table>
+            <TR>
+                <TD class="morado"><b>5 PLAN DE TRATAMIENTO RECOMENDADO</B></TD>
+            </TR>
+            <TR>
+                <TD class="blanco_left">
+                    <?php
+                    $plan_sql = "SELECT * FROM form_treatment_plan WHERE id = ?";
+                    $plan = sqlQuery($plan_sql, array($form_id));
+                    echo wordwrap($plan['recommendation_for_follow_up'], 160, "</TD></TR><TR><TD class='blanco_left'>");
+                    ?>
+                </TD>
+            </TR>
+            <TR>
+                <TD class="blanco_left"></TD>
+            </TR>
+            <TR>
+                <TD class="blanco_left"></TD>
+            </TR>
+        </table>
+        <?php
+        break;
     }
 }
 ?>
@@ -1064,74 +633,51 @@ foreach ($ar as $key => $val) {
 <?php
 //5 FIRMA Y SELLO DEL MEDICO
 foreach ($ar as $key => $val) {
-    // Aqui los hallazgos relevantes de la contrarreferencia
-    // in the format: <formdirname_formid>=<encounterID>
+// Aqui los hallazgos relevantes de la contrarreferencia
+// in the format: <formdirname_formid>=<encounterID>
     if ($key == 'pdf') {
         continue;
     }
     if ($key == 'include_demographics') {
         continue;
     }
-    if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-        $form_encounter = $val;
-        preg_match('/^(.*)_(\d+)$/', $key, $res);
-        $form_id = $res[2];
-        $formres = getFormNameByFormdirAndFormid($res[1], $form_id);
-        $dateres = getEncounterDateByEncounter($form_encounter);
-        $formId = getFormIdByFormdirAndFormid($res[1], $form_id);
-        if ($res[1] == 'eye_mag') {
-            $providerID_sql = "SELECT * FROM form_encounter WHERE encounter = ?";
-            $providerID = sqlQuery($providerID_sql, array($form_encounter));
-            ?>
-            <table CELLSPACING=0 RULES=NONE BORDER=0 WIDTH=100%>
-                <TR>
-                    <TD colspan="8" ALIGN=LEFT><BR></TD>
-                    <TD rowspan="3" ALIGN=CENTER valign="top" BGCOLOR="#FFFFFF"><FONT SIZE=1>
-                        </FONT></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        width="7%" HEIGHT=20 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SALA</FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        width="7%" ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;1033;D-MMM-YY"><B><FONT SIZE=1><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>CAMA</FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        width="7%" ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;0;[H]:MM:SS"><B><FONT SIZE=1><BR></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PROFESIONAL</FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>
-                            <?php
-                            echo getProviderName($providerID['provider_id']);
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        width="10%" ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                            <?php
-                            echo getProviderRegistro($providerID['provider_id']);
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        width="7%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>FIRMA</FONT></TD>
-
-                </TR>
-                <TR>
-                    <TD colspan="8" ALIGN=LEFT><BR></TD>
-                </TR>
-                <TR>
-                    <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=TOP><B><FONT SIZE=1 COLOR="#000000">SNS-MSP /
-                                HCU-form.053 / 2008</FONT></B></TD>
-                    <TD colspan="3" ALIGN=RIGHT VALIGN=TOP><B><FONT SIZE=3 COLOR="#000000">CONTRAREFERENCIA</FONT></B>
-                    </TD>
-                </TR>
-                </TBODY>
-            </TABLE>
-            <?php
-            break;
-        }
+    $form_encounter = $val;
+    preg_match('/^(.*)_(\d+)$/', $key, $res);
+    $form_id = $res[2];
+    if ($res[1] == 'eye_mag') {
+        $providerID_sql = "SELECT * FROM form_encounter WHERE encounter = ?";
+        $providerID = sqlQuery($providerID_sql, array($form_encounter));
+        ?>
+        <table style="width: 75%">
+            <TR>
+                <TD class="verde" style="height: 40px">SALA</TD>
+                <TD class="blanco"><BR></TD>
+                <TD class="verde">CAMA</TD>
+                <TD class="blanco"><BR></TD>
+                <TD class="verde">PROFESIONAL</TD>
+                <TD class="blanco">
+                    <?php
+                    echo getProviderName($providerID['provider_id']);
+                    ?>
+                </TD>
+                <TD class="blanco">
+                    <?php
+                    echo getProviderRegistro($providerID['provider_id']);
+                    ?>
+                </TD>
+                <td class="verde">FIRMA</TD>
+            </TR>
+        </table>
+        <table style="border: none">
+            <TR>
+                <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=M><B>SNS-MSP / HCU-form.053 / 2008</B>
+                </TD>
+                <TD colspan="3" ALIGN=RIGHT VALIGN=TOP><B><FONT SIZE=3 COLOR="#000000">CONTRAREFERENCIA</B>
+                </TD>
+            </TR>
+        </TABLE>
+        <?php
+        break;
     }
 }
 ?>

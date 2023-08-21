@@ -2675,9 +2675,25 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                               id="EXT_text_view"></span>
                                         <table cellspacing="0" cellpadding="0">
                                             <tr>
-                                                <th><?php echo xlt('Right'); ?></th>
+                                                <th>
+                                                    <i class="float-left fa fa-times copier" id="clear_EXT_R"
+                                                       title="<?php echo xla('Clear Right side values'); ?>"></i>
+                                                    <i class="fa fa-angle-double-down copier" id="EXT_defaults_R"
+                                                       title="<?php echo xla('Enter defaults for Right side'); ?>"></i>
+                                                    <?php echo xlt('Right'); ?>
+                                                    <i class="float-right fa fa-arrow-right copier" id="EXT_R_L"
+                                                       title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                </th>
                                                 <th></th>
-                                                <th><?php echo xlt('Left'); ?></th>
+                                                <th>
+                                                    <i class="float-left fa fa-arrow-left copier" id="EXT_L_R"
+                                                       title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    <i class="fa fa-angle-double-down copier" id="EXT_defaults_L"
+                                                       title="<?php echo xla('Enter defaults values for Left side'); ?>"></i>
+                                                    <?php echo xlt('Left'); ?>
+                                                    <i class="delButton_2 fa fa-times copier" id="clear_EXT_L"
+                                                       title="<?php echo xla('Clear Left side values'); ?>"></i>
+                                                </th>
                                             </tr>
                                             <tr>
                                                 <td><textarea name="RBROW" id="RBROW"
@@ -3017,10 +3033,25 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                               id="ANTSEG_text_view"></span>
                                         <table>
                                             <tr>
-                                                <th><?php echo xlt('OD{{right eye}}'); ?></th>
+                                                <th>
+                                                    <i class="float-left fa fa-times copier" id="clear_ANTSEG_OD"
+                                                       title="<?php echo xla('Clear OD{{right eye}} values'); ?>"></i>
+                                                    <i class="fa fa-angle-double-down copier" id="ANTSEG_defaults_OD"
+                                                       title="<?php echo xla('Enter default values for OD{{right eye}}'); ?>"></i>
+                                                    <?php echo xlt('OD{{right eye}}'); ?>
+                                                    <i class="float-right fa fa-arrow-right copier" id="ANTSEG_OD_OS"
+                                                       title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                </th>
                                                 <th></th>
-                                                <th><?php echo xlt('OS{{left eye}}'); ?></th>
-                                                </td>
+                                                <th>
+                                                    <i class="float-left fa fa-arrow-left copier" id="ANTSEG_OS_OD"
+                                                       title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    <i class="fa fa-angle-double-down copier" id="ANTSEG_defaults_OS"
+                                                       title="<?php echo xla('Enter defaults values for OS{{left eye}}'); ?>"></i>
+                                                    <?php echo xlt('OS{{left eye}}'); ?>
+                                                    <i class="delButton_2 fa fa-times copier" id="clear_ANTSEG_OS"
+                                                       title="<?php echo xla('Delete OS{{left eye}} values'); ?>"></i>
+                                                </th>
                                             </tr>
                                             <tr>
                                                 <td>
@@ -3283,10 +3314,28 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                   name="RETINA_text_view" id="RETINA_text_view"></span>
                                             <table cellspacing="0" cellpadding="0">
                                                 <tr>
-                                                    <th><?php echo xlt('OD{{right eye}}'); ?></th>
+                                                    <th>
+                                                        <i class="float-left fa fa-times copier" id="clear_RETINA_OD"
+                                                           title="<?php echo xla('Clear OD{{right eye}} values'); ?>"></i>
+                                                        <i class="fa fa-angle-double-down copier"
+                                                           id="RETINA_defaults_OD"
+                                                           title="<?php echo xla('Enter default values for OD{{right eye}}'); ?>"></i>
+                                                        <?php echo xlt('OD{{right eye}}'); ?>
+                                                        <i class="float-right fa fa-arrow-right copier"
+                                                           id="RETINA_OD_OS"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                    </th>
                                                     <th></th>
-                                                    <th><?php echo xlt('OS{{left eye}}'); ?></th>
-                                                    </td>
+                                                    <th>
+                                                        <i class="float-left fa fa-arrow-left copier" id="RETINA_OS_OD"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        <i class="fa fa-angle-double-down copier"
+                                                           id="RETINA_defaults_OS"
+                                                           title="<?php echo xla('Enter defaults values for OS{{left eye}}'); ?>"></i>
+                                                        <?php echo xlt('OS{{left eye}}'); ?>
+                                                        <i class="delButton_2 fa fa-times copier" id="clear_RETINA_OS"
+                                                           title="<?php echo xla('Delete OS{{left eye}} values'); ?>"></i>
+                                                    </th>
                                                 </tr>
 
                                                 <tr>
@@ -5396,12 +5445,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                         }
 
                                                                         ?>
-                                                                        </td>
-                                                                    </tr>
-                                                                </table>
-                                                                <br/>
                                                             </td>
                                                         </tr>
+                                                    </table>
+                                                    <br/>
+                                                    </td>
+                                                    </tr>
                                                     </table>
                                                     <table style="width:100%;padding-top:10px;vertical-align:top;">
                                                         <tr>
@@ -5454,7 +5503,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                   *  This list is used to create the plan for the next visit.  Anything with a CODE
                                   *  is also listed as a billable item/TEST in the CODING ENGINE.
                                   */
-                                            $query = "select * from list_options where list_id=? and activity='1' order by seq";
+                                            $query = "select * from list_options where list_id=? and activity='1' order by subtype ASC, seq ASC";
                                             $TODO_data = sqlStatement($query, array("Eye_todo_done_" . $provider_id));
                                             if (sqlNumRows($TODO_data) < '1') {
                                                 // Provider list is not created yet, or was deleted.
@@ -5500,7 +5549,24 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             while ($plan_row = sqlFetchArray($PLAN_results)) {
                                                                 $PLAN_arr[] = $plan_row;
                                                             }
+                                                            $previous_subtype = '';
+
+                                                            echo '<div>'; // Agregar un contenedor div para agrupar los elementos por subtype
+
                                                             while ($row = sqlFetchArray($TODO_data)) {
+                                                                $subtype = $row['subtype'];
+
+                                                                // Verificar si el subtype ha cambiado, y si es así, imprimir un título para el grupo
+                                                                if ($subtype != $previous_subtype) {
+                                                                    if (!empty($previous_subtype)) {
+                                                                        echo "</div></td></tr>"; // Cerrar el div y la fila anterior
+                                                                    }
+                                                                    echo '<tr><td colspan="3" style="padding-left:20px;padding-top:8px;"><strong>' . attr($subtype) . '</strong></td></tr>';
+                                                                    echo '<tr><td style="padding-right:20px;padding-left:20px;">';
+                                                                    echo '<div>'; // Abrir un nuevo div para el grupo de subtype
+                                                                    $previous_subtype = $subtype;
+                                                                }
+
                                                                 $arrPLAN[$counter]['option_id'] = $row['option_id'];
                                                                 $arrPLAN[$counter]['title'] = $row['title'];
                                                                 $arrPLAN[$counter]['option_value'] = $row['option_value'];
@@ -5522,12 +5588,16 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 $count++;
                                                                 $counter++;
                                                                 if ($count == "3") {
-                                                                    echo '</td><tr><td style="padding-right:20px;padding-left:20px;">';
+                                                                    echo '</div></td></tr><tr><td style="padding-right:20px;padding-left:20px;">';
+                                                                    echo '<div>';
                                                                     $count = '0';
                                                                 } else {
-                                                                    echo "</td><td>";
+                                                                    echo "</div><div>";
                                                                 }
                                                             }
+
+                                                            echo '</div>'; // Cerrar el último div
+
                                                             ?>
                                                             <script>
                                                                 var PLANoptions = <?php echo json_encode($arrPLAN); ?>;

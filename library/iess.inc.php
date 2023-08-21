@@ -253,46 +253,40 @@ function fetchEyeMagOrders($form_id, $pid)
 
 function getPlanTerapeuticoOD($form_id, $pid)
 {
-    $query = "SELECT c.name
-              FROM form_eye_mag_ordenqxod AS o
-              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
-              WHERE o.form_id = ? AND o.pid = ?
-              ORDER BY o.id ASC";
-
-    $results = sqlStatement($query, array($form_id, $pid));
-
-    $names = array();
-
-    if (!empty($results)) {
-        while ($row = sqlFetchArray($results)) {
-            $name = $row['name'];
-            $names[] = $name;
+    $query = "SELECT * FROM form_eye_mag_ordenqxod
+              WHERE form_id = ? AND pid = ?
+              ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($row = sqlFetchArray($PLAN_results)) {
+            $Plan_propuesto = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` LIKE ?";
+            $item = sqlQuery($Plan_propuesto, array($row['ORDER_DETAILS']));
+            if (!empty($item)) {
+                echo $item['notes'] . " en ojo derecho";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
         }
     }
-
-    return $names;
 }
 
 function getPlanTerapeuticoOI($form_id, $pid)
 {
-    $query = "SELECT c.name
-              FROM form_eye_mag_ordenqxoi AS o
-              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
-              WHERE o.form_id = ? AND o.pid = ?
-              ORDER BY o.id ASC";
-
-    $results = sqlStatement($query, array($form_id, $pid));
-
-    $names = array();
-
-    if (!empty($results)) {
-        while ($row = sqlFetchArray($results)) {
-            $name = $row['name'];
-            $names[] = $name;
+    $query = "SELECT * FROM form_eye_mag_ordenqxoi
+              WHERE form_id = ? AND pid = ?
+              ORDER BY id ASC";
+    $PLAN_results = sqlStatement($query, array($form_id, $pid));
+    if (!empty($PLAN_results)) {
+        while ($row = sqlFetchArray($PLAN_results)) {
+            $Plan_propuesto = "SELECT title, codes, notes FROM `list_options`
+                                WHERE `list_id` = 'cirugia_propuesta_defaults' AND `option_id` LIKE ?";
+            $item = sqlQuery($Plan_propuesto, array($row['ORDER_DETAILS']));
+            if (!empty($item)) {
+                echo $item['notes'] . " en ojo izquierdo";
+                echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
+            }
         }
     }
-
-    return $names;
 }
 
 function getCPT4Codes($convenio, $lbfID)
@@ -367,6 +361,24 @@ function obtenerCodigosImpPlan($pid, $encounter)
     return $codigosImpPlan;
 }
 
+function obtenerCIE10issue($pid)
+{
+    $query = "SELECT title, diagnosis FROM lists WHERE type = 'medical_problem' AND pid=?";
+    $result = sqlStatement($query, array($pid));
+    $codigosImpPlan = array();
+
+    while ($ip_list = sqlFetchArray($result)) {
+        if (!empty($ip_list['title']) && !empty($ip_list['diagnosis'])) {
+            $codigosImpPlan[] = array(
+                'title' => $ip_list['title'],
+                'diagnosis' => $ip_list['diagnosis'],
+            );
+        }
+    }
+
+    return $codigosImpPlan;
+}
+
 function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
 {
     $pc_eid = fetchEventIdByEncounter($encounter);
@@ -427,6 +439,376 @@ function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
     }
 
     return $items;
+}
+
+
+function generatePageHeader($facilityService, $web_root)
+{
+    $facility = null;
+    if ($_SESSION['pc_facility']) {
+        $facility = $facilityService->getById($_SESSION['pc_facility']);
+    } else {
+        $facility = $facilityService->getPrimaryBillingLocation();
+    }
+
+    $ma_logo_path = "sites/" . $_SESSION['site_id'] . "/images/ma_logo.png";
+    $logo = "<img src='$web_root/$ma_logo_path' style='height:" . attr(round(9 * 7.50)) . "pt' />";
+
+    echo "<page_header>";
+    echo "<table>";
+    echo "<tr>";
+    echo "<td>";
+    echo "<span class='sd-abs-pos' style='position: absolute; top: -0.67in; left: 1.81in; width: 249px'>";
+    echo $logo;
+    echo "</span>";
+    echo "</td>";
+    echo "<td>";
+    echo "<h2>" . $facility['name'] . "</h2>";
+    echo "<p class='texto'>";
+    echo $facility['street'] . "<br>";
+    echo $facility['city'] . ", " . $facility['country_code'] . " " . $facility['postal_code'] . "<br>";
+    echo "<b>Telfs: </b>" . $facility['phone'] . "<br>";
+    echo "<b>E-mail: </b>" . $facility['email'];
+    echo "</p>";
+    echo "</td>";
+    echo "</tr>";
+    echo "</table>";
+    echo "<hr>";
+    echo "</page_header>";
+}
+
+function getEyeMagEncounterData($encounter, $pid)
+{
+    $query = "  select  *,form_encounter.date as encounter_date
+                            from forms,form_encounter,form_eye_base,
+                            form_eye_hpi,form_eye_ros,form_eye_vitals,
+                            form_eye_acuity,form_eye_refraction,form_eye_biometrics,
+                            form_eye_external, form_eye_antseg,form_eye_postseg,
+                            form_eye_neuro,form_eye_locking
+                            where
+                            forms.deleted != '1'  and
+                            forms.formdir='eye_mag' and
+                            forms.encounter=form_encounter.encounter  and
+                            forms.form_id=form_eye_base.id and
+                            forms.form_id=form_eye_hpi.id and
+                            forms.form_id=form_eye_ros.id and
+                            forms.form_id=form_eye_vitals.id and
+                            forms.form_id=form_eye_acuity.id and
+                            forms.form_id=form_eye_refraction.id and
+                            forms.form_id=form_eye_biometrics.id and
+                            forms.form_id=form_eye_external.id and
+                            forms.form_id=form_eye_antseg.id and
+                            forms.form_id=form_eye_postseg.id and
+                            forms.form_id=form_eye_neuro.id and
+                            forms.form_id=form_eye_locking.id and
+                            forms.encounter=? and
+                            forms.pid=? ";
+
+    $encounter_data = sqlQuery($query, array($encounter, $pid));
+
+    return $encounter_data;
+}
+
+function ExamenesImagenes($pid, $encounter, $formid, $formdir)
+{
+
+    $query = sqlStatement("SELECT * FROM forms AS f
+                                           LEFT JOIN lbf_data AS lbf ON (lbf.form_id = f.form_id)
+                                           LEFT JOIN layout_options AS lo ON (lo.field_id = lbf.field_id)
+                                           WHERE f.pid=? AND f.encounter=? AND f.form_id=? AND f.formdir LIKE '%LBF%' AND f.formdir NOT LIKE 'LBFprotocolo'
+                                           AND f.deleted = 0 AND lbf.field_id NOT LIKE 'p1' AND lbf.field_id NOT LIKE 'p2' AND lbf.field_id NOT LIKE 'OCTNO_Equi'
+                                           AND lbf.field_id NOT LIKE 'equipo'
+                                           ORDER BY lo.group_id ASC, lo.seq ASC ", array($pid, $encounter, $formid));
+    while ($info = sqlFetchArray($query)) {
+        $lbf = array(
+            'etiqueta' => $info['title'],
+            'informe' => $info['field_value'],
+        );
+        $lb[$formdir] = $lbf;
+        foreach ($lb as $inf) {
+            echo $inf['etiqueta'] . ": " . $inf['informe'] . " ";
+        }
+    }
+    //$Exam = $Examen . $ExamenContent;
+    echo "</TD></TR>";
+}
+
+function protocolo($form_id, $form_encounter, $formdir)
+{
+    $REALIZADA = getFieldValue($form_id, 'Prot_opr');
+    $ojoValue = getFieldValue($form_id, 'Prot_ojo');
+    $dateform = getEncounterDateByFormID($form_encounter, $form_id, $formdir);
+
+    echo "<b>(" . text(oeFormatSDFT(strtotime($dateform['date']))) . ") </b>";
+
+    if ($REALIZADA && $ojoValue != '0') {
+        $REALIZADA_items = explode('|', $REALIZADA);
+        $notesArray = [];
+
+        foreach ($REALIZADA_items as $value) {
+            $QXpropuesta = $value;
+            $IntervencionPropuesta = sqlquery("SELECT notes FROM `list_options`
+                                               WHERE `list_id` = 'cirugia_propuesta_defaults'
+                                               AND `option_id` = '$QXpropuesta' ");
+
+            $notesArray[] = $IntervencionPropuesta['notes'];
+        }
+
+        $notesString = implode(" + ", $notesArray);
+
+        if (!empty($notesString)) {
+            echo $notesString;
+        }
+
+        $mensajeOjo = [
+            'OI' => 'Ojo izquierdo',
+            'OjoIzq' => 'Ojo izquierdo',
+            'OD' => 'Ojo derecho',
+            'OjoDer' => 'Ojo derecho',
+            'AO' => 'Ambos ojos',
+            'OjoAmb' => 'Ambos ojos'
+        ];
+
+        if (isset($mensajeOjo[$ojoValue])) {
+            echo " " . $mensajeOjo[$ojoValue];
+        } else {
+            echo " Valor no válido";
+        }
+        echo "</td></tr><tr><td class='linearesumen'>";
+    }
+}
+
+function noInvasivos($form_id, $form_encounter)
+{
+    $NoInvasivoQuery = sqlQuery("SELECT * from form_care_plan
+                                    WHERE id = $form_id
+                                    AND encounter = $form_encounter ");
+
+    $procedimiento = $NoInvasivoQuery['codetext'];
+    $dateform = $NoInvasivoQuery['date'];
+    $ojo_atendido = 'ojo ' . $NoInvasivoQuery['description'];
+    echo "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform))) . ") " . "</b>";
+    echo $procedimiento . ' ' . $ojo_atendido;
+    echo "</TD></TR><TR><TD class='linearesumen'>";
+}
+
+function getDXoftalmo($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['codedesc'] . ". ";
+        }
+
+    }
+}
+
+function getDXcodedesc($form_id, $pid)
+{
+    $query = "SELECT DISTINCT code, codedesc FROM form_eye_mag_impplan
+              WHERE form_id=? AND pid=? ORDER BY form_id ASC, IMPPLAN_order ASC";
+    $result = sqlStatement($query, array($form_id, $pid));
+    $uniqueItems = array();
+
+    while ($ip_list = sqlFetchArray($result)) {
+        $code = $ip_list['code'];
+        // Use the 'code' value as the key to store the item in the $uniqueItems array
+        if (!isset($uniqueItems[$code])) {
+            $newdata = array(
+                'code' => $ip_list['code'],
+                'codedesc' => $ip_list['codedesc']
+            );
+            $uniqueItems[$code] = $newdata;
+        }
+    }
+    return $uniqueItems;
+}
+
+
+function getDXoftalmoCIE10($form_id, $pid, $dxnum)
+{
+    $query = "select * from form_eye_mag_impplan
+              where codetype = 'ICD10' and form_id=? and pid=? and IMPPLAN_order = ?
+              order by IMPPLAN_order ASC LIMIT 1";
+    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
+    $i = '0';
+    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
+    $replace = "<br />";
+    // echo '<ol>';
+    while ($ip_list = sqlFetchArray($result)) {
+        $newdata = array(
+            'form_id' => $ip_list['form_id'],
+            'pid' => $ip_list['pid'],
+            'title' => $ip_list['title'],
+            'code' => $ip_list['code'],
+            'codetype' => $ip_list['codetype'],
+            'codetext' => $ip_list['codetext'],
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+        );
+        $IMPPLAN_items[$i] = $newdata;
+        $i++;
+    }
+
+    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
+    foreach ($IMPPLAN_items as $item) {
+        $pattern = '/Code/';
+        if (preg_match($pattern, $item['code'])) {
+            $item['code'] = '';
+        }
+
+        if ($item['codetext'] > '') {
+            return $item['code'] . ". ";
+        }
+
+    }
+}
+
+function ExamOftal($form_encounter, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
+                   $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
+                   $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS)
+{
+    $dateform = getEncounterDateByEncounter($form_encounter);
+    $ExamOFT = "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform["date"]))) . ") " . "</b>";
+
+    if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $SCODVA || $SCOSVA || $ODIOPAP || $OSIOPAP || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
+        $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
+        if ($SCODVA) {
+            $ExamOFT = $ExamOFT . ("OD: " . $SCODVA . ", ");
+        }
+        if ($SCOSVA) {
+            $ExamOFT = $ExamOFT . ("OI: " . $SCOSVA . ", ");
+        }
+        if ($ODIOPAP) {
+            $ExamOFT = $ExamOFT . ("OD: " . $ODIOPAP . ", ");
+        }
+        if ($OSIOPAP) {
+            $ExamOFT = $ExamOFT . ("OI: " . $OSIOPAP . ", ");
+        }
+        $ExamOFT = $ExamOFT . "Biomicroscopía: ";
+        if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
+            $ExamOFT = $ExamOFT . "Examen Externo: ";
+            if ($RBROW || $RUL || $RLL || $RMCT || $RADNEXA) {
+                $ExamOFT = $ExamOFT . "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
+            }
+            if ($LBROW || $LUL || $LLL || $LMCT || $LADNEXA) {
+                $ExamOFT = $ExamOFT . "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
+            }
+            $ExamOFT = $ExamOFT . $EXT_COMMENTS;
+        }
+        if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
+            $ExamOFT = $ExamOFT . "OD: ";
+        }
+        if ($ODCONJ) {
+            $ExamOFT = $ExamOFT . ("Conjuntiva " . $ODCONJ . ", ");
+        }
+        if ($ODCORNEA) {
+            $ExamOFT = $ExamOFT . ("Córnea " . $ODCORNEA . ", ");
+        }
+        if ($ODAC) {
+            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $ODAC . ", ");
+        }
+        if ($ODLENS) {
+            $ExamOFT = $ExamOFT . ("Cristalino " . $ODLENS . ", ");
+        }
+        if ($ODIRIS) {
+            $ExamOFT = $ExamOFT . ("Iris " . $ODIRIS . ", ");
+        }
+        if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
+            $ExamOFT = $ExamOFT . "OI: ";
+        }
+        if ($OSCONJ) {
+            $ExamOFT = $ExamOFT . ("Conjuntiva " . $OSCONJ . ", ");
+        }
+        if ($OSCORNEA) {
+            $ExamOFT = $ExamOFT . ("Córnea " . $OSCORNEA . ", ");
+        }
+        if ($OSAC) {
+            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $OSAC . ", ");
+        }
+        if ($OSLENS) {
+            $ExamOFT = $ExamOFT . ("Cristalino " . $OSLENS . ", ");
+        }
+        if ($OSIRIS) {
+            $ExamOFT = $ExamOFT . ("Iris " . $OSIRIS . ", ");
+        }
+        if ($ODDISC || $OSDISC || $ODCUP || $OSCUP || $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
+            $ExamOFT = $ExamOFT . "Al fondo de ojo: ";
+        }
+        //Retina Ojo Derecho
+        if ($ODDISC || $ODCUP || $ODMACULA || $ODVESSELS || $ODPERIPH || $ODVITREOUS) {
+            $ExamOFT = $ExamOFT . "OD: ";
+        }
+        if ($ODDISC) {
+            $ExamOFT = $ExamOFT . ("Disco " . $ODDISC . ", ");
+        }
+        if ($ODCUP) {
+            $ExamOFT = $ExamOFT . ("Copa " . $ODCUP . ", ");
+        }
+        if ($ODMACULA) {
+            $ExamOFT = $ExamOFT . ("Mácula " . $ODMACULA . ", ");
+        }
+        if ($ODVESSELS) {
+            $ExamOFT = $ExamOFT . ("Vasos " . $ODVESSELS . ", ");
+        }
+        if ($ODPERIPH) {
+            $ExamOFT = $ExamOFT . ("Periferia " . $ODPERIPH . ", ");
+        }
+        if ($ODVITREOUS) {
+            $ExamOFT = $ExamOFT . ("Vítreo " . $ODVITREOUS . ", ");
+        }
+        //Retina Ojo Izquierdo
+        if ($OSDISC || $OSCUP || $OSMACULA || $OSVESSELS || $OSPERIPH || $OSVITREOUS) {
+            $ExamOFT = $ExamOFT . "OI: ";
+        }
+        if ($OSDISC) {
+            $ExamOFT = $ExamOFT . ("Disco " . $OSDISC . ", ");
+        }
+        if ($OSCUP) {
+            $ExamOFT = $ExamOFT . ("Copa " . $OSCUP . ", ");
+        }
+        if ($OSMACULA) {
+            $ExamOFT = $ExamOFT . ("Mácula " . $OSMACULA . ", ");
+        }
+        if ($OSVESSELS) {
+            $ExamOFT = $ExamOFT . ("Vasos " . $OSVESSELS . ", ");
+        }
+        if ($OSPERIPH) {
+            $ExamOFT = $ExamOFT . ("Periferia " . $OSPERIPH . ", ");
+        }
+        if ($OSVITREOUS) {
+            $ExamOFT = $ExamOFT . ("Vítreo " . $OSVITREOUS . ", ");
+        }
+        return wordwrap($ExamOFT, 160, "</TD></TR><tr><td class='linearesumen'>");
+    }
 }
 
 ?>

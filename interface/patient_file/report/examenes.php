@@ -2,6 +2,14 @@
 <?php
 require_once "contra_template.php";
 require_once("$srcdir/iess.inc.php");
+$queryform = "select * from forms
+                where
+                pid=? and
+                encounter=? and
+                formdir = 'newpatient' and
+                deleted = 0";
+
+$fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
 ?>
 <html>
 <head>
@@ -215,9 +223,7 @@ require_once("$srcdir/iess.inc.php");
         <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
     </tr>
     <tr>
-        <td colspan="8" class="blanco"><?php
-            echo text(oeFormatSDFT(strtotime($dateres["date"])));
-            ?></td>
+        <td colspan="8" class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
         <td colspan="7" class="blanco"></td>
         <td colspan="21" class="blanco">Mario</td>
         <td colspan="19" class="blanco">Pólit</td>

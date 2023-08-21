@@ -46,12 +46,17 @@ if (!empty($_POST)) {
 
 $facilityService = new FacilityService();
 
-$errmsg  = "";
+$errmsg = "";
 $alertmsg = ''; // not used yet but maybe later
-$grand_total_charges    = 0;
-$grand_total_copays     = 0;
+$grand_total_charges = 0;
+$grand_total_copays = 0;
 $grand_total_encounters = 0;
 $grand_total_formulario = 0;
+
+$ORDERHASH = array(
+    'doctor' => 'docname',
+    'form' => 'formulario',
+);
 
 function postError($msg)
 {
@@ -102,28 +107,32 @@ function endDoctor(&$docrow)
     echo "  </td>\n";
     echo " </tr>\n";
 
-    $grand_total_charges     += $docrow['charges'];
-    $grand_total_copays      += $docrow['copays'];
-    $grand_total_encounters  += $docrow['encounters'];
-    $grand_total_formulario  += $docrow['formulario'];
+    $grand_total_charges += $docrow['charges'];
+    $grand_total_copays += $docrow['copays'];
+    $grand_total_encounters += $docrow['encounters'];
+    $grand_total_formulario += $docrow['formulario'];
 
-    $docrow['charges']     = 0;
-    $docrow['copays']      = 0;
-    $docrow['encounters']  = 0;
-    $docrow['formulario']  = 0;
+    $docrow['charges'] = 0;
+    $docrow['copays'] = 0;
+    $docrow['encounters'] = 0;
+    $docrow['formulario'] = 0;
 }
 
-$form_facility  = isset($_POST['form_facility']) ? $_POST['form_facility'] : '';
-$form_examen  = isset($_POST['form_examen']) ? $_POST['form_examen'] : '';
-$form_provider  = isset($_POST['form_provider']) ? $_POST['form_provider'] : '';
-$form_pricelevel  = isset($_POST['form_pricelevel']) ? $_POST['form_pricelevel'] : '';
+$form_facility = isset($_POST['form_facility']) ? $_POST['form_facility'] : '';
+$form_examen = isset($_POST['form_examen']) ? $_POST['form_examen'] : '';
+$form_provider = isset($_POST['form_provider']) ? $_POST['form_provider'] : '';
+$form_pricelevel = isset($_POST['form_pricelevel']) ? $_POST['form_pricelevel'] : '';
 $form_from_date = (isset($_POST['form_from_date'])) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-m-d');
-$form_to_date   = (isset($_POST['form_to_date'])) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
-if ($_POST['form_refresh']) {
-    // MySQL doesn't grok full outer joins so we do it the hard way.
-    //
-    $sqlBindArray = array();
-    $query = "( " .
+$form_to_date = (isset($_POST['form_to_date'])) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
+
+$form_orderby = $ORDERHASH[$_REQUEST['form_orderby']] ?
+    $_REQUEST['form_orderby'] : 'doctor';
+$orderby = $ORDERHASH[$form_orderby];
+
+// MySQL doesn't grok full outer joins so we do it the hard way.
+//
+$sqlBindArray = array();
+$query = "( " .
     "SELECT " .
     "e.pc_eventDate, e.pc_startTime, " .
     "fe.encounter, fe.date AS encdate, " .
@@ -137,37 +146,37 @@ if ($_POST['form_refresh']) {
     "LEFT OUTER JOIN patient_data AS p ON p.pid = e.pc_pid " .
     // "LEFT OUTER JOIN users AS u ON BINARY u.username = BINARY f.user WHERE ";
     "LEFT OUTER JOIN users AS u ON u.id = fe.provider_id WHERE ";
-    if ($form_to_date) {
-        $query .= "e.pc_eventDate >= ? AND e.pc_eventDate <= ? ";
-        array_push($sqlBindArray, $form_from_date, $form_to_date);
-    } else {
-        $query .= "e.pc_eventDate = ? ";
-        array_push($sqlBindArray, $form_from_date);
-    }
+if ($form_to_date) {
+    $query .= "e.pc_eventDate >= ? AND e.pc_eventDate <= ? ";
+    array_push($sqlBindArray, $form_from_date, $form_to_date);
+} else {
+    $query .= "e.pc_eventDate = ? ";
+    array_push($sqlBindArray, $form_from_date);
+}
 
-    if ($form_facility !== '') {
-        $query .= "AND e.pc_facility = ? ";
-        array_push($sqlBindArray, $form_facility);
-    }
+if ($form_facility !== '') {
+    $query .= "AND e.pc_facility = ? ";
+    array_push($sqlBindArray, $form_facility);
+}
 
-    if ($form_pricelevel !== '') {
-        $query .= "AND p.pricelevel = ? ";
-        array_push($sqlBindArray, $form_pricelevel);
-    }
+if ($form_pricelevel !== '') {
+    $query .= "AND p.pricelevel = ? ";
+    array_push($sqlBindArray, $form_pricelevel);
+}
 
-    if ($form_examen !== '') {
-        $query .= "AND f.form_name = ? ";
-        array_push($sqlBindArray, $form_examen);
-    }
+if ($form_examen !== '') {
+    $query .= "AND f.form_name = ? ";
+    array_push($sqlBindArray, $form_examen);
+}
 
-    if ($form_provider !== '') {
-        $query .= "AND f.provider_id = ? ";
-        array_push($sqlBindArray, $form_provider);
-    }
+if ($form_provider !== '') {
+    $query .= "AND f.provider_id = ? ";
+    array_push($sqlBindArray, $form_provider);
+}
 
 
-    // $query .= "AND ( e.pc_catid = 5 OR e.pc_catid = 9 OR e.pc_catid = 10 ) " .
-    $query .= "AND e.pc_pid != '' AND e.pc_apptstatus != ? " .
+// $query .= "AND ( e.pc_catid = 5 OR e.pc_catid = 9 OR e.pc_catid = 10 ) " .
+$query .= "AND e.pc_pid != '' AND e.pc_apptstatus != ? " .
     ") UNION ( " .
     "SELECT " .
     "e.pc_eventDate, e.pc_startTime, " .
@@ -184,45 +193,44 @@ if ($_POST['form_refresh']) {
     "LEFT OUTER JOIN patient_data AS p ON p.pid = fe.pid " .
     // "LEFT OUTER JOIN users AS u ON BINARY u.username = BINARY f.user WHERE ";
     "LEFT OUTER JOIN users AS u ON u.id = fe.provider_id WHERE ";
-    array_push($sqlBindArray, '?', '?');
-    if ($form_to_date) {
-        // $query .= "LEFT(fe.date, 10) >= '$form_from_date' AND LEFT(fe.date, 10) <= '$form_to_date' ";
-        $query .= "fe.date >= ? AND fe.date <= ? ";
-        array_push($sqlBindArray, $form_from_date.' 00:00:00', $form_to_date.' 23:59:59');
-    } else {
-       // $query .= "LEFT(fe.date, 10) = '$form_from_date' ";
-        $query .= "fe.date >= ? AND fe.date <= ? ";
-        array_push($sqlBindArray, $form_from_date.' 00:00:00', $form_from_date.' 23:59:59');
-    }
-
-    if ($form_facility !== '') {
-        $query .= "AND fe.facility_id = ? ";
-        array_push($sqlBindArray, $form_facility);
-    }
-
-    if ($form_pricelevel !== '') {
-        $query .= "AND p.pricelevel = ? ";
-        array_push($sqlBindArray, $form_pricelevel);
-    }
-
-    if ($form_examen !== '') {
-        $query .= "AND f.form_name = ? ";
-        array_push($sqlBindArray, $form_examen);
-    }
-
-    if ($form_provider !== '') {
-        $query .= "AND f.provider_id = ? ";
-        array_push($sqlBindArray, $form_provider);
-    }
-
-    $query .= ") ORDER BY docname, IFNULL(pc_eventDate, encdate), pc_startTime";
-
-    $res = sqlStatement($query, $sqlBindArray);
+array_push($sqlBindArray, '?', '?');
+if ($form_to_date) {
+    // $query .= "LEFT(fe.date, 10) >= '$form_from_date' AND LEFT(fe.date, 10) <= '$form_to_date' ";
+    $query .= "fe.date >= ? AND fe.date <= ? ";
+    array_push($sqlBindArray, $form_from_date . ' 00:00:00', $form_to_date . ' 23:59:59');
+} else {
+    // $query .= "LEFT(fe.date, 10) = '$form_from_date' ";
+    $query .= "fe.date >= ? AND fe.date <= ? ";
+    array_push($sqlBindArray, $form_from_date . ' 00:00:00', $form_from_date . ' 23:59:59');
 }
+
+if ($form_facility !== '') {
+    $query .= "AND fe.facility_id = ? ";
+    array_push($sqlBindArray, $form_facility);
+}
+
+if ($form_pricelevel !== '') {
+    $query .= "AND p.pricelevel = ? ";
+    array_push($sqlBindArray, $form_pricelevel);
+}
+
+if ($form_examen !== '') {
+    $query .= "AND f.form_name = ? ";
+    array_push($sqlBindArray, $form_examen);
+}
+
+if ($form_provider !== '') {
+    $query .= "AND f.provider_id = ? ";
+    array_push($sqlBindArray, $form_provider);
+}
+
+$query .= ") ORDER BY " . $orderby . ", IFNULL(pc_eventDate, encdate), pc_startTime";
+
+$res = sqlStatement($query, $sqlBindArray);
 ?>
 <html>
 <head>
-    <title><?php echo xlt('Appointments and Encounters'); ?></title>
+    <title><?php echo xlt('Exams/Tests'); ?></title>
 
     <?php Header::setupHeader(['datetime-picker', 'report-helper']); ?>
 
@@ -233,12 +241,14 @@ if ($_POST['form_refresh']) {
                 visibility: hidden;
                 display: none;
             }
+
             #report_parameters_daterange {
                 visibility: visible;
                 display: inline;
             }
+
             #report_results table {
-               margin-top: 0px;
+                margin-top: 0px;
             }
         }
 
@@ -252,7 +262,7 @@ if ($_POST['form_refresh']) {
     </style>
 
     <script LANGUAGE="JavaScript">
-        $(function() {
+        $(function () {
             oeFixedHeaderSetup(document.getElementById('mymaintable'));
             var win = top.printLogSetup ? top : opener.top;
             win.printLogSetup(document.getElementById('printbutton'));
@@ -265,468 +275,501 @@ if ($_POST['form_refresh']) {
                 <?php // can add any additional javascript settings to datetimepicker here; need to prepend first setting with a comma ?>
             });
         });
+
+        function dosort(orderby) {
+            var f = document.forms[0];
+            f.form_orderby.value = orderby;
+            f.submit();
+            return false;
+        }
+
+        function refreshme() {
+            document.forms[0].submit();
+        }
     </script>
 </head>
 
 <body class="body_top">
 
-<span class='title'><?php echo xlt('Report'); ?> - <?php echo xlt('Appointments and Encounters'); ?></span>
+<span class='title'><?php echo xlt('Report'); ?> - <?php echo xlt('Exams/Tests'); ?></span>
 
 <div id="report_parameters_daterange">
-    <?php echo text(oeFormatShortDate($form_from_date)) ." &nbsp; " . xlt('to') . " &nbsp; ". text(oeFormatShortDate($form_to_date)); ?>
+    <?php echo text(oeFormatShortDate($form_from_date)) . " &nbsp; " . xlt('to') . " &nbsp; " . text(oeFormatShortDate($form_to_date)); ?>
 </div>
 
 <form method='post' id='theform' action='appt_encounter_report.php' onsubmit='return top.restoreSession()'>
-<input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
+    <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>"/>
 
-<div id="report_parameters">
+    <div id="report_parameters">
 
-<table>
- <tr>
-  <td width='630px'>
-    <div style='float:left'>
+        <table>
+            <tr>
+                <td width='630px'>
+                    <div style='float:left'>
 
-    <table class='text'>
-        <tr>
-            <td class='control-label'>
-                <?php echo xlt('Facility'); ?>:
-            </td>
-            <td>
-                <?php
-                 // Build a drop-down list of facilities.
-                 //
-                $fres = $facilityService->getAll();
-                echo "   <select name='form_facility' class='form-control'>\n";
-                echo "    <option value=''>-- " . xlt('All Facilities') . " --\n";
-                foreach ($fres as $frow) {
-                    $facid = $frow['id'];
-                    echo "    <option value='" . attr($facid) . "'";
-                    if ($facid == $form_facility) {
-                        echo " selected";
-                    }
-                    echo ">" . text($frow['name']) . "\n";
-                }
+                        <table class='text'>
+                            <tr>
+                                <td class='control-label'>
+                                    <?php echo xlt('Facility'); ?>:
+                                </td>
+                                <td>
+                                    <?php
+                                    // Build a drop-down list of facilities.
+                                    //
+                                    $fres = $facilityService->getAll();
+                                    echo "   <select name='form_facility' class='form-control'>\n";
+                                    echo "    <option value=''>-- " . xlt('All Facilities') . " --\n";
+                                    foreach ($fres as $frow) {
+                                        $facid = $frow['id'];
+                                        echo "    <option value='" . attr($facid) . "'";
+                                        if ($facid == $form_facility) {
+                                            echo " selected";
+                                        }
+                                        echo ">" . text($frow['name']) . "\n";
+                                    }
 
-                echo "    <option value='0'";
-                if ($form_facility === '0') {
-                    echo " selected";
-                }
+                                    echo "    <option value='0'";
+                                    if ($form_facility === '0') {
+                                        echo " selected";
+                                    }
 
-                 echo ">-- " . xlt('Unspecified') . " --\n";
-                 echo "   </select>\n";
-                ?>
-            </td>
-            <td>
-              <?php
+                                    echo ">-- " . xlt('Unspecified') . " --\n";
+                                    echo "   </select>\n";
+                                    ?>
+                                </td>
+                                <td class='control-label'>
+                                    <?php echo xlt('Exams/Tests'); ?>:
+                                </td>
+                                <td>
+                                    <?php
 
-               // Build a drop-down list of providers.
-               //
+                                    // Build a drop-down list of providers.
+                                    //
 
-               $queryp = "SELECT * FROM `layout_group_properties` WHERE `grp_mapping` = 'CLinical' AND `grp_activity` = 1 ".
-                "GROUP BY `grp_form_id` "; //(CHEMED) facility filter
+                                    $queryp = "SELECT * FROM `layout_group_properties` WHERE `grp_mapping` = 'CLinical' AND `grp_activity` = 1 " .
+                                        "GROUP BY `grp_form_id` "; //(CHEMED) facility filter
 
-               $price = sqlStatement($queryp);
+                                    $price = sqlStatement($queryp);
 
-               echo "   <select name='form_examen' class='form-control'>\n";
-               echo "    <option value=''>-- " . xlt('All') . " --\n";
+                                    echo "   <select name='form_examen' class='form-control'>\n";
+                                    echo "    <option value=''>-- " . xlt('All') . " --\n";
 
-              while ($prirow = sqlFetchArray($price)) {
-                  $price1 = $prirow['grp_title'];
-                  echo "    <option value='" . attr($price1) . "'";
-                  if ($price1 == $_POST['form_examen']) {
-                      echo " selected";
-                  }
+                                    while ($prirow = sqlFetchArray($price)) {
+                                        $price1 = $prirow['grp_title'];
+                                        echo "    <option value='" . attr($price1) . "'";
+                                        if ($price1 == $_POST['form_examen']) {
+                                            echo " selected";
+                                        }
 
-                  echo ">" .  text($prirow['grp_title']) . "\n";
-              }
+                                        echo ">" . text($prirow['grp_title']) . "\n";
+                                    }
 
-               echo "   </select>\n";
+                                    echo "   </select>\n";
 
-              ?>
-            </td>
-            <td>
-                <?php
+                                    ?>
+                                </td>
+                                <td class='control-label'>
+                                    <?php echo xlt('Convenio'); ?>:
+                                </td>
+                                <td>
+                                    <?php
 
-                // Build a drop-down list of providers.
-                //
+                                    // Build a drop-down list of providers.
+                                    //
 
-                $queryp = "SELECT option_id, title FROM list_options WHERE ".
-                    "list_id = 'pricelevel' ORDER BY seq"; //(CHEMED) facility filter
+                                    $queryp = "SELECT option_id, title FROM list_options WHERE " .
+                                        "list_id = 'pricelevel' ORDER BY seq"; //(CHEMED) facility filter
 
-                $price = sqlStatement($queryp);
+                                    $price = sqlStatement($queryp);
 
-                echo "   <select name='form_pricelevel' class='form-control'>\n";
-                echo "    <option value=''>-- " . xlt('All') . " --\n";
+                                    echo "   <select name='form_pricelevel' class='form-control'>\n";
+                                    echo "    <option value=''>-- " . xlt('All') . " --\n";
 
-                while ($prirow = sqlFetchArray($price)) {
-                    $price1 = $prirow['title'];
-                    echo "    <option value='" . attr($price1) . "'";
-                    if ($price1 == $_POST['form_pricelevel']) {
-                        echo " selected";
-                    }
+                                    while ($prirow = sqlFetchArray($price)) {
+                                        $price1 = $prirow['title'];
+                                        echo "    <option value='" . attr($price1) . "'";
+                                        if ($price1 == $_POST['form_pricelevel']) {
+                                            echo " selected";
+                                        }
 
-                    echo ">" .  text($prirow['title']) . "\n";
-                }
+                                        echo ">" . text($prirow['title']) . "\n";
+                                    }
 
-                echo "   </select>\n";
+                                    echo "   </select>\n";
 
-                ?>
-            </td>
-            <td class='control-label'>
-            <?php echo xlt('Operador'); ?>:
-            </td>
-            <td>
-            <?php
+                                    ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class='control-label'>
+                                    <?php echo xlt('Operador'); ?>:
+                                </td>
+                                <td>
+                                    <?php
 
-                $queryp = "select id, lname, fname from users where " .
-                  "authorized = 1 order by lname, fname";
-                $resp = sqlStatement($queryp);
-                echo "   &nbsp;<select name='form_provider' class='form-control'>\n";
-                echo "    <option value=''>-- " . xlt('All Providers') . " --\n";
-                while ($row = sqlFetchArray($resp)) {
-                    $provid = $row['id'];
-                    echo "    <option value='". attr($provid) ."'";
-                    if ($provid == $_REQUEST['form_provider']) {
-                        echo " selected";
-                    }
+                                    $queryp = "select id, lname, fname from users where " .
+                                        "authorized = 1 order by lname, fname";
+                                    $resp = sqlStatement($queryp);
+                                    echo "   &nbsp;<select name='form_provider' class='form-control'>\n";
+                                    echo "    <option value=''>-- " . xlt('All Providers') . " --\n";
+                                    while ($row = sqlFetchArray($resp)) {
+                                        $provid = $row['id'];
+                                        echo "    <option value='" . attr($provid) . "'";
+                                        if ($provid == $_REQUEST['form_provider']) {
+                                            echo " selected";
+                                        }
 
-                    echo ">" . text($row['lname']) . ", " . text($row['fname']) . "\n";
-                }
+                                        echo ">" . text($row['lname']) . ", " . text($row['fname']) . "\n";
+                                    }
 
-                echo "   </select>\n";
-                            ?>
-                &nbsp;
-              </td>
-            <td class='control-label'>
-                <?php echo xlt('DOS'); ?>:
-            </td>
-            <td>
-               <input type='text' class='datepicker form-control' name='form_from_date' id="form_from_date" size='10' value='<?php echo attr(oeFormatShortDate($form_from_date)); ?>' >
-            </td>
-            <td class='control-label'>
-                <?php echo xlt('To'); ?>:
-            </td>
-            <td>
-               <input type='text' class='datepicker form-control' name='form_to_date' id="form_to_date" size='10' value='<?php  echo attr(oeFormatShortDate($form_to_date)); ?>' >
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-        <div class="checkbox">
-                <label><input type='checkbox' name='form_details'
-                  value='1'<?php echo ($_POST['form_details']) ? " checked" : ""; ?>><?php echo xlt('Details') ?></label>
-        </div>
-            </td>
-        </tr>
-    </table>
+                                    echo "   </select>\n";
+                                    ?>
+                                    &nbsp;
+                                </td>
+                                <td class='control-label'>
+                                    <?php echo xlt('From'); ?>:
+                                </td>
+                                <td>
+                                    <input type='text' class='datepicker form-control' name='form_from_date'
+                                           id="form_from_date" size='10'
+                                           value='<?php echo attr(oeFormatShortDate($form_from_date)); ?>'>
+                                </td>
+                                <td class='control-label'>
+                                    <?php echo xlt('To'); ?>:
+                                </td>
+                                <td>
+                                    <input type='text' class='datepicker form-control' name='form_to_date'
+                                           id="form_to_date" size='10'
+                                           value='<?php echo attr(oeFormatShortDate($form_to_date)); ?>'>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>
+                                    <div class="checkbox">
+                                        <label><input type='checkbox' name='form_details'
+                                                      value='1'<?php echo ($_POST['form_details']) ? " checked" : ""; ?>><?php echo xlt('Details') ?>
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
 
-    </div>
+                    </div>
 
-  </td>
-  <td align='left' valign='middle' height="100%">
-    <table style='border-left:1px solid; width:100%; height:100%' >
-        <tr>
-            <td>
-                <div class="text-center">
-          <div class="btn-group" role="group">
-                    <a href='#' class='btn btn-default btn-save' onclick='$("#form_refresh").attr("value","true"); $("#theform").submit();'>
-                        <?php echo xlt('Submit'); ?>
-                    </a>
-                    <?php if ($_POST['form_refresh']) { ?>
-                      <a href='#' class='btn btn-default btn-print' id='printbutton'>
-                            <?php echo xlt('Print'); ?>
-                      </a>
-                    <?php } ?>
-          </div>
-                </div>
-            </td>
-        </tr>
-    </table>
-  </td>
- </tr>
-</table>
+                </td>
+                <td align='left' valign='middle' height="100%">
+                    <table style='border-left:1px solid; width:100%; height:100%'>
+                        <tr>
+                            <td>
+                                <div class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href='#' class='btn btn-default btn-save'
+                                           onclick='$("#form_refresh").attr("value","true"); $("#theform").submit();'>
+                                            <?php echo xlt('Submit'); ?>
+                                        </a>
+                                        <?php if ($_POST['form_refresh'] || $_POST['form_orderby']) { ?>
+                                            <a href='#' class='btn btn-default btn-print' id='printbutton'>
+                                                <?php echo xlt('Print'); ?>
+                                            </a>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
 
-</div> <!-- end apptenc_report_parameters -->
+    </div> <!-- end apptenc_report_parameters -->
 
-<?php
-if ($_POST['form_refresh']) {
-    ?>
-<div id="report_results">
-<table id='mymaintable'>
-
-<thead>
-<th> &nbsp;<?php echo xlt('Practitioner'); ?> </th>
-<th> &nbsp;<?php echo xlt('Date/Appt'); ?> </th>
-<th> &nbsp;<?php echo xlt('Patient'); ?> </th>
-<th> &nbsp;<?php echo xlt('ID'); ?> </th>
-<th> <?php echo xlt('Chart'); ?>&nbsp; </th>
-<th> &nbsp;<?php echo xlt('Operador'); ?> </th>
-<th> <?php echo xlt('Encounter'); ?>&nbsp; </th>
-<th> <?php echo xlt('Form'); ?>&nbsp; </th>
-<th> <?php echo xlt('Charges'); ?>&nbsp; </th>
-<th> <?php echo xlt('Copays'); ?>&nbsp; </th>
-<th> <?php echo xlt('Billed'); ?> </th>
-<th> &nbsp;<?php echo xlt('Error'); ?> </th>
-</thead>
-<tbody>
-<?php
-if ($res) {
-    $docrow = array('docname' => '', 'charges' => 0, 'copays' => 0, 'encounters' => 0);
-    $i = '0';
-    while ($row = sqlFetchArray($res)) {
-        $patient_id = $row['pid'];
-        $encounter  = $row['encounter'];
-        $formulario = $row['formulario'];
-        $docname    = $row['docname'] ? $row['docname'] : xl('Unknown');
-        $patname    = $row['fname'] . ", " . $row['lname'] . " " . $row['lname2'];
-
-        if ($docname != $docrow['docname']) {
-            endDoctor($docrow);
-        }
-
-        $errmsg  = "";
-        $billed  = "Y";
-        $charges = 0;
-        $copays  = 0;
-        $gcac_related_visit = false;
-
-        // Scan the billing items for status and fee total.
-        //
-        $list_options = "SELECT codes " .
-        "FROM list_options WHERE " .
-        "list_id = 'Eye_todo_done_' AND title LIKE ? ";
-        $lres = sqlQuery($list_options, array($formulario));
-        $form_code = substr($lres['codes'],5);
-
-        $queryb = "SELECT code_type, code, modifier, authorized, billed, fee, justify " .
-        "FROM billing WHERE " .
-        "pid = ? AND encounter = ? AND activity = 1 AND code = '$form_code' ";
-        $bres = sqlStatement($queryb, array($patient_id, $encounter));
-        //
-        while ($brow = sqlFetchArray($bres)) {
-            $code_type = $brow['code_type'];
-            if ($code_types[$code_type]['fee'] && !$brow['billed']) {
-                $billed = "";
-            }
-
-                if (!$GLOBALS['simplified_demographics'] && !$brow['authorized']) {
-                    postError(xl('Needs Auth'));
-                }
-
-                if ($code_types[$code_type]['just']) {
-                    if (! $brow['justify']) {
-                        postError(xl('Needs Justify'));
-                    }
-                }
-
-                if ($code_types[$code_type]['fee']) {
-                    $charges += $brow['fee'];
-                    if ($brow['fee'] == 0 && !$GLOBALS['ippf_specific']) {
-                        postError(xl('Missing Fee'));
-                    }
-                } else {
-                    if ($brow['fee'] != 0) {
-                        postError(xl('Fee is not allowed'));
-                    }
-                }
-
-                // Custom logic for IPPF to determine if a GCAC issue applies.
-                if ($GLOBALS['ippf_specific']) {
-                    if (!empty($code_types[$code_type]['fee'])) {
-                        $sqlBindArray = array();
-                        $query = "SELECT related_code FROM codes WHERE code_type = ? AND code = ? AND ";
-                        array_push($sqlBindArray, $code_types[$code_type]['id'], $brow['code']);
-                        if ($brow['modifier']) {
-                            $query .= "modifier = ?";
-                            array_push($sqlBindArray, $brow['modifier']);
-                        } else {
-                            $query .= "(modifier IS NULL OR modifier = '')";
-                        }
-
-                        $query .= " LIMIT 1";
-                        $tmp = sqlQuery($query, $sqlBindArray);
-                        $relcodes = explode(';', $tmp['related_code']);
-                        foreach ($relcodes as $codestring) {
-                            if ($codestring === '') {
-                                continue;
-                            }
-
-                            list($codetype, $code) = explode(':', $codestring);
-                            if ($codetype !== 'IPPF') {
-                                continue;
-                            }
-
-                            if (preg_match('/^25222/', $code)) {
-                                $gcac_related_visit = true;
-                            }
-                        }
-                    }
-                } // End IPPF stuff
-            } // end while
-
-            $copays -= BillingUtilities::getPatientCopay($patient_id, $encounter);
-
-           // The following is removed, perhaps temporarily, because gcac reporting
-           // no longer depends on gcac issues.  -- Rod 2009-08-11
-           /******************************************************************
-         // More custom code for IPPF.  Generates an error message if a
-         // GCAC issue is required but is not linked to this visit.
-         if (!$errmsg && $gcac_related_visit) {
-          $grow = sqlQuery("SELECT l.id, l.title, l.begdate, ie.pid " .
-            "FROM lists AS l " .
-            "LEFT JOIN issue_encounter AS ie ON ie.pid = l.pid AND " .
-            "ie.encounter = '$encounter' AND ie.list_id = l.id " .
-            "WHERE l.pid = '$patient_id' AND " .
-            "l.activity = 1 AND l.type = 'ippf_gcac' " .
-            "ORDER BY ie.pid DESC, l.begdate DESC LIMIT 1");
-          // Note that reverse-ordering by ie.pid is a trick for sorting
-          // issues linked to the encounter (non-null values) first.
-          if (empty($grow['pid'])) { // if there is no linked GCAC issue
-            if (empty($grow)) { // no GCAC issue exists
-            $errmsg = "GCAC issue does not exist";
-            }
-            else { // there is one but none is linked
-            $errmsg = "GCAC issue is not linked";
-            }
-          }
-         }
-           ******************************************************************/
-            if ($gcac_related_visit) {
-                 $grow = sqlQuery("SELECT COUNT(*) AS count FROM forms " .
-                 "WHERE pid = ? AND encounter = ? AND " .
-                 "deleted = 0 AND formdir = 'LBFgcac'", array($patient_id, $encounter));
-                if (empty($grow['count'])) { // if there is no gcac form
-                      postError(xl('GCAC visit form is missing'));
-                }
-            } // end if
-           /*****************************************************************/
-
-            if (!$billed) {
-                postError($GLOBALS['simplified_demographics'] ?
-                xl('Not checked out') : xl('Not billed'));
-            }
-
-            if (!$encounter) {
-                postError(xl('No visit'));
-            }
-
-            if (! $charges) {
-                $billed = "";
-            }
-
-        $docrow['charges'] += $charges;
-        $docrow['copays']  += $copays;
-        if ($encounter) {
-            ++$docrow['encounters'];
-        }
-        if ($formulario) {
-            ++$docrow['formulario'];
-        }
-
-            if ($_POST['form_details']) {
-                ?>
-         <tr>
-          <td>
-            &nbsp;<?php echo ($docname == $docrow['docname']) ? "" : text($docname); ?>
-   </td>
-   <td>
-      &nbsp;<?php
-         /*****************************************************************
-         if ($form_to_date) {
-            echo $row['pc_eventDate'] . '<br>';
-            echo substr($row['pc_startTime'], 0, 5);
-         }
-         *****************************************************************/
-        if (empty($row['pc_eventDate'])) {
-            echo text(oeFormatShortDate(substr($row['encdate'], 0, 10)));
-        } else {
-            echo text(oeFormatShortDate($row['pc_eventDate'])) . ' ' . text(substr($row['pc_startTime'], 0, 5));
-        }
+    <?php
+    if ($_POST['form_refresh'] || $_POST['form_orderby']) {
         ?>
-         </td>
-         <td>
-          &nbsp;<?php echo text($patname); ?>
-         </td>
-         <td>
-          &nbsp;<?php echo text($row['pubpid']); ?>
-         </td>
-         <td align='right'>
-                <?php echo text($row['pid']); ?>&nbsp;
-         </td>
-         <td>
-           <?php echo getProviderName($row['operador']); ?>&nbsp;
-         </td>
-         <td>
-            <?php echo text($encounter); ?>&nbsp;
-         </td>
-         <td>
-            <?php echo text($formulario); ?>&nbsp;
-         </td>
-         <td>
-            <?php
-           echo text(bucks($charges))?>&nbsp;
-         </td>
-         <td>
-            <?php echo $form_code; ?>&nbsp;
-         </td>
-         <td>
-                <?php echo text($billed); ?>
-         </td>
-         <td style='color:#cc0000'>
-                <?php echo $errmsg; ?>&nbsp;
-         </td>
-        </tr>
+        <div id="report_results">
+            <table id='mymaintable'>
+
+                <thead>
+                <th>
+                    <a href="nojs.php" onclick="return dosort('doctor')"
+                        <?php echo ($form_orderby == "doctor") ? " style=\"color:#00cc00\"" : ""; ?>>
+                        <?php echo xlt('Practitioner'); ?> </a>
+                    <?php echo xlt('Practitioner'); ?> </th>
+                <th> &nbsp;<?php echo xlt('Date/Appt'); ?> </th>
+                <th> &nbsp;<?php echo xlt('Patient'); ?> </th>
+                <th> &nbsp;<?php echo xlt('ID'); ?> </th>
+                <th> <?php echo xlt('Chart'); ?>&nbsp;</th>
+                <th> &nbsp;<?php echo xlt('Operador'); ?> </th>
+                <th> <?php echo xlt('Encounter'); ?>&nbsp;</th>
+                <th>
+                    <a href="nojs.php" onclick="return dosort('form')"
+                        <?php echo ($form_orderby == "encounter") ? " style=\"color:#00cc00\"" : ""; ?>>
+                        <?php echo xlt('Form'); ?></a>
+                </th>
+                <th> <?php echo xlt('Charges'); ?>&nbsp;</th>
+                <th> <?php echo xlt('Copays'); ?>&nbsp;</th>
+                <th> <?php echo xlt('Billed'); ?> </th>
+                <th> &nbsp;<?php echo xlt('Error'); ?> </th>
+                </thead>
+                <tbody>
                 <?php
-            } // end of details line
+                if ($res) {
+                    $docrow = array('docname' => '', 'charges' => 0, 'copays' => 0, 'encounters' => 0);
+                    $i = '0';
+                    while ($row = sqlFetchArray($res)) {
+                        $patient_id = $row['pid'];
+                        $encounter = $row['encounter'];
+                        $formulario = $row['formulario'];
+                        $docname = $row['docname'] ? $row['docname'] : xl('Unknown');
+                        $patname = $row['fname'] . ", " . $row['lname'] . " " . $row['lname2'];
 
-            $docrow['docname'] = $docname;
-        } // end of row
+                        if ($docname != $docrow['docname']) {
+                            endDoctor($docrow);
+                        }
 
-        endDoctor($docrow);
+                        $errmsg = "";
+                        $billed = "Y";
+                        $charges = 0;
+                        $copays = 0;
+                        $gcac_related_visit = false;
 
-    echo " <tr class='report_totals'>\n";
-    echo "  <td colspan='6'>\n";
-    echo "   &nbsp;" . xlt('Grand Totals') . "\n";
-    echo "  </td>\n";
-    echo "  <td >\n";
-    echo "   &nbsp;" . text($grand_total_encounters) . "&nbsp;\n";
-    echo "  </td>\n";
-    echo "  <td >\n";
-    echo "   &nbsp;" . text($grand_total_formulario) . "&nbsp;\n";
-    echo "  </td>\n";
-    echo "  <td >\n";
-    echo "   &nbsp;";
-    echo text(bucks($grand_total_charges));
-    echo "&nbsp;\n";
-    echo "  </td>\n";
-    echo "  <td >\n";
-    echo "   &nbsp;";
-    echo text(bucks($grand_total_copays));
-    echo "&nbsp;\n";
-    echo "  </td>\n";
-    echo "  <td colspan='2'>\n";
-    echo "   &nbsp;\n";
-    echo "  </td>\n";
-    echo " </tr>\n";
-}
-?>
-</tbody>
-</table>
-</div> <!-- end the apptenc_report_results -->
-<?php } else { ?>
-<div class='text'>
-    <?php echo xlt('Please input search criteria above, and click Submit to view results.'); ?>
-</div>
-<?php } ?>
+                        // Scan the billing items for status and fee total.
+                        //
+                        $list_options = "SELECT codes " .
+                            "FROM list_options WHERE " .
+                            "list_id = 'Eye_todo_done_' AND title LIKE ? ";
+                        $lres = sqlQuery($list_options, array($formulario));
+                        $form_code = substr($lres['codes'], 5);
 
-<input type='hidden' name='form_refresh' id='form_refresh' value=''/>
+                        $queryb = "SELECT code_type, code, modifier, authorized, billed, fee, justify " .
+                            "FROM billing WHERE " .
+                            "pid = ? AND encounter = ? AND activity = 1 AND code = '$form_code' ";
+                        $bres = sqlStatement($queryb, array($patient_id, $encounter));
+                        //
+                        while ($brow = sqlFetchArray($bres)) {
+                            $code_type = $brow['code_type'];
+                            if ($code_types[$code_type]['fee'] && !$brow['billed']) {
+                                $billed = "";
+                            }
 
+                            if (!$GLOBALS['simplified_demographics'] && !$brow['authorized']) {
+                                postError(xl('Needs Auth'));
+                            }
+
+                            if ($code_types[$code_type]['just']) {
+                                if (!$brow['justify']) {
+                                    postError(xl('Needs Justify'));
+                                }
+                            }
+
+                            if ($code_types[$code_type]['fee']) {
+                                $charges += $brow['fee'];
+                                if ($brow['fee'] == 0 && !$GLOBALS['ippf_specific']) {
+                                    postError(xl('Missing Fee'));
+                                }
+                            } else {
+                                if ($brow['fee'] != 0) {
+                                    postError(xl('Fee is not allowed'));
+                                }
+                            }
+
+                            // Custom logic for IPPF to determine if a GCAC issue applies.
+                            if ($GLOBALS['ippf_specific']) {
+                                if (!empty($code_types[$code_type]['fee'])) {
+                                    $sqlBindArray = array();
+                                    $query = "SELECT related_code FROM codes WHERE code_type = ? AND code = ? AND ";
+                                    array_push($sqlBindArray, $code_types[$code_type]['id'], $brow['code']);
+                                    if ($brow['modifier']) {
+                                        $query .= "modifier = ?";
+                                        array_push($sqlBindArray, $brow['modifier']);
+                                    } else {
+                                        $query .= "(modifier IS NULL OR modifier = '')";
+                                    }
+
+                                    $query .= " LIMIT 1";
+                                    $tmp = sqlQuery($query, $sqlBindArray);
+                                    $relcodes = explode(';', $tmp['related_code']);
+                                    foreach ($relcodes as $codestring) {
+                                        if ($codestring === '') {
+                                            continue;
+                                        }
+
+                                        list($codetype, $code) = explode(':', $codestring);
+                                        if ($codetype !== 'IPPF') {
+                                            continue;
+                                        }
+
+                                        if (preg_match('/^25222/', $code)) {
+                                            $gcac_related_visit = true;
+                                        }
+                                    }
+                                }
+                            } // End IPPF stuff
+                        } // end while
+
+                        $copays -= BillingUtilities::getPatientCopay($patient_id, $encounter);
+
+                        // The following is removed, perhaps temporarily, because gcac reporting
+                        // no longer depends on gcac issues.  -- Rod 2009-08-11
+                        /******************************************************************
+                         * // More custom code for IPPF.  Generates an error message if a
+                         * // GCAC issue is required but is not linked to this visit.
+                         * if (!$errmsg && $gcac_related_visit) {
+                         * $grow = sqlQuery("SELECT l.id, l.title, l.begdate, ie.pid " .
+                         * "FROM lists AS l " .
+                         * "LEFT JOIN issue_encounter AS ie ON ie.pid = l.pid AND " .
+                         * "ie.encounter = '$encounter' AND ie.list_id = l.id " .
+                         * "WHERE l.pid = '$patient_id' AND " .
+                         * "l.activity = 1 AND l.type = 'ippf_gcac' " .
+                         * "ORDER BY ie.pid DESC, l.begdate DESC LIMIT 1");
+                         * // Note that reverse-ordering by ie.pid is a trick for sorting
+                         * // issues linked to the encounter (non-null values) first.
+                         * if (empty($grow['pid'])) { // if there is no linked GCAC issue
+                         * if (empty($grow)) { // no GCAC issue exists
+                         * $errmsg = "GCAC issue does not exist";
+                         * }
+                         * else { // there is one but none is linked
+                         * $errmsg = "GCAC issue is not linked";
+                         * }
+                         * }
+                         * }
+                         ******************************************************************/
+                        if ($gcac_related_visit) {
+                            $grow = sqlQuery("SELECT COUNT(*) AS count FROM forms " .
+                                "WHERE pid = ? AND encounter = ? AND " .
+                                "deleted = 0 AND formdir = 'LBFgcac'", array($patient_id, $encounter));
+                            if (empty($grow['count'])) { // if there is no gcac form
+                                postError(xl('GCAC visit form is missing'));
+                            }
+                        } // end if
+                        /*****************************************************************/
+
+                        if (!$billed) {
+                            postError($GLOBALS['simplified_demographics'] ?
+                                xl('Not checked out') : xl('Not billed'));
+                        }
+
+                        if (!$encounter) {
+                            postError(xl('No visit'));
+                        }
+
+                        if (!$charges) {
+                            $billed = "";
+                        }
+
+                        $docrow['charges'] += $charges;
+                        $docrow['copays'] += $copays;
+                        if ($encounter) {
+                            ++$docrow['encounters'];
+                        }
+                        if ($formulario) {
+                            ++$docrow['formulario'];
+                        }
+
+                        if ($_POST['form_details']) {
+                            ?>
+                            <tr>
+                                <td>
+                                    &nbsp;<?php echo ($docname == $docrow['docname']) ? "" : text($docname); ?>
+                                </td>
+                                <td>
+                                    &nbsp;<?php
+                                    /*****************************************************************
+                                     * if ($form_to_date) {
+                                     * echo $row['pc_eventDate'] . '<br>';
+                                     * echo substr($row['pc_startTime'], 0, 5);
+                                     * }
+                                     *****************************************************************/
+                                    if (empty($row['pc_eventDate'])) {
+                                        echo text(oeFormatShortDate(substr($row['encdate'], 0, 10)));
+                                    } else {
+                                        echo text(oeFormatShortDate($row['pc_eventDate'])) . ' ' . text(substr($row['pc_startTime'], 0, 5));
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    &nbsp;<?php echo text($patname); ?>
+                                </td>
+                                <td>
+                                    &nbsp;<?php echo text($row['pubpid']); ?>
+                                </td>
+                                <td align='right'>
+                                    <?php echo text($row['pid']); ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php echo getProviderName($row['operador']); ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php echo text($encounter); ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php echo text($formulario); ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php
+                                    echo text(bucks($charges)) ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php echo $form_code; ?>&nbsp;
+                                </td>
+                                <td>
+                                    <?php echo text($billed); ?>
+                                </td>
+                                <td style='color:#cc0000'>
+                                    <?php echo $errmsg; ?>&nbsp;
+                                </td>
+                            </tr>
+                            <?php
+                        } // end of details line
+
+                        $docrow['docname'] = $docname;
+                    } // end of row
+
+                    endDoctor($docrow);
+
+                    echo " <tr class='report_totals'>\n";
+                    echo "  <td colspan='6'>\n";
+                    echo "   &nbsp;" . xlt('Grand Totals') . "\n";
+                    echo "  </td>\n";
+                    echo "  <td >\n";
+                    echo "   &nbsp;" . text($grand_total_encounters) . "&nbsp;\n";
+                    echo "  </td>\n";
+                    echo "  <td >\n";
+                    echo "   &nbsp;" . text($grand_total_formulario) . "&nbsp;\n";
+                    echo "  </td>\n";
+                    echo "  <td >\n";
+                    echo "   &nbsp;";
+                    echo text(bucks($grand_total_charges));
+                    echo "&nbsp;\n";
+                    echo "  </td>\n";
+                    echo "  <td >\n";
+                    echo "   &nbsp;";
+                    echo text(bucks($grand_total_copays));
+                    echo "&nbsp;\n";
+                    echo "  </td>\n";
+                    echo "  <td colspan='2'>\n";
+                    echo "   &nbsp;\n";
+                    echo "  </td>\n";
+                    echo " </tr>\n";
+                }
+                ?>
+                </tbody>
+            </table>
+        </div> <!-- end the apptenc_report_results -->
+    <?php } else { ?>
+        <div class='text'>
+            <?php echo xlt('Please input search criteria above, and click Submit to view results.'); ?>
+        </div>
+    <?php } ?>
+
+    <input type="hidden" name="form_orderby" value="<?php echo attr($form_orderby) ?>"/>
+    <input type='hidden' name='form_refresh' id='form_refresh' value=''/>
 </form>
 <script>
-<?php if ($alertmsg) {
-    echo " alert(" . js_escape($alertmsg) . ");\n";
-} ?>
+    <?php if ($alertmsg) {
+        echo " alert(" . js_escape($alertmsg) . ");\n";
+    } ?>
 </script>
 </body>
 

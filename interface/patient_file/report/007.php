@@ -1,7 +1,6 @@
 <!DOCTYPE HTML>
 <?php
 require_once("$srcdir/iess.inc.php");
-require_once("contra_template.php");
 preg_match('/^(.*)_(\d+)$/', $key, $res);
 $formdir = $res[1];
 $form_id = $res[2];
@@ -24,7 +23,7 @@ $queryform = "select * from forms
                 where
                 pid=? and
                 encounter=? and
-                formdir = 'eye_mag' and
+                formdir = 'newpatient' and
                 deleted = 0";
 
 $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
@@ -162,38 +161,21 @@ if (!empty($dxResult)) {
             <td class="morado">C. RESUMEN DEL CRITERIO CLÍNICO</td>
         </tr>
         <tr>
-            <td class="linearesumen" style="border-right: none; text-align: left"><?php
-                if ($formdir == 'eye_mag') {
-                    $query = "  select  *,form_encounter.date as encounter_date
-                            from forms,form_encounter,form_eye_base,
-                            form_eye_hpi,form_eye_ros,form_eye_vitals,
-                            form_eye_acuity,form_eye_refraction,form_eye_biometrics,
-                            form_eye_external, form_eye_antseg,form_eye_postseg,
-                            form_eye_neuro,form_eye_locking
-                            where
-                            forms.deleted != '1'  and
-                            forms.formdir='eye_mag' and
-                            forms.encounter=form_encounter.encounter  and
-                            forms.form_id=form_eye_base.id and
-                            forms.form_id=form_eye_hpi.id and
-                            forms.form_id=form_eye_ros.id and
-                            forms.form_id=form_eye_vitals.id and
-                            forms.form_id=form_eye_acuity.id and
-                            forms.form_id=form_eye_refraction.id and
-                            forms.form_id=form_eye_biometrics.id and
-                            forms.form_id=form_eye_external.id and
-                            forms.form_id=form_eye_antseg.id and
-                            forms.form_id=form_eye_postseg.id and
-                            forms.form_id=form_eye_neuro.id and
-                            forms.form_id=form_eye_locking.id and
-                            forms.encounter=? and
-                            forms.pid=? ";
-                    $encounter_data = sqlQuery($query, array($form_encounter, $pid));
+            <?php
+            if ($formdir === 'eye_mag') {
+                $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
+                if ($encounter_data) {
                     @extract($encounter_data);
-                    echo ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                        $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                    $examOutput = ExamOftal($val, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
+                        $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $OSCONJ, $ODCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS,
+                        $ODDISC, $OSDISC, $ODCUP, $OSCUP, $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                    if (!empty($examOutput)) {
+                        echo "<tr><td class='blanco_left'>";
+                        echo $examOutput;
+                    }
                 }
-                ?>
+            }
+            ?>
             </td>
         </tr>
     </table>
@@ -289,28 +271,9 @@ if (!empty($dxResult)) {
         <tr>
             <td colspan="71" class="blanco_left">
                 <?php
-                $planTerapeuticoOD = getPlanTerapeuticoOD($form_id, $pid);
-
-                // Mostrar los nombres uno por uno
-                if (empty($planTerapeuticoOD)) {
-                    echo "</td></tr>";
-                } else {
-                    // Mostrar los resultados con un bucle foreach
-                    foreach ($planTerapeuticoOD as $resultado) {
-                        echo $resultado . " en ojo derecho</td></tr><tr><td colspan=\"71\" class=\"blanco_left\">";
-                    }
-                }
-                $planTerapeuticoOI = getPlanTerapeuticoOI($form_id, $pid);
-
-                // Mostrar los nombres uno por uno
-                if (empty($planTerapeuticoOI)) {
-                    echo "</td></tr>";
-                } else {
-                    // Mostrar los resultados con un bucle foreach
-                    foreach ($planTerapeuticoOI as $resultado) {
-                        echo $resultado . " en ojo izquierdo</td></tr><tr><td colspan=\"71\" class=\"blanco_left\">";
-                    }
-                } ?>
+                echo getPlanTerapeuticoOD($form_id, $pid);
+                echo getPlanTerapeuticoOI($form_id, $pid);
+                ?>
             </td>
         </tr>
         <tr>
@@ -342,7 +305,7 @@ if (!empty($dxResult)) {
             <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
         </tr>
         <tr>
-            <td colspan="8" class="blanco"><?php echo date("d/m/Y", strtotime($fechaINGRESO['date'])); ?></td>
+            <td colspan="8" class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
             <td colspan="7" class="blanco"></td>
             <td colspan="21" class="blanco"><?php echo $mname; ?></td>
             <td colspan="19" class="blanco"><?php echo $fname; ?></td>
@@ -537,38 +500,21 @@ if (sqlNumRows($result) > 0) {
                 </td>
             </tr>
             <tr>
-                <td class="linearesumen" style="border-right: none; text-align: left"><?php
-                    if ($formdir == 'eye_mag') {
-                        $query = "  select  *,form_encounter.date as encounter_date
-                            from forms,form_encounter,form_eye_base,
-                            form_eye_hpi,form_eye_ros,form_eye_vitals,
-                            form_eye_acuity,form_eye_refraction,form_eye_biometrics,
-                            form_eye_external, form_eye_antseg,form_eye_postseg,
-                            form_eye_neuro,form_eye_locking
-                            where
-                            forms.deleted != '1'  and
-                            forms.formdir='eye_mag' and
-                            forms.encounter=form_encounter.encounter  and
-                            forms.form_id=form_eye_base.id and
-                            forms.form_id=form_eye_hpi.id and
-                            forms.form_id=form_eye_ros.id and
-                            forms.form_id=form_eye_vitals.id and
-                            forms.form_id=form_eye_acuity.id and
-                            forms.form_id=form_eye_refraction.id and
-                            forms.form_id=form_eye_biometrics.id and
-                            forms.form_id=form_eye_external.id and
-                            forms.form_id=form_eye_antseg.id and
-                            forms.form_id=form_eye_postseg.id and
-                            forms.form_id=form_eye_neuro.id and
-                            forms.form_id=form_eye_locking.id and
-                            forms.encounter=? and
-                            forms.pid=? ";
-                        $encounter_data = sqlQuery($query, array($form_encounter, $pid));
+                <?php
+                if ($formdir === 'eye_mag') {
+                    $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
+                    if ($encounter_data) {
                         @extract($encounter_data);
-                        echo ExamOftal($form_encounter, $form_id, $formdir, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                            $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                        $examOutput = ExamOftal($val, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
+                            $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $OSCONJ, $ODCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS,
+                            $ODDISC, $OSDISC, $ODCUP, $OSCUP, $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
+                        if (!empty($examOutput)) {
+                            echo "<tr><td class='blanco_left'>";
+                            echo $examOutput;
+                        }
                     }
-                    ?>
+                }
+                ?>
                 </td>
             </tr>
         </table>
@@ -663,7 +609,7 @@ if (sqlNumRows($result) > 0) {
                 <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
             </tr>
             <tr>
-                <td colspan="8" class="blanco"><?php echo date("d/m/Y", strtotime($fechaINGRESO['date'])); ?></td>
+                <td colspan="8" class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
                 <td colspan="7" class="blanco"></td>
                 <td colspan="21" class="blanco"><?php echo $mname; ?></td>
                 <td colspan="19" class="blanco"><?php echo $fname; ?></td>

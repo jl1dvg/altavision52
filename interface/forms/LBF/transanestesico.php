@@ -6956,7 +6956,14 @@ ob_start();
             <td class="blanco_left" colspan="14">
                 <?php
                 $horaInicio = strtotime(getFieldValue($formid, "Prot_hini"));
-                $horaFin = strtotime(getFieldValue($formid, "Prot_hfin"));
+                $horaFin = $horaInicio + 7200;
+
+                $prot_opr_value = getFieldValue($formid, "Prot_opr");
+                if ($prot_opr_value === 'avastin') {
+                    $horaFin = $horaInicio + 3600;
+                } elseif (strpos($prot_opr_value, 'vpp') !== false) {
+                    $horaFin = $horaInicio + 10800;
+                }
 
                 $diferencia = $horaFin - $horaInicio;
 

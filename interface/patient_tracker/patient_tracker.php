@@ -799,10 +799,11 @@ if (!$_REQUEST['flb_table']) {
                         <?php if ($GLOBALS['ptkr_visit_reason']) { ?>
                             <td class="detail hidden-xs text-center" name="kiosk_hide">
                                 <?php
+                                echo text($reason_visit);
                                 if ($appointment['pc_examenes'] && $appointment['pc_catid'] == 14){
                                     echo $examenes;
                                 }
-                                if(!empty($appointment['pc_apptqx']) && !empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15){
+                                if(!empty($appointment['pc_apptqx']) && !empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15 || $appointment['pc_catid'] == 19){
                                     echo "OD: ";
                                     foreach ($explodeOD as $value) {
                                         $surgeryOD = sqlQuery($cirugiaSQL, array($value));
@@ -817,25 +818,22 @@ if (!$_REQUEST['flb_table']) {
                                     }
                                     echo $lioBrandOI['title'] . " " . $lioOI['title'];
                                 }
-                                elseif(!empty($appointment['pc_apptqx']) && $appointment['pc_catid'] == 15){
+                                elseif(!empty($appointment['pc_apptqx']) && $appointment['pc_catid'] == 15 || $appointment['pc_catid'] == 19){
                                     echo "OD: ";
                                     foreach ($explodeOD as $value) {
                                         $surgeryOD = sqlQuery($cirugiaSQL, array($value));
                                         echo $surgeryOD['title'] . ", ";
                                     }
                                     echo $lioBrandOD['title'] . " " . $lioOD['title'];
-                                    echo "<br>";
                                 }
-                                elseif(!empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15){
+                                elseif(!empty($appointment['pc_apptqxOI']) && $appointment['pc_catid'] == 15 || $appointment['pc_catid'] == 19){
                                   echo "OI: ";
                                     foreach ($explodeOI as $value) {
                                         $surgeryOI = sqlQuery($cirugiaSQL, array($value));
                                         echo $surgeryOI['title'] . ", ";
                                     }
                                     echo $lioBrandOI['title'] . " " . $lioOI['title'];
-                                    echo "<br>";
                                 }
-                                echo text($reason_visit);
                                 ?>
                             </td>
                         <?php } ?>

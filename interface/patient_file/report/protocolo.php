@@ -20,19 +20,7 @@ if ($resultado) {
 } else {
     // La fecha del protocolo no se encontró, manejar este caso según corresponda
 }
-$prot_hini = getFieldValue($form_id, "Prot_hini"); // Obtener el valor de la hora
-$prot_hini_timestamp = strtotime($prot_hini); // Convertir la hora a un timestamp
 
-// Restar una hora y media (5400 segundos) al timestamp
-$prot_hfinal_timestamp = $prot_hini_timestamp + 7200;
-$prot_hpre_timestamp = $prot_hini_timestamp - 1800;
-$prot_halta_timestamp = $prot_hini_timestamp + 9900;
-
-// Formatear el nuevo timestamp en formato de hora (HH:MM)
-$prot_hini_time = date("H:i", $prot_hini_timestamp);
-$prot_hfin_time = date("H:i", $prot_hfinal_timestamp);
-$prot_hfin_nueva = date("H:i", $prot_hpre_timestamp);
-$prot_hfin_fin = date("H:i", $prot_halta_timestamp);
 
 $codes = getCPT4Codes($titleres['pricelevel'], $form_id);
 
@@ -48,6 +36,10 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
 <html>
 <HEAD>
     <style>
+        p {
+            text-align: justify;
+        }
+
         table {
             width: 100%;
             border: 5px solid #808080;
@@ -83,6 +75,16 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             background-color: #CCFFCC;
             font-size: 7pt;
             font-weight: bold;
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+        }
+
+        td.verde_normal {
+            height: 23px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #CCFFCC;
+            font-size: 7pt;
             border-top: 1px solid #808080;
             border-right: 1px solid #808080;
         }
@@ -848,8 +850,24 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="verde" colspan="11">PROCEDIMIENTO/S PROPUESTO /S:</td>
             <td class="blanco_left" colspan="56">
                 <?php
-                echo $item['name'];
-                ?> en ojo derecho.
+                echo $item['name'] . " ";
+                $ojoValue = getFieldValue($form_id, "Prot_ojo");
+
+                $mensajeOjo = [
+                    'OI' => 'Ojo izquierdo',
+                    'OjoIzq' => 'Ojo izquierdo',
+                    'OD' => 'Ojo derecho',
+                    'OjoDer' => 'Ojo derecho',
+                    'AO' => 'Ambos ojos',
+                    'OjoAmb' => 'Ambos ojos'
+                ];
+
+                if (isset($mensajeOjo[$ojoValue])) {
+                    echo $mensajeOjo[$ojoValue];
+                } else {
+                    echo "Valor no válido";
+                }
+                ?>
             </td>
         </tr>
         <tr>
@@ -1018,6 +1036,444 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
     }
     ?>
 </pagebreak>
+<pagebreak>
+    <table>
+        <tr>
+            <td class="morado" colspan="67">D. EXAMEN FÍSICO</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="12" style="height: 15px">CONSTANTES VITALES</td>
+            <td class="verde" colspan="3" style="height: 15px">TA</td>
+            <td class="blanco" colspan="6" style="height: 15px">120/80</td>
+            <td class="verde" colspan="4" style="height: 15px">FC</td>
+            <td class="blanco" colspan="6" style="height: 15px">70</td>
+            <td class="verde" colspan="4" style="height: 15px">FR</td>
+            <td class="blanco" colspan="6" style="height: 15px">12</td>
+            <td class="verde" colspan="4" style="height: 15px">T°</td>
+            <td class="blanco" colspan="3" style="height: 15px">36</td>
+            <td class="verde" colspan="5" style="height: 15px">SAT 02</td>
+            <td class="blanco" colspan="4" style="height: 15px">99</td>
+            <td class="verde" colspan="7" style="height: 15px">GLASGOW</td>
+            <td class="blanco" colspan="3" style="height: 15px">15</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="12" style="height: 15px">ANTROPOMETRÍA</td>
+            <td class="verde" colspan="8" style="height: 15px">PESO (kg)</td>
+            <td class="blanco" colspan="11" style="height: 15px"></td>
+            <td class="verde" colspan="8" style="height: 15px">TALLA (cm)</td>
+            <td class="blanco" colspan="11" style="height: 15px"></td>
+            <td class="verde" colspan="7" style="height: 15px">IMC (kg/m2)</td>
+            <td class="blanco" colspan="10" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="12" rowspan="6">VÍA AÉREA</td>
+            <td class="verde" colspan="22" style="height: 15px; font-size: 6pt">APERTURA BUCAL (cm)</td>
+            <td class="verde" colspan="17" style="height: 15px; font-size: 6pt">DISTANCIA TIROMENTONEANA (cm)</td>
+            <td class="verde" colspan="16" style="height: 15px; font-size: 6pt">MALLAMPATI</td>
+        </tr>
+        <tr>
+            <td class="blanco" colspan="3" style="height: 15px">&lt;2</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">2 - 2,5</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">2,6 - 3</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="3" style="height: 15px">&gt;3</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="3" style="height: 15px">&lt;6</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">6 - 6,5</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">&gt;6,5</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px">I</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px">II</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="2" style="height: 15px">III</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px">IV</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="17" style="height: 15px; font-size: 6pt">PROTRUSIÓN MANDIBULAR</td>
+            <td class="verde" colspan="11" style="height: 15px; font-size: 6pt">PERÍMETRO CERVICAL (cm)</td>
+            <td class="verde" colspan="11" style="height: 15px; font-size: 6pt">MOVILIDAD CERVICAL (°)</td>
+            <td class="verde" colspan="8" style="height: 15px; font-size: 6pt">HISTORIA DE INTUBACIÓN DIFÍCIL</td>
+            <td class="verde" colspan="8" style="height: 15px; font-size: 6pt">PATOLOGÍA ASOCIADA A INTUBACIÓN DIFÍCIL
+            </td>
+        </tr>
+        <tr>
+            <td class="blanco" colspan="3" style="height: 15px">&lt;0</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">0</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="4" style="height: 15px">&gt;0</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="3" style="height: 15px">&lt;40</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="4" style="height: 15px">&gt;40</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="3" style="height: 15px">&lt;35</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px">&gt;35</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="2" style="height: 15px">SI</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px">NO</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="blanco" colspan="2" style="height: 15px">SI</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px">NO</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="9" rowspan="2">OTROS</td>
+            <td class="blanco" colspan="46" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="blanco" colspan="46" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">TÓRAX</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Respiración normal sin sonidos adicionales o anormales durante la auscultación
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">CORAZÓN</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Se escuchan ruidos cardíacos regulares sin la presencia de soplos adicionales durante la
+                auscultación cardíaca
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">PULMONES</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Normal
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">ABDOMEN</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Normal
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">EXTREMIDADES</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Sin Edema
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">SISTEMA NERVIOSO CENTRAL</td>
+            <td class="blanco_left" colspan="46" style="height: 15px">
+                Glasgow 15/15
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="21" style="height: 15px">EQUIVALENTE METABÓLICO (METS)</td>
+            <td class="blanco" colspan="46" style="height: 15px"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="morado" colspan="67">E. RESULTADOS DE EXÁMENES DE LABORATORIO, GABINETE E
+                IMAGEN<span
+                    style="font-size:9pt;font-family:Arial;font-weight:bold;">                  </span><span
+                    style="font-size:7pt;font-family:Arial;font-weight:bold;">(REGISTRAR LO QUE APLIQUE)</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="11" style="height: 15px; font-size: 6pt">HEMOGRAMA</td>
+            <td class="verde" colspan="12" style="height: 15px; font-size: 6pt">TIPIFICACIÓN</td>
+            <td class="verde" colspan="8" style="height: 15px; font-size: 6pt">PERFIL HEPÁTICO</td>
+            <td class="verde" colspan="7" style="height: 15px; font-size: 6pt">IONOGRAMA</td>
+            <td class="verde" colspan="9" style="height: 15px; font-size: 6pt">GASOMETRÍA</td>
+            <td class="verde" colspan="6" style="height: 15px; font-size: 6pt">HORMONAS</td>
+            <td class="verde" colspan="14" style="height: 15px; font-size: 6pt">ORINA</td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">HCTO</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">GRUPO</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">AST</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">Na</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px;">pH</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">T4</td>
+            <td class="blanco" colspan="4" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">pH</td>
+            <td class="blanco" colspan="8" style="height: 15px;"></td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">HB</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">FACTOR</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">ALT</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">K</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px;">PO2</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="6" rowspan="2" style="height: 15px;">PRUEBA
+                EMBARAZO
+            </td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">BACTERIAS</td>
+            <td class="blanco" colspan="8" style="height: 15px;"></td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">TP</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">GLUCOSA</td>
+            <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">LDH</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">Ca</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px;">HCO3</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">LEUCOCITOS</td>
+            <td class="blanco" colspan="8" style="height: 15px;"></td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">TTP</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">UREA</td>
+            <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">BT</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">Mg</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px;">EB</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">SI</td>
+            <td class="blanco" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">NO</td>
+            <td class="blanco" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">PIOCITOS</td>
+            <td class="blanco" colspan="8" style="height: 15px;"></td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">INR</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">CREATININA</td>
+            <td class="blanco" colspan="6" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">BD</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="blanco" colspan="7" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px;">SAT. 02</td>
+            <td class="blanco" colspan="5" style="height: 15px;"></td>
+            <td class="blanco" colspan="2" style="height: 15px;"></td>
+            <td class="blanco" colspan="4" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">GLUCOSA</td>
+            <td class="blanco" colspan="8" style="height: 15px;"></td>
+        </tr>
+        <tr>
+            <td class="verde_normal" colspan="6" style="height: 15px;">LEUCOCITOS</td>
+            <td class="blanco" colspan="5" style="height: 15px;">Normal</td>
+            <td class="verde_normal" colspan="6" style="height: 15px;">OTROS:</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px;">BI</td>
+            <td class="blanco" colspan="6" style="height: 15px;"></td>
+            <td class="blanco" colspan="7" style="height: 15px"></td>
+            <td class="verde_normal" colspan="4" style="height: 15px">LACTATO</td>
+            <td class="blanco" colspan="5" style="height: 15px"></td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="blanco" colspan="4" style="height: 15px"></td>
+            <td class="verde_normal" colspan="6" style="height: 15px">GLUCOSA</td>
+            <td class="blanco" colspan="8" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="11" style="height: 15px">EKG</td>
+            <td class="blanco_left" colspan="56" style="height: 15px">
+                Ritmo sinusal, ondas P, complejos QRS y ondas T normales, sin cambios significativos en la
+                repolarización
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="11" style="height: 15px">RX TÓRAX</td>
+            <td class="blanco_left" colspan="56" style="height: 15px">
+                Normal muestra una estructura cardíaca y pulmonar sin anomalías significativas. No se observan
+                infiltrados, derrames o colapso pulmonar
+            </td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="11" style="height: 15px">ESPIROMETRÍA</td>
+            <td class="blanco" colspan="56" style="height: 15px">No</td>
+        </tr>
+        <tr>
+            <td class="verde_left" colspan="11" rowspan="2" style="height: 15px">OTROS</td>
+            <td class="blanco" colspan="56" style="height: 15px"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="morado" colspan="67">F. ESCALAS E ÍNDICES <span
+                    style="font-size:7pt;font-family:Arial;font-weight:bold;">(REGISTRAR LO QUE APLIQUE)</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="12" style="height: 15px">ESTADO FÍSICO ASA</td>
+            <td class="verde_normal" colspan="2" style="height: 15px">I</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px">II</td>
+            <td class="blanco" colspan="2" style="height: 15px">X</td>
+            <td class="verde_normal" colspan="2" style="height: 15px">III</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px">IV</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px">V</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="verde_normal" colspan="2" style="height: 15px">VI</td>
+            <td class="blanco" colspan="2" style="height: 15px"></td>
+            <td class="verde" colspan="15" style="height: 15px">RIESGO CARDÍACO</td>
+            <td class="blanco" colspan="16" style="height: 15px">Bajo</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="12" style="height: 15px">RIESGO PULMONAR</td>
+            <td class="blanco" colspan="24" style="height: 15px">Bajo</td>
+            <td class="verde" colspan="15" style="height: 15px">RIESGO TROMBOEMBÓLICO</td>
+            <td class="blanco" colspan="16" style="height: 15px">Bajo</td>
+        </tr>
+        <tr style="height: 17px">
+            <td class="verde" colspan="12" style="height: 15px">OTROS</td>
+            <td class="blanco" colspan="55" style="height: 15px"></td>
+        </tr>
+
+    </table>
+    <table>
+        <tr>
+            <td class="morado" colspan="67" style="height: 15px">F. TIEMPO DE ULTIMA INGESTA</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="16" style="height: 15px">LÍQUIDOS CLAROS</td>
+            <td class="blanco" colspan="18" style="height: 15px"></td>
+            <td class="verde" colspan="16" style="height: 15px">LECHE DE FÓRMULA</td>
+            <td class="blanco" colspan="17" style="height: 15px"></td>
+        </tr>
+        <tr style="height: 17px">
+            <td class="verde" colspan="16" style="height: 15px">LECHE MATERNA</td>
+            <td class="blanco" colspan="18" style="height: 15px"></td>
+            <td class="verde" colspan="16" style="height: 15px">SÓLIDOS</td>
+            <td class="blanco" colspan="17" style="height: 15px"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="morado" colspan="67" style="height: 15px">G. INDICACIONES</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">1.</td>
+            <td class="blanco" colspan="65" style="height: 15px">NPO 6 horas antes de la cirugía</td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">2.</td>
+            <td class="blanco" colspan="65" style="height: 15px">
+                No suspender tratamiento habitual
+            </td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">3.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">4.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">5.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">6.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">7.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+        <tr>
+            <td class="verde" colspan="2" style="height: 15px">8.</td>
+            <td class="blanco" colspan="65" style="height: 15px"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="morado" style="height: 15px;" colspan="67">H. PLAN ANESTÉSICO</td>
+        </tr>
+        <tr>
+            <td class="blanco" style="height: 15px;" colspan="67">
+                Anestesia local (Bloqueo periférico)
+            </td>
+        </tr>
+        <tr>
+            <td class="blanco" style="height: 15px;" colspan="67"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="morado" style="height: 15px;" colspan="67">I. OBSERVACIONES</td>
+        </tr>
+        <tr>
+            <td class="blanco" style="height: 15px;" colspan="67"></td>
+        </tr>
+        <tr>
+            <td class="blanco" style="height: 15px;" colspan="67"></td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td colspan="71" class="morado" style="height: 15px;">F. DATOS DEL PROFESIONAL RESPONSABLE</td>
+        </tr>
+        <tr class="xl78">
+            <td colspan="8" class="verde" style="height: 15px;">FECHA
+
+                <font class="font5">(aaaa-mm-dd)</font>
+            </td>
+            <td colspan="7" class="verde" style="height: 15px;">HORA
+
+                <font class="font5">(hh:mm)</font>
+            </td>
+            <td colspan="21" class="verde" style="height: 15px;">PRIMER NOMBRE</td>
+            <td colspan="19" class="verde" style="height: 15px;">PRIMER APELLIDO</td>
+            <td colspan="16" class="verde" style="height: 15px;">SEGUNDO APELLIDO</td>
+        </tr>
+        <tr>
+            <td colspan="8" class="blanco"
+                style="height: 15px;">
+                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+            </td>
+            <td colspan="7" class="blanco" style="height: 15px;"></td>
+            <td colspan="21" class="blanco" style="height: 15px;">María</td>
+            <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
+            <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
+        </tr>
+        <tr>
+            <td colspan="15" class="verde" style="height: 15px;">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
+            <td colspan="26" class="verde" style="height: 15px;">FIRMA</td>
+            <td colspan="30" class="verde" style="height: 15px;">SELLO</td>
+        </tr>
+        <tr>
+            <td colspan="15" class="blanco" style="height: 40px">0963691662</td>
+            <td colspan="26" class="blanco" style="height: 15px;">&nbsp;</td>
+            <td colspan="30" class="blanco" style="height: 15px;">&nbsp;</td>
+        </tr>
+    </table>
+    <table style="border: none">
+        <TR>
+            <TD colspan="6" class="blanco_left" style="border: none"><B>SNS-MSP/HCU-form.018/2021</B>
+            </TD>
+            <TD colspan="3" class="blanco" style="border: none; text-align: right"><B> PRE ANESTÉSICO (2)</B>
+            </TD>
+        </TR>
+    </TABLE>
+</pagebreak>
+
 <pagebreak>
     <TABLE>
         <tr>
@@ -1234,11 +1690,34 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="18" class="verde">HORA DE TERMINACIÓN</td>
         </tr>
         <tr>
+            <?php
+            $prot_hini = getFieldValue($form_id, "Prot_hini"); // Obtener el valor de la hora
+            $prot_hini_timestamp = strtotime($prot_hini); // Convertir la hora a un timestamp
+
+            // Restar una hora y media (5400 segundos) al timestamp
+
+            $prot_opr_value = getFieldValue($form_id, "Prot_opr");
+            if ($prot_opr_value == 'avastin') {
+                $prot_hfinal_timestamp = $prot_hini_timestamp + 3600;
+            } elseif (strpos($prot_opr_value, 'vpp') !== false) {
+                $prot_hfinal_timestamp = $prot_hini_timestamp + 10800;
+            } else {
+                $prot_hfinal_timestamp = $prot_hini_timestamp + 7200;
+            }
+
+            $prot_hpre_timestamp = $prot_hini_timestamp - 1800;
+            $prot_halta_timestamp = $prot_hfinal_timestamp + 2700;
+            // Formatear el nuevo timestamp en formato de hora (HH:MM)
+            $pot_hinicio = date("H:i", $prot_hini_timestamp);
+            $pot_hfinal = date("H:i", $prot_hfinal_timestamp);
+            $pot_hpre = date("H:i", $prot_hpre_timestamp);
+            $pot_halta = date("H:i", $prot_halta_timestamp);
+            ?>
             <td colspan="5" class="blanco"><?php echo $dateddia; ?></td>
             <td colspan="5" class="blanco"><?php echo $datedmes; ?></td>
             <td colspan="5" class="blanco"><?php echo $datedano; ?></td>
-            <td colspan="18" class="blanco"><?php echo $prot_hini_time; ?></td>
-            <td colspan="18" class="blanco"><?php echo $prot_hfin_time; ?></td>
+            <td colspan="18" class="blanco"><?php echo $pot_hinicio; ?></td>
+            <td colspan="18" class="blanco"><?php echo $pot_hfinal; ?></td>
         </tr>
         <tr>
             <td colspan="15" class="verde_left">Dieresis:</td>
@@ -1268,7 +1747,6 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <TD colspan="3" ALIGN=RIGHT VALIGN=TOP><B><FONT SIZE=3 COLOR="#000000">PROTOCOLO QUIRÚRGICO (1)</FONT></B>
             </TD>
         </TR>
-        ]
     </TABLE>
 </pagebreak>
 <pagebreak>
@@ -1521,7 +1999,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
         </tr>
         <tr>
             <td class="blanco_left" colspan="6"><?php echo $dateddia . "/" . $datedmes . "/" . $datedano; ?></td>
-            <td class="blanco_left" colspan="3"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?>
+            <td class="blanco_left" colspan="3"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?>
             </td>
             <td class="blanco_left" colspan="29" style="text-align: center">PRE-OPERATORIO
             </td>
@@ -1675,7 +2153,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
         </tr>
         <tr>
             <td class="blanco_left" colspan="6"></td>
-            <td class="blanco_left" colspan="3"><?php echo $prot_hfin_time; ?>
+            <td class="blanco_left" colspan="3"><?php echo $pot_hfinal; ?>
             </td>
             <td class="blanco_left" colspan="29" STYLE="text-align: center">POST-OPERATORIO
             </td>
@@ -1765,7 +2243,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
         </tr>
         <tr>
             <td class="blanco_left" colspan="6"></td>
-            <td class="blanco_left" colspan="3"><?php echo $prot_hfin_fin; // Mostrar el nuevo valor de la hora?>
+            <td class="blanco_left" colspan="3"><?php echo $pot_halta; // Mostrar el nuevo valor de la hora?>
             </td>
             <td class="blanco_left" colspan="29" STYLE="text-align: center">ALTA MEDICA
             </td>
@@ -1997,7 +2475,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 CLORURO DE SODIO 0,9% LIQUIDO PARENTERAL (1000ML) 60 GOTAS POR
                 MINUTO, INTRAVENOSA, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2021,7 +2499,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 MANITOL 20% LIQUIDO PARENTERAL 500 MILILITROS INTRAVENOSA, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2045,7 +2523,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 MIDAZOLAM LIQUIDO PARENTERAL 5MG/ML (3ML) DOSIS: 2,5 MILIGRAMOS/0,5 MILILITRO, INTRAVENOSA,STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2069,7 +2547,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 FENTANILO LIQUIDO PARENTERAL 0,05MG/ ML (10ML) DOSIS: 60 MICROGRAMOS/ 1MILILITRO, INTRAVENOSO, STAT
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2094,7 +2572,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 CEFTRIAXONA SOLIDO PARENTERAL 1000MG DOSIS: 1000MILIGRAMOS DILUIDO EN 100MILILITROS DE CLORURO DE SODIO
                 AL 0,9% INTRAVENOSA, STAT
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hfinal; ?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2119,7 +2597,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 KETOROLACO LIQUIDO PARENTERAL 30MG/ML (1ML) DOSIS: 60MILIGRAMOS DILUIDO EN 100 MILILITROS DE CLORURO DE
                 SODIO AL 0,9%, INTRAVENOSA, STAT
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hfinal; ?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2144,7 +2622,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 LIDOCAINA CON EPINEFRINA, LIQUIDO PARENTERAL 2% + 1,200,000 (50ML), DOSIS: 80MILIGRAMO /4 MILILITRO, VIA
                 INFILTRATIVA, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2169,7 +2647,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 BUPIVACAINA SIN EPINEFRINA, LIQUIDO PARENTERAL 0,5% (20ML), DOSIS: 20 MILIGRAMO /4MILILITRO, VIA
                 INFILTRATIVA, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_nueva; // Mostrar el nuevo valor de la hora?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hpre; // Mostrar el nuevo valor de la hora?></td>
             <td class="blanco"
                 colspan="9"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="blanco" colspan="6"></td>
@@ -2193,7 +2671,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 GENTAMICINA LIQUIDO PARENTERAL 80MG/ML (2ML) DOSIS: 160MILIGRAMOS /2 MILILITROS, SUBCONJUNTIVAL, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hfinal; ?></td>
             <td class="blanco" colspan="9"><?php echo $providerNAME; ?></td>
             <td class="blanco" colspan="6"></td>
             <td class="blanco" colspan="9"></td>
@@ -2216,7 +2694,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 DEXAMETASONA LIQUIDO PARENTERAL 4MG/DL (2ML) DOSIS: 8MILIGRAMOS /2MILILITROS, SUBCONJUNTIVAL, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hfinal; ?></td>
             <td class="blanco" colspan="9"><?php echo $providerNAME; ?></td>
             <td class="blanco" colspan="6"></td>
             <td class="blanco" colspan="9"></td>
@@ -2239,7 +2717,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="17" rowspan="2">
                 DEXAMETASONA + TOBRAMICINA LIQUIDO OFTALMOLOGICO 0,1%+0,3% (5ML) DOSIS: 1 GOTA, VIA TOPICA, STAT.
             </td>
-            <td class="blanco" colspan="6"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="6"><?php echo $pot_hfinal; ?></td>
             <td class="blanco" colspan="9"><?php echo $providerNAME; ?></td>
             <td class="blanco" colspan="6"></td>
             <td class="blanco" colspan="9"></td>
@@ -2366,8 +2844,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" colspan="10">
                 <?php echo $dateddia . "/" . $datedmes . "/" . $datedano; ?>
             </td>
-            <td class="blanco" colspan="8"><?php echo $prot_hini_time; ?></td>
-            <td class="blanco" colspan="8"><?php echo $prot_hfin_time; ?></td>
+            <td class="blanco" colspan="8"><?php echo $pot_hinicio; ?></td>
+            <td class="blanco" colspan="8"><?php echo $pot_hfinal; ?></td>
             <td class="blanco" colspan="20">3 litros</td>
             <td class="blanco" colspan="14">360</td>
             <td class="blanco" colspan="20">
@@ -2473,6 +2951,64 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
     echo "<br>";
     echo getProviderRegistro($providerID);
     ?>
+</pagebreak>
+<pagebreak>
+    <?php
+    generatePageHeader($facilityService, $web_root);
+    ?>
+    <P style="text-align: center"><B>PLAN DE EGRESO</B></P>
+    <P><B>CIRUGIA OCULAR</B></P>
+    <P><b>Diagn&oacute;stico de egreso: </b>
+        <?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost")); ?></P>
+    <P><b>Fecha: </b>
+        <?php
+        echo $dateddia . " de " . $datedmes . " del " . $datedano;
+        ?>
+    </P>
+    <P><b>Egresado a: </b>Casa</P>
+    <P>Instrucciones para el
+        paciente <?php echo text(xlt($titleres['title']) . " " . $titleres['fname'] . " " . $titleres['lname']); ?> y
+        familia:</P>
+    <P>MEDICAMENTOS
+        RECETADOS: <U><B>Tobracort (Tobramicina+Dexametazona) 1 gota cada 3
+                horas por 21 d&iacute;as</B></U><U>.</U></P>
+    <P>ACTIVIDAD: Se debe
+        mantener reposo en la postura de acuerdo a la indicaci&oacute;n del
+        m&eacute;dico.</P>
+    <P>HIGIENE: Debe ba&ntilde;arse
+        el cuerpo con agua y jab&oacute;n incluyendo la cara.</P>
+    <P>ALIMENTACI&Oacute;N:
+        No hay restricci&oacute;n de dieta. Evite fumar o tomar alcohol hasta
+        que est&eacute; completamente recuperado.</P>
+    <P>CUIDADOS
+        ESPECIALES: Mantenga parche y protector ocular durante 24 horas,
+        seg&uacute;n prescripci&oacute;n m&eacute;dica. Controle sangrado
+        (Observe si mancha la gasa).</P>
+    <P>EDUCACION AL PACIENTE:
+        Pueden sentir picor, sensaci&oacute;n de cuerpo extra&ntilde;o,
+        pinchazos espor&aacute;dicos: Son consecuencia de los punto
+        conjuntivales.</P>
+    <P>Cumpla con el
+        tratamiento ambulatorio ya sea con colirios o pomadas de acuerdo a la
+        prescripci&oacute;n de su m&eacute;dico.</P>
+    <P>Un paciente sometido a
+        cirug&iacute;a ocular <U><B>NO DEBE</B></U> en ning&uacute;n caso:
+        Conducir, realizar actividades peligrosas, ni levantar pesos.</P>
+    <P>La lectura y la
+        televisi&oacute;n no est&aacute;n contraindicadas, excepto si
+        producen molestias o impiden la posici&oacute;n recomendada.</P>
+    <P>OTROS:</P>
+    <P><U><B>INFORME DE
+                EGRESO DE ENFERMERIA</B></U>:</P>
+    <P>PACIENTE EGRESA EN
+        CONDICIONES FAVORABLES PARA SU SALUD, CON INDICACIONES MEDICA, SI
+        LLEVA LA MEDICACI&Oacute;N.</P>
+    <br><br><br><br><br>
+    <P><b>M&eacute;dico
+            tratante: </b><?php
+        echo getProviderName($providerID);
+        ?>
+        <b>Tel&eacute;fono: </b>2286080</P>
 </pagebreak>
 
 </BODY>

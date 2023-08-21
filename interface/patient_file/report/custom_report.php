@@ -915,9 +915,6 @@ function postToGet($arin)
             $pdf->SetDirectionality('rtl');
         }
 
-        // Crear una nueva página en el PDF
-        $pdf->AddPage();
-
         // Incluir el contenido de contra_template.php en el PDF
         include("contra_template.php");
         $contra_content = ob_get_clean();
@@ -925,65 +922,39 @@ function postToGet($arin)
         // Imprimir el contenido de contra_template.php
         $pdf->WriteHTML($contra_content);
 
+        // Ordenar y recorrer el array $ar
+
         asort($ar);
         foreach ($ar as $key => $value) {
             $form_encounter = $value;
-            // Verificar si el elemento del arreglo comienza con "LBF"
-            if (strpos($key, 'eye_mag') === 0) {
-                // Crear una nueva página en el PDF
-                $pdf->AddPage();
 
-                // Incluir el contenido de examenes.php en el PDF
-                ob_start();
-                include("007.php");
-                $inter_content = ob_get_clean();
-
-                // Imprimir el valor de $key dentro de un elemento <h1>
-                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
-                // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($inter_content);
-            } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') !== 0) {
-                // Crear una nueva página en el PDF
-                $pdf->AddPage();
-
-                // Incluir el contenido de examenes.php en el PDF
-                ob_start();
-                include("examenes.php");
-                $examenes_content = ob_get_clean();
-
-                // Imprimir el valor de $key dentro de un elemento <h1>
-                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
-                // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($examenes_content);
-            } elseif (strpos($key, 'LBFprotocolo') === 0) {
-                // Crear una nueva página en el PDF
-                $pdf->AddPage();
-
-                // Incluir el contenido de examenes.php en el PDF
-                ob_start();
-                include("protocolo.php");
-                $protocolo_content = ob_get_clean();
-
-                // Imprimir el valor de $key dentro de un elemento <h1>
-                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
-                // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($protocolo_content);
-            } elseif (strpos($key, 'care_plan') === 0) {
-
-                // Crear una nueva página en el PDF
-                $pdf->AddPage();
-
-                // Incluir el contenido de examenes.php en el PDF
-                ob_start();
-                include("no_invasivo.php");
-                $no_invasivo_content = ob_get_clean();
-
-                // Imprimir el valor de $key dentro de un elemento <h1>
-                //$pdf->WriteHTML('<h1>' . $key . '</h1>');
-                // Imprimir el contenido de examenes.php
-                $pdf->WriteHTML($no_invasivo_content);
+            // Verificar si se debe agregar una nueva página
+            if (strpos($key, 'eye_mag') === 0 ||
+                strpos($key, 'LBF') === 0 ||
+                strpos($key, 'LBFprotocolo') === 0 ||
+                strpos($key, 'care_plan') === 0) {
+                $pdf->AddPage(); // Crear una nueva página en el PDF
             }
-        }
+
+            if (strpos($key, 'eye_mag') === 0) {
+                $contentFile = "007.php";
+            } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') !== 0) {
+                $contentFile = "examenes.php";
+            } elseif (strpos($key, 'LBFprotocolo') === 0) {
+                $contentFile = "protocolo.php";
+            } elseif (strpos($key, 'care_plan') === 0) {
+                $contentFile = "no_invasivo.php";
+            }
+
+            if (isset($contentFile)) {
+                ob_start();
+                include($contentFile);
+                $content = ob_get_clean();
+                $pdf->WriteHTML($content);
+                unset($contentFile);
+            }
+        }        // Salida del PDF
+        $pdf->Output();
     }
 
     if ($printable && !$PDF_OUTPUT) {// Patched out of pdf 04/20/2017 sjpadgett
