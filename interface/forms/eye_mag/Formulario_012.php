@@ -381,45 +381,7 @@ ob_start();
 ?>
 <HTML>
 <HEAD>
-    <style>
-        table {
-            width: 100%;
-            border: 5px solid #808080;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        td.morado {
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 9pt;
-            font-weight: bold;
-            height: 23px;
-        }
-
-        td.verde {
-            height: 23px;
-            text-align: center;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 7pt;
-            font-weight: bold;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        td.blanco {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            height: 21px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="reports.css">
 </HEAD>
 <BODY>
 <TABLE>

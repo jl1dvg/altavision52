@@ -165,7 +165,8 @@ if ($proced_id == '65855') {
         <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
         <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?></td>
         <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+        <td colspan="3"
+            class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($fechaProcedimiento))); ?></td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
@@ -377,7 +378,7 @@ if ($proced_id == '65855') {
             <td colspan="11" class="verde">FECHA
             </td>
             <td colspan="56" class="blanco_left">
-                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+                <?php echo date("d/m/Y", strtotime($fechaProcedimiento)); ?>
             </td>
         </tr>
         <tr>
@@ -488,7 +489,7 @@ if ($proced_id == '65855') {
             <td colspan="11" class="verde">FECHA
             </td>
             <td colspan="56" class="blanco_left">
-                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+                <?php echo date("d/m/Y", strtotime($fechaProcedimiento)); ?>
             </td>
         </tr>
         <tr>
@@ -617,7 +618,7 @@ if ($proced_id == '65855') {
             <td colspan="11" class="verde">FECHA
             </td>
             <td colspan="56" class="blanco_left">
-                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+                <?php echo date("d/m/Y", strtotime($fechaProcedimiento)); ?>
             </td>
         </tr>
         <tr>

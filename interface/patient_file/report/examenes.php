@@ -13,43 +13,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
 ?>
 <html>
 <head>
-    <style>
-        table.formulario {
-            width: 100%;
-            border: 5px solid #808080;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        td.morado {
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 9pt;
-            font-weight: bold;
-            height: 23px;
-        }
-
-        td.verde {
-            height: 23px;
-            text-align: center;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 7pt;
-            font-weight: bold;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        td.blanco {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            height: 21px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="reports.css">
 </head>
 <body>
 <?php
@@ -59,7 +23,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
 //echo $val;
 //echo "</pre>";
 ?>
-<TABLE class="formulario">
+<TABLE>
     <tr>
         <td colspan="71" class="morado">A. DATOS DEL ESTABLECIMIENTO
             Y USUARIO / PACIENTE
@@ -103,14 +67,15 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
         <td colspan="3" class="blanco"><?php echo $titleres['sex']; ?></td>
         <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+        <td colspan="3"
+            class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($fechaINGRESO['date']))); ?></td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco" style="border-right: none">&nbsp;</td>
     </tr>
 </TABLE>
-<table class="formulario">
+<table>
     <colgroup>
         <col class="xl76" span="71">
     </colgroup>
@@ -142,7 +107,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         <td colspan="2" class="blanco" style="border-right: none"></td>
     </tr>
 </table>
-<table class="formulario">
+<table>
     <tr>
         <td colspan="71" class="morado">C. ESTUDIO DE IMAGENOLOGÍA SOLICITADO</td>
     </tr>
@@ -194,7 +159,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         </td>
     </tr>
 </table>
-<table class="formulario">
+<table>
     <tr>
         <td class="morado">E. CONCLUSIONES Y SUGERENCIAS</td>
     </tr>
@@ -207,7 +172,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         </td>
     </tr>
 </table>
-<table class="formulario">
+<table>
     <tr>
         <td colspan="71" class="morado">F. DATOS DEL PROFESIONAL RESPONSABLE</td>
     </tr>
@@ -257,6 +222,5 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         <TD colspan="3" ALIGN=RIGHT VALIGN=TOP><B><FONT SIZE=3 COLOR="#000000">IMAGENOLOGÍA - INFORME</FONT></B>
         </TD>
     </TR>
-    ]
 </TABLE>
 </body>

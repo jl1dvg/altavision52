@@ -161,8 +161,10 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
         <td colspan="13" class="blanco"><?php echo $titleres['fname']; ?></td>
         <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
         <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?></td>
-        <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+        <td colspan="6"
+            class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
+        <td colspan="3"
+            class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
         <td colspan="2" class="blanco">&nbsp;</td>
@@ -795,7 +797,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
             <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?></td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
@@ -1520,7 +1523,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?>
             </td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
@@ -1952,7 +1956,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?>
             </td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
@@ -2011,7 +2016,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco_left" colspan="6"></td>
             <td class="blanco_left" colspan="3">
             </td>
-            <td class="blanco_left" colspan="29">Paciente de <?php echo text(getPatientAge($titleres['DOB_TS'])); ?>
+            <td class="blanco_left" colspan="29">Paciente
+                de <?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?>
                 años de edad, conciente, orientado
             </td>
             <td class="blanco_break"></td>
@@ -2424,7 +2430,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?>
             </td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
@@ -2821,7 +2828,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?>
             </td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>

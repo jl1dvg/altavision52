@@ -1,0 +1,80 @@
+/* styles.css */
+table {
+    width: 100%;
+    border: 2px solid #808080;
+    border-collapse: collapse;
+    margin-bottom: 2px;
+}
+
+td.morado {
+    text-align: left;
+    vertical-align: middle;
+    background-color: #CCCCFF;
+    font-size: 7pt;
+    font-weight: bold;
+    height: 17px;
+}
+
+td.verde {
+    height: 17px;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #CCFFCC;
+    font-size: 7pt;
+    font-weight: bold;
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+}
+
+td.blanco {
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+    height: 17px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 7pt;
+}
+
+td.blanco_left {
+    border-top: 1px solid #808080;
+    border-right: 1px solid #808080;
+    height: 18px;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 7pt;
+}
+
+/* Estilo para todas las celdas (td) de la tabla */
+.cell {
+    border: 1px solid #000000;
+    padding: 8px;
+    text-align: left;
+    vertical-align: bottom;
+    font-size: 12px;
+}
+
+.reason-cell {
+    border: 1px solid #000000;
+    height: 18px;
+    text-align: left;
+    vertical-align: bottom;
+    font-size: 7.5pt;
+}
+
+
+.empty-cell {
+    /* Estilos para celdas vacías */
+}
+
+.big-text {
+    /* Estilos para texto grande */
+    font-size: 13px;
+    color: #000000;
+}
+
+.small-text {
+    /* Estilos para texto pequeño */
+    font-size: 1px;
+    color: #000000;
+}
+

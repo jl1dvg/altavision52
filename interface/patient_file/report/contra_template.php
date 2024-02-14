@@ -5,104 +5,6 @@ require_once("$srcdir/iess.inc.php");
 
 <html>
 <head>
-    <STYLE TYPE="text/css">
-        div.relative {
-            position: relative;
-            width: 400px;
-            height: 200px;
-            border: 3px solid #73AD21;
-        }
-
-        div.absolute {
-            position: absolute;
-            top: 80px;
-            right: 0;
-            width: 200px;
-            height: 100px;
-            border: 3px solid #73AD21;
-        }
-
-        img {
-            position: absolute;
-            left: 0px;
-            top: 0px;
-        }
-
-        td.lineatitulo {
-            height: 24;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            text-align: left;
-            font-size: 11;
-            border-top: 5px solid #808080;
-            border-bottom: 1px solid #808080;
-            border-left: 5px solid #808080;
-            border-right: 5px solid #808080;
-            padding-left: 10px;
-        }
-
-        td.linearesumen {
-            border-top: 1px solid #808080;
-            border-bottom: 1px solid #808080;
-            border-left: 5px solid #808080;
-            border-right: 5px solid #808080;
-            height: 20;
-            vertical-align: middle;
-            background-color: #fff;
-            text-align: justify;
-            font-size: 8.5;
-        }
-
-        td.ultimalinea {
-            border-top: 5px solid #808080;
-            height: 10;
-            background-color: #fff;
-            font-size: 1;
-        }
-
-        td.lineatituloDX {
-            border-top: 5px solid #808080;
-            border-bottom: 1px solid #808080;
-            height: 24;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 11;
-            padding-left: 10px;
-        }
-
-        td.lineatituloDX1 {
-            border-top: 5px solid #808080;
-            border-left: 5px solid #808080;
-            border-bottom: 1px solid #808080;
-            height: 24;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 11;
-            padding-left: 10px;
-        }
-
-        td.lineatituloCIE {
-            border-top: 5px solid #808080;
-            border-bottom: 1px solid #808080;
-            height: 24;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 8;
-            padding-left: 10px;
-        }
-
-        td.lineatituloCIEfinal {
-            border-top: 5px solid #808080;
-            border-bottom: 1px solid #808080;
-            border-right: 5px solid #808080;
-            height: 24;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 8;
-            padding-left: 10px;
-        }
-
-    </STYLE>
     <link rel="stylesheet" type="text/css" href="reports.css">
 </head>
 <body>
@@ -118,300 +20,220 @@ foreach ($ar as $key => $val) {
             $titleres = getPatientData($pid, "pubpid,fname,mname,lname,pricelevel, lname2,race, sex,status,genericval1,genericname1,providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
             ?>
 
-            <TABLE CELLSPACING=0 COLS=64 RULES=NONE BORDER=0>
-                <COLGROUP>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                    <COL WIDTH=16>
-                </COLGROUP>
-                <TR>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080"
-                        COLSPAN=16 HEIGHT=23 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>INSTITUCI&Oacute;N
-                                DEL
-                                SISTEMA</FONT></B></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" COLSPAN=19 ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>UNIDAD OPERATIVA</FONT></B></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>COD. UO</FONT></B></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>COD.
-                                LOCALIZACI&Oacute;N</FONT></B></TD>
-                    <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>NUMERO DE
-                                HISTORIA CL&Iacute;NICA</FONT></B>
-                    </TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=16 ROWSPAN=2 HEIGHT=55 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">
-                                <?php
-                                echo $titleres['pricelevel'];
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=19 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT FACE="Tahoma">ALTA VISION</FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=5 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=1><BR></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PARROQUIA</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>CANT&Oacute;N</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PROVINCIA</FONT></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>TARQUI</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>GYE</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>GUAYAS</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=4>
-                                <?php
-                                echo $titleres['pubpid'];
-                                ?>
-                            </FONT></B></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080"
-                        COLSPAN=13 HEIGHT=21 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>APELLIDO
-                            PATERNO</FONT>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>APELLIDO MATERNO</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>PRIMER NOMBRE</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=13 ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SEGUNDO NOMBRE</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>C&Eacute;DULA DE
-                            CIUDADAN&Iacute;A</FONT></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=13 HEIGHT=21 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                            <?php
-                            echo $titleres['lname'];
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                            <?php
-                            echo $titleres['lname2'];
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                            <?php
-                            echo $titleres['fname'];
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=13 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
-                            <?php
-                            echo $titleres['mname'];
-                            ?>
-                        </FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE><B>
-                            <?php
-                            echo $titleres['pubpid'];
-                            ?>
-                        </B></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080"
-                        COLSPAN=8 ROWSPAN=2 HEIGHT=43 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>FECHA DE
-                            REFERENCIA</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ROWSPAN=2
-                        ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>HORA</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=5 ROWSPAN=2
-                        ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>EDAD</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=4 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>GENERO</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>ESTADO CIVIL</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC">
-                        <FONT
-                            SIZE=1>INSTRUCCI&Oacute;N</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080" COLSPAN=10 ROWSPAN=2
-                        ALIGN=CENTER
-                        VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>EMPRESA DONDE TRABAJA</FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ROWSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><FONT SIZE=1>SEGURO DE
-                            SALUD</FONT>
-                    </TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>M</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>F</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>SOL</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>CAS</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>DIV</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>VIU</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC"><B><FONT SIZE=1>U-L</FONT></B></TD>
-                    <TD STYLE="border-bottom: 1px solid #808080" COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE
-                        BGCOLOR="#CCFFCC"><FONT
-                            SIZE=1>ULTIMO A&Ntilde;O APROBADO</FONT></TD>
-                </TR>
-                <TR>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=8 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE SDVAL="43056" SDNUM="1033;1033;D-MMM-YY">
+            <TABLE>
+                <tr>
+                    <td class="verde" colspan="16">INSTITUCI&Oacute;N DEL SISTEMA</td>
+                    <td class="verde" colspan="19">UNIDAD OPERATIVA</td>
+                    <td class="verde" colspan="5">COD. UO</td>
+                    <td class="verde" colspan="12">COD. LOCALIZACI&Oacute;N</td>
+                    <td class="verde" colspan="12" rowspan="2">NUMERO DE HISTORIA CL&Iacute;NICA</td>
+                </tr>
+                <tr>
+                    <td class="blanco" colspan="16" rowspan="2">
+                        <b><?php echo $titleres['pricelevel']; ?></b>
+                    </td>
+                    <td class="blanco" colspan="19" rowspan="2"><b>ALTA VISION</b>
+                    </td>
+                    <td class="blanco" colspan="5" rowspan="2">
+                        <br>
+                    </td>
+                    <td class="verde" colspan="4">
+                        PARROQUIA
+                    </td>
+                    <td class="verde" colspan="4">
+                        CANT&Oacute;N
+                    </td>
+                    <td class="verde" colspan="4">
+                        PROVINCIA
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blanco" colspan="4">
+                        TARQUI
+                    </td>
+                    <td class="blanco" colspan="4">
+                        GYE
+                    </td>
+                    <td class="blanco" colspan="4">
+                        GUAYAS
+                    </td>
+                    <td class="blanco" colspan="12">
+                        <b>
+                            <?php echo $titleres['pubpid']; ?>
+                        </b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="verde" colspan="13" height="21">
+                        APELLIDO PATERNO
+                    </td>
+                    <td class="verde" colspan="13">
+                        APELLIDO MATERNO
+                    </td>
+                    <td class="verde" colspan="13">
+                        PRIMER NOMBRE
+                    </td>
+                    <td class="verde" colspan="13">
+                        SEGUNDO NOMBRE
+                    </td>
+                    <td class="verde" colspan="12" style="border-right: 5px solid #808080">
+                        C&Eacute;DULA DE CIUDADAN&Iacute;A
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blanco" colspan="13">
+                        <?php echo $titleres['lname']; ?>
+                    </td>
+                    <td class="blanco" colspan="13">
+                        <?php echo $titleres['lname2']; ?>
+                    </td>
+                    <td class="blanco" colspan="13">
+                        <?php echo $titleres['fname']; ?>
+                    </td>
+                    <td class="blanco" colspan="13">
+                        <?php echo $titleres['mname']; ?>
+                    </td>
+                    <td class="blanco" colspan="12">
+                        <b><?php echo $titleres['pubpid']; ?></b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="verde" colspan="8" rowspan="2">
+                        Fecha de Referencia
+                    </td>
+                    <td class="verde" colspan="5" rowspan="2">
+                        Hora
+                    </td>
+                    <td class="verde" colspan="5" rowspan="2">
+                        Edad
+                    </td>
+                    <td class="verde" colspan="4">
+                        Género
+                    </td>
+                    <td class="verde" colspan="10">
+                        Estado Civil
+                    </td>
+                    <td class="verde" colspan="10">
+                        Instrucción
+                    </td>
+                    <td class="verde" colspan="10" rowspan="2">
+                        Empresa donde Trabaja
+                    </td>
+                    <td class="verde" colspan="12" rowspan="2">
+                        Seguro de Salud
+                    </td>
+                </tr>
+                <tr>
+                    <td class="verde" colspan="2">
+                        <b>M</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>F</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>SOL</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>CAS</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>DIV</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>VIU</b>
+                    </td>
+                    <td class="verde" colspan="2">
+                        <b>U-L</b>
+                    </td>
+                    <td class="verde" colspan="10">
+                        Último Año Aprobado
+                    </td>
+                </tr>
+                <tr>
+                    <td class="blanco" colspan="8" rowspan="1" height="28">
                         <?php
-                        $max_form_id = -1; // Inicializar con un valor negativo para garantizar que se tomará un valor mayor
+                        $max_form_id = -1;
 
                         foreach ($ar as $key => $val) {
-                            // Aqui los hallazgos relevantes de la contrarreferencia
-                            // in the format: <formdirname_formid>=<encounterID>
                             if ($key == 'pdf' || $key == 'include_demographics') {
-                                continue; // Ignorar las claves 'pdf' y 'include_demographics'
+                                continue;
                             }
                             preg_match('/^(.*)_(\d+)$/', $key, $res);
                             $form_id = $res[2];
 
-                            // Verificar si el form_id actual es mayor al máximo encontrado hasta ahora
                             if ($form_id > $max_form_id) {
                                 $max_form_id = $form_id;
 
                                 if ($res[1] == 'newpatient') {
                                     $plan_sql = "SELECT * FROM forms WHERE form_id = ? AND formdir = 'newpatient'
-                                                 ORDER BY date DESC LIMIT 1";
+                                 ORDER BY date DESC LIMIT 1";
                                     $plan = sqlQuery($plan_sql, array($form_id));
                                     echo date("d/m/Y", strtotime($plan['date']));
                                 }
                             }
                         }
                         ?>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;1033;H:MM AM/PM"><BR></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDVAL="50"
-                        SDNUM="1033;"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4
-                                                                                        COLOR="#DD0806"><?php if ($titleres['sex'] == "Male") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['sex'] == "Female") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['status'] == "single") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['status'] == "married") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['status'] == "divorced") {
-                                    echo text("x");
-                                }
-                                ?>
-                            </FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['status'] == "widowed") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4 COLOR="#DD0806"><?php
-                                if ($titleres['status'] == "ul") {
-                                    echo text("x");
-                                }
-                                ?></FONT></B></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE><B><FONT SIZE=4
-                                                                       COLOR="#DD0806"><?php echo text($titleres['race']); ?></FONT></B>
-                    </TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
-                        COLSPAN=10 ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1><BR></FONT></TD>
-                    <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"
-                        COLSPAN=12 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;0;000-00-0000">
-                        <B><?php echo text($titleres['genericval1']); ?></B></TD>
-                </TR>
+                    </td>
+                    <td class="blanco" colspan="5" rowspan="1"></td>
+                    <td class="blanco" colspan="5" rowspan="1" align="center">
+                        <?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($plan['date']))); ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php if ($titleres['sex'] == "Male") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['sex'] == "Female") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['status'] == "single") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['status'] == "married") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['status'] == "divorced") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['status'] == "widowed") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="amarillo" colspan="2" rowspan="1">
+                        <?php
+                        if ($titleres['status'] == "ul") {
+                            echo text("x");
+                        }
+                        ?>
+                    </td>
+                    <td class="blanco" colspan="10" rowspan="1" align="center">
+                        <?php echo text($titleres['race']); ?>
+                    </td>
+                    <td class="blanco" colspan="10" rowspan="1"><br></td>
+                    <td class="blanco" colspan="12" rowspan="1">
+                        <b><?php echo text($titleres['genericval1']); ?></b>
+                    </td>
+                </tr>
             </TABLE>
             <table>
                 <TR>
@@ -441,10 +263,10 @@ foreach ($ar as $key => $val) {
 
             <table>
                 <TR>
-                    <TD class="morado" COLSPAN=1><B>1 RESUMEN DEL CUADRO CLÍNICO</B></TD>
+                    <TD class="morado">1 RESUMEN DEL CUADRO CLÍNICO</TD>
                 </TR>
                 <TR>
-                    <TD class="blanco_left" colspan=1>
+                    <TD class="blanco_left">
                         <?php
                         echo wordwrap($reason['reason'], 160, "</TD></TR><TR><TD class='blanco_left'>");
                         ?>
@@ -458,7 +280,7 @@ foreach ($ar as $key => $val) {
 ?>
 <table>
     <TR>
-        <TD class="morado"><b>2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</b></TD>
+        <TD class="morado">2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</TD>
     </TR>
     <?php
     // Ordena el arreglo por clave de manera natural

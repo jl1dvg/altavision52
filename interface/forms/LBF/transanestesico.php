@@ -929,7 +929,7 @@ ob_start();
         <td class="blanco" colspan="24"><?php echo $titleres['mname']; ?></td>
         <td class="blanco" colspan="8"><?php echo substr($titleres['sex'], 0, 1); ?></td>
         <td class="blanco" colspan="16"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td class="blanco" colspan="12"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+        <td class="blanco" colspan="12"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
         <td class="blanco" colspan="2"></td>
         <td class="blanco" colspan="2"></td>
         <td class="blanco" colspan="2"></td>

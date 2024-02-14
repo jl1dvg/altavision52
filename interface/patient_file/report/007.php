@@ -31,54 +31,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
 ?>
 <html>
 <HEAD>
-    <style>
-        table {
-            width: 100%;
-            border: 5px solid #808080;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
-
-        td.morado {
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 9pt;
-            font-weight: bold;
-            height: 23px;
-        }
-
-        td.verde {
-            height: 23px;
-            text-align: center;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 7pt;
-            font-weight: bold;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        td.blanco {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            height: 21px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-
-        td.blanco_left {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            height: 21px;
-            text-align: left;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="reports.css">
 </HEAD>
 <body>
 <?php
@@ -131,7 +84,8 @@ if (!empty($dxResult)) {
             <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
             <td colspan="3" class="blanco"><?php echo $titleres['sex']; ?></td>
             <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-            <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+            <td colspan="3"
+                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($plan['date']))); ?></td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
             <td colspan="2" class="blanco">&nbsp;</td>
@@ -200,8 +154,8 @@ if (!empty($dxResult)) {
             <td colspan="2" class="blanco"
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "0"); ?></td>
             <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "0")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "0")) {
                     echo "x";
                 } ?></td>
             <td class="verde">4.</td>
@@ -209,8 +163,8 @@ if (!empty($dxResult)) {
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "3"); ?></td>
             <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "3")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "3")) {
                     echo "x";
                 } ?></td>
         </TR>
@@ -219,8 +173,8 @@ if (!empty($dxResult)) {
             <td colspan="2" class="blanco"
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "1"); ?></td>
             <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "1")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "1")) {
                     echo "x";
                 } ?></td>
             <td class="verde">5.</td>
@@ -228,8 +182,8 @@ if (!empty($dxResult)) {
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "4"); ?></td>
             <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "4")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "4")) {
                     echo "x";
                 } ?></td>
         </TR>
@@ -238,8 +192,8 @@ if (!empty($dxResult)) {
             <td colspan="2" class="blanco"
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "2"); ?></td>
             <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "2")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "2")) {
                     echo "x";
                 } ?></td>
             <td class="verde">6.</td>
@@ -247,8 +201,8 @@ if (!empty($dxResult)) {
                 style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "5"); ?></td>
             <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></td>
-            <td class="blanco"></td>
-            <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "5")) {
+            <td class="amarillo"></td>
+            <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "5")) {
                     echo "x";
                 } ?></td>
         </TR>
@@ -385,7 +339,8 @@ if (sqlNumRows($result) > 0) {
                 <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
                 <td colspan="3" class="blanco"><?php echo $titleres['sex']; ?></td>
                 <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-                <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+                <td colspan="3"
+                    class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($plan['date']))); ?></td>
                 <td colspan="2" class="blanco">&nbsp;</td>
                 <td colspan="2" class="blanco">&nbsp;</td>
                 <td colspan="2" class="blanco">&nbsp;</td>
@@ -540,8 +495,8 @@ if (sqlNumRows($result) > 0) {
                 <td colspan="2" class="blanco"
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "0"); ?></td>
                 <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "0"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "0")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "0")) {
                         echo "x";
                     } ?></td>
                 <td class="verde">4.</td>
@@ -549,8 +504,8 @@ if (sqlNumRows($result) > 0) {
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "3"); ?></td>
                 <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "3"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "3")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "3")) {
                         echo "x";
                     } ?></td>
             </TR>
@@ -559,8 +514,8 @@ if (sqlNumRows($result) > 0) {
                 <td colspan="2" class="blanco"
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "1"); ?></td>
                 <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "1"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "1")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "1")) {
                         echo "x";
                     } ?></td>
                 <td class="verde">5.</td>
@@ -568,8 +523,8 @@ if (sqlNumRows($result) > 0) {
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "4"); ?></td>
                 <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "4"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "4")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "4")) {
                         echo "x";
                     } ?></td>
             </TR>
@@ -578,8 +533,8 @@ if (sqlNumRows($result) > 0) {
                 <td colspan="2" class="blanco"
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "2"); ?></td>
                 <td class="blanco"><?php echo getDXoftalmoCIE10($form_id, $pid, "2"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "2")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "2")) {
                         echo "x";
                     } ?></td>
                 <td class="verde">6.</td>
@@ -587,8 +542,8 @@ if (sqlNumRows($result) > 0) {
                     style="text-align: left"><?php echo getDXoftalmo($form_id, $pid, "5"); ?></td>
                 <td class=" blanco
         "><?php echo getDXoftalmoCIE10($form_id, $pid, "5"); ?></td>
-                <td class="blanco"></td>
-                <td class="blanco"><?php if (getDXoftalmo($form_id, $pid, "5")) {
+                <td class="amarillo"></td>
+                <td class="amarillo"><?php if (getDXoftalmo($form_id, $pid, "5")) {
                         echo "x";
                     } ?></td>
             </TR>
