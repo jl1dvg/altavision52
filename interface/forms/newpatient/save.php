@@ -49,15 +49,17 @@ $normalurl = "patient_file/encounter/encounter_top.php";
 
 $nexturl = $normalurl;
 
+$provider_id = $_SESSION['authUserID'] ? $_SESSION['authUserID'] : 0;
+$provider_id = $encounter_provider ? $encounter_provider : $provider_id;
+
 if ($mode == 'new') {
-    $provider_id = $userauthorized ? $_SESSION['authUserID'] : 0;
     $encounter = generate_id();
     addForm(
         $encounter,
         "New Patient Encounter",
         sqlInsert(
             "INSERT INTO form_encounter SET
-                date = ?,      
+                date = ?,
                 onset_date = ?,
                 reason = ?,
                 facility = ?,
@@ -70,7 +72,7 @@ if ($mode == 'new') {
                 encounter = ?,
                 pos_code = ?,
                 external_id = ?,
-                responsable_id = ?,               
+                responsable_id = ?,
                 provider_id = ?",
             [
                 $date,
@@ -132,7 +134,7 @@ if ($mode == 'new') {
             reason = ?,
             facility = ?,
             provider_id = ?,
-            responsable_id = ?,               
+            responsable_id = ?,
             pc_catid = ?,
             facility_id = ?,
             billing_facility = ?,
