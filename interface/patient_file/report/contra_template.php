@@ -279,47 +279,71 @@ foreach ($ar as $key => $val) {
 }
 ?>
 <table>
-    <TR>
-        <TD class="morado">2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</TD>
-    </TR>
-    <?php
-    // Ordena el arreglo por clave de manera natural
-    natsort($ar);
+    <tr>
+        <td class="morado">2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</td>
+    </tr>
+    <tr>
+        <td class='blanco_left'>
+            <?php
+            $items = [];
 
-    foreach ($ar as $key => $val) {
-        // Ignorar claves 'pdf'
-        if ($key == 'pdf') {
-            continue;
-        }
+            foreach ($ar as $key => $val) {
+                // Ignorar claves 'pdf'
+                if ($key == 'pdf') {
+                    continue;
+                }
 
-        // Extraer form_id y formdir de la clave
-        preg_match('/^(.*)_(\d+)$/', $key, $res);
-        $form_id = $res[2];
-        $formdir = $res[1];
+                // Comprobar si la clave comienza con 'eye_mag' o 'LBF'
+                if (strpos($key, 'eye_mag') === 0 || strpos($key, 'LBF') === 0 || strpos($key, 'care_plan') === 0) {
+                    // Extraer form_id y formdir de la clave
+                    preg_match('/^(.*)_(\d+)$/', $key, $res);
+                    $form_id = $res[2];
+                    $formdir = $res[1];
 
-        // Manejar casos específicos
-        if ($formdir === 'eye_mag') {
-            $encounter_data = getEyeMagEncounterData($val, $pid);
-            if ($encounter_data) {
-                @extract($encounter_data);
-                $examOutput = ExamOftal($val, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
-                    $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $OSCONJ, $ODCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS,
-                    $ODDISC, $OSDISC, $ODCUP, $OSCUP, $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS);
-                if (!empty($examOutput)) {
-                    echo "<tr><td class='blanco_left'>";
-                    echo $examOutput;
+                    $dateArray = getEncounterDateByEncounter($val);
+                    $date = $dateArray['date'];
+
+                    // Almacenar en el arreglo con la fecha como clave
+                    if (!isset($items[$date])) {
+                        $items[$date] = [];
+                    }
+                    $items[$date][] = ['val' => $val, 'formdir' => $formdir, 'form_id' => $form_id];
                 }
             }
-        } elseif (substr($formdir, 0, 3) == 'LBF' && substr($formdir, 0, 12) !== 'LBFprotocolo') {
-            echo "<tr><td class='blanco_left'>";
-            echo "<b>" . ImageStudyName($pid, $val, $form_id, $formdir) . ": </b>";
-            echo ExamenesImagenes($pid, $val, $form_id, $formdir);
-        }
-    }
 
-    ?>
-    </TD>
-    </TR>
+            // Ordenar el arreglo por clave (que son fechas)
+            ksort($items);
+
+            // Procesar y mostrar cada elemento ordenado
+            foreach ($items as $date => $entries) {
+                foreach ($entries as $entry) {
+                    $val = $entry['val'];
+                    $formdir = $entry['formdir'];
+                    $form_id = $entry['form_id'];
+
+                    // Obtener datos adicionales
+                    if ($formdir === 'eye_mag') {
+                        $encounter_data = getEyeMagEncounterData($val, $pid);
+                        if ($encounter_data) {
+                            extract($encounter_data);
+                            $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
+                                $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
+                                $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
+                            if (!empty($examOutput)) {
+                                echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
+                            }
+                        }
+                    } elseif (substr($formdir, 0, 3) == 'LBF' && substr($formdir, 0, 12) !== 'LBFprotocolo') {
+                        echo "<tr><td class='blanco_left'>";
+                        echo "<b>" . ImageStudyName($pid, $val, $form_id, $formdir) . ": </b>";
+                        echo ExamenesImagenes($pid, $val, $form_id, $formdir);
+                    }
+
+                }
+            }
+            ?>
+        </td>
+    </tr>
 </table>
 <table>
     <TR>
@@ -328,14 +352,18 @@ foreach ($ar as $key => $val) {
     <TR>
         <TD class="blanco_left" COLSPAN=1>
             <?php
-            foreach ($ar as $key => $val) {
-                $form_encounter = $val;
-                preg_match('/^(.*)_(\d+)$/', $key, $res);
-                $form_id = $res[2];
-                if ($res[1] == 'LBFprotocolo') {
-                    echo protocolo($form_id, $form_encounter, 'LBFprotocolo');
-                } elseif ($res[1] == 'care_plan') {
-                    echo noInvasivos($form_id, $form_encounter);
+            foreach ($items as $date => $entries) {
+                foreach ($entries as $entry) {
+                    $val = $entry['val'];
+                    $formdir = $entry['formdir'];
+                    $form_id = $entry['form_id'];
+
+                    // Obtener datos adicionales
+                    if ($formdir === 'LBFprotocolo') {
+                        echo protocolo($form_id, $val, 'LBFprotocolo');
+                    } elseif ($formdir === 'care_plan') {
+                        echo noInvasivos($form_id, $val);
+                    }
                 }
             }
             ?>

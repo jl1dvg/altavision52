@@ -19,6 +19,15 @@ td.morado {
     height: 24px;
 }
 
+td.morado_right {
+    text-align: right;
+    vertical-align: middle;
+    background-color: #CCCCFF;
+    font-size: 11;
+    font-weight: bold;
+    height: 24px;
+}
+
 td.amarillo {
     height: 23px;
     text-align: center;

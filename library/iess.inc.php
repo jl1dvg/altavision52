@@ -234,14 +234,14 @@ function getReason($encounter, $pid)
     return $result['reason'];
 }
 
-function fetchEyeMagOrders($form_id, $pid)
+function fetchEyeMagOrders($form_id, $pid, $providerID)
 {
     $query = "SELECT * FROM form_eye_mag_orders WHERE form_id=? AND pid=? ORDER BY id ASC";
     $PLAN_results = sqlStatement($query, array($form_id, $pid));
     if (!empty($PLAN_results)) {
         while ($plan_row = sqlFetchArray($PLAN_results)) {
             $IMAGENPropuesta = "SELECT title, codes, notes FROM `list_options`
-                                WHERE `list_id` = 'Eye_todo_done_' AND `title` LIKE ? ";
+                                WHERE `list_id` = 'Eye_todo_done_" . $providerID . "' AND `title` LIKE ? ";
             $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
             if ($code_item['codes']) {
                 echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
@@ -484,7 +484,7 @@ function getEyeMagEncounterData($encounter, $pid)
                             form_eye_hpi,form_eye_ros,form_eye_vitals,
                             form_eye_acuity,form_eye_refraction,form_eye_biometrics,
                             form_eye_external, form_eye_antseg,form_eye_postseg,
-                            form_eye_neuro,form_eye_locking
+                            form_eye_neuro,form_eye_locking,form_eye_mag_wearing
                             where
                             forms.deleted != '1'  and
                             forms.formdir='eye_mag' and
@@ -501,6 +501,7 @@ function getEyeMagEncounterData($encounter, $pid)
                             forms.form_id=form_eye_postseg.id and
                             forms.form_id=form_eye_neuro.id and
                             forms.form_id=form_eye_locking.id and
+                            forms.form_id=form_eye_mag_wearing.FORM_ID and
                             forms.encounter=? and
                             forms.pid=? ";
 
@@ -692,123 +693,148 @@ function getDXoftalmoCIE10($form_id, $pid, $dxnum)
     }
 }
 
-function ExamOftal($form_encounter, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
-                   $SCODVA, $SCOSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
-                   $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS)
+function ExamOftal($form_encounter, $CC1, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,
+                   $SCODVA, $SCOSVA, $ODVA, $OSVA, $ODIOPAP, $OSIOPAP, $ODCONJ, $OSCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP,
+                   $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS, $colspan = '')
 {
     $dateform = getEncounterDateByEncounter($form_encounter);
     $ExamOFT = "<b>" . "(" . text(oeFormatSDFT(strtotime($dateform["date"]))) . ") " . "</b>";
 
-    if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $SCODVA || $SCOSVA || $ODIOPAP || $OSIOPAP || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
-        $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
-        if ($SCODVA) {
-            $ExamOFT = $ExamOFT . ("OD: " . $SCODVA . ", ");
+    $fields = [$CC1, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS, $SCODVA, $SCOSVA, $ODVA, $OSVA, $ODIOPAP, $OSIOPAP, $OSCONJ, $ODCONJ, $ODCORNEA, $OSCORNEA, $ODAC, $OSAC, $ODLENS, $OSLENS, $ODIRIS, $OSIRIS, $ODDISC, $OSDISC, $ODCUP, $OSCUP, $ODMACULA, $OSMACULA, $ODVESSELS, $OSVESSELS, $ODPERIPH, $OSPERIPH, $ODVITREOUS, $OSVITREOUS];
+
+    if (array_filter($fields)) {
+        if ($CC1) {
+            $ExamOFT .= $CC1 . ", ";
         }
-        if ($SCOSVA) {
-            $ExamOFT = $ExamOFT . ("OI: " . $SCOSVA . ", ");
+        if ($SCODVA || $SCOSVA) {
+            $ExamOFT .= "AVSC: ";
+            if ($SCODVA) {
+                $ExamOFT .= "OD: " . $SCODVA . ", ";
+            }
+            if ($SCOSVA) {
+                $ExamOFT .= "OI: " . $SCOSVA . ", ";
+            }
         }
-        if ($ODIOPAP) {
-            $ExamOFT = $ExamOFT . ("OD: " . $ODIOPAP . ", ");
+        if ($ODVA || $OSVA) {
+            $ExamOFT .= "AVCC: ";
+            if ($ODVA) {
+                $ExamOFT .= "OD: " . $ODVA . ", ";
+            }
+            if ($OSVA) {
+                $ExamOFT .= "OI: " . $OSVA . ", ";
+            }
         }
-        if ($OSIOPAP) {
-            $ExamOFT = $ExamOFT . ("OI: " . $OSIOPAP . ", ");
+
+        if ($ODIOPAP || $OSIOPAP) {
+            $ExamOFT .= "PIO: ";
+            if ($ODIOPAP) {
+                $ExamOFT .= "OD: " . $ODIOPAP . ", ";
+            }
+            if ($OSIOPAP) {
+                $ExamOFT .= "OI: " . $OSIOPAP . ", ";
+            }
         }
-        $ExamOFT = $ExamOFT . "Biomicroscopía: ";
+
         if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
-            $ExamOFT = $ExamOFT . "Examen Externo: ";
+            $ExamOFT .= "Examen Externo: ";
             if ($RBROW || $RUL || $RLL || $RMCT || $RADNEXA) {
-                $ExamOFT = $ExamOFT . "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
+                $ExamOFT .= "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
             }
             if ($LBROW || $LUL || $LLL || $LMCT || $LADNEXA) {
-                $ExamOFT = $ExamOFT . "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
+                $ExamOFT .= "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
             }
-            $ExamOFT = $ExamOFT . $EXT_COMMENTS;
+            $ExamOFT .= $EXT_COMMENTS;
         }
-        if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
-            $ExamOFT = $ExamOFT . "OD: ";
-        }
-        if ($ODCONJ) {
-            $ExamOFT = $ExamOFT . ("Conjuntiva " . $ODCONJ . ", ");
-        }
-        if ($ODCORNEA) {
-            $ExamOFT = $ExamOFT . ("Córnea " . $ODCORNEA . ", ");
-        }
-        if ($ODAC) {
-            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $ODAC . ", ");
-        }
-        if ($ODLENS) {
-            $ExamOFT = $ExamOFT . ("Cristalino " . $ODLENS . ", ");
-        }
-        if ($ODIRIS) {
-            $ExamOFT = $ExamOFT . ("Iris " . $ODIRIS . ", ");
-        }
-        if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
-            $ExamOFT = $ExamOFT . "OI: ";
-        }
-        if ($OSCONJ) {
-            $ExamOFT = $ExamOFT . ("Conjuntiva " . $OSCONJ . ", ");
-        }
-        if ($OSCORNEA) {
-            $ExamOFT = $ExamOFT . ("Córnea " . $OSCORNEA . ", ");
-        }
-        if ($OSAC) {
-            $ExamOFT = $ExamOFT . ("Cámara Anterior " . $OSAC . ", ");
-        }
-        if ($OSLENS) {
-            $ExamOFT = $ExamOFT . ("Cristalino " . $OSLENS . ", ");
-        }
-        if ($OSIRIS) {
-            $ExamOFT = $ExamOFT . ("Iris " . $OSIRIS . ", ");
+        if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS || $OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
+            $ExamOFT .= "Biomicroscopía: ";
+            if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
+                $ExamOFT .= "OD: ";
+            }
+            if ($ODCONJ) {
+                $ExamOFT .= "Conjuntiva " . $ODCONJ . ", ";
+            }
+            if ($ODCORNEA) {
+                $ExamOFT .= "Córnea " . $ODCORNEA . ", ";
+            }
+            if ($ODAC) {
+                $ExamOFT .= "Cámara Anterior " . $ODAC . ", ";
+            }
+            if ($ODLENS) {
+                $ExamOFT .= "Cristalino " . $ODLENS . ", ";
+            }
+            if ($ODIRIS) {
+                $ExamOFT .= "Iris " . $ODIRIS . ", ";
+            }
+            if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
+                $ExamOFT .= "OI: ";
+            }
+            if ($OSCONJ) {
+                $ExamOFT .= "Conjuntiva " . $OSCONJ . ", ";
+            }
+            if ($OSCORNEA) {
+                $ExamOFT .= "Córnea " . $OSCORNEA . ", ";
+            }
+            if ($OSAC) {
+                $ExamOFT .= "Cámara Anterior " . $OSAC . ", ";
+            }
+            if ($OSLENS) {
+                $ExamOFT .= "Cristalino " . $OSLENS . ", ";
+            }
+            if ($OSIRIS) {
+                $ExamOFT .= "Iris " . $OSIRIS . ", ";
+            }
         }
         if ($ODDISC || $OSDISC || $ODCUP || $OSCUP || $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
-            $ExamOFT = $ExamOFT . "Al fondo de ojo: ";
+            $ExamOFT .= "Al fondo de ojo: ";
         }
         //Retina Ojo Derecho
         if ($ODDISC || $ODCUP || $ODMACULA || $ODVESSELS || $ODPERIPH || $ODVITREOUS) {
-            $ExamOFT = $ExamOFT . "OD: ";
+            $ExamOFT .= "OD: ";
         }
         if ($ODDISC) {
-            $ExamOFT = $ExamOFT . ("Disco " . $ODDISC . ", ");
+            $ExamOFT .= "Disco " . $ODDISC . ", ";
         }
         if ($ODCUP) {
-            $ExamOFT = $ExamOFT . ("Copa " . $ODCUP . ", ");
+            $ExamOFT .= "Copa " . $ODCUP . ", ";
         }
         if ($ODMACULA) {
-            $ExamOFT = $ExamOFT . ("Mácula " . $ODMACULA . ", ");
+            $ExamOFT .= "Mácula " . $ODMACULA . ", ";
         }
         if ($ODVESSELS) {
-            $ExamOFT = $ExamOFT . ("Vasos " . $ODVESSELS . ", ");
+            $ExamOFT .= "Vasos " . $ODVESSELS . ", ";
         }
         if ($ODPERIPH) {
-            $ExamOFT = $ExamOFT . ("Periferia " . $ODPERIPH . ", ");
+            $ExamOFT .= "Periferia " . $ODPERIPH . ", ";
         }
         if ($ODVITREOUS) {
-            $ExamOFT = $ExamOFT . ("Vítreo " . $ODVITREOUS . ", ");
+            $ExamOFT .= "Vítreo " . $ODVITREOUS . ", ";
         }
         //Retina Ojo Izquierdo
         if ($OSDISC || $OSCUP || $OSMACULA || $OSVESSELS || $OSPERIPH || $OSVITREOUS) {
-            $ExamOFT = $ExamOFT . "OI: ";
+            $ExamOFT .= "OI: ";
         }
         if ($OSDISC) {
-            $ExamOFT = $ExamOFT . ("Disco " . $OSDISC . ", ");
+            $ExamOFT .= "Disco " . $OSDISC . ", ";
         }
         if ($OSCUP) {
-            $ExamOFT = $ExamOFT . ("Copa " . $OSCUP . ", ");
+            $ExamOFT .= "Copa " . $OSCUP . ", ";
         }
         if ($OSMACULA) {
-            $ExamOFT = $ExamOFT . ("Mácula " . $OSMACULA . ", ");
+            $ExamOFT .= "Mácula " . $OSMACULA . ", ";
         }
         if ($OSVESSELS) {
-            $ExamOFT = $ExamOFT . ("Vasos " . $OSVESSELS . ", ");
+            $ExamOFT .= "Vasos " . $OSVESSELS . ", ";
         }
         if ($OSPERIPH) {
-            $ExamOFT = $ExamOFT . ("Periferia " . $OSPERIPH . ", ");
+            $ExamOFT .= "Periferia " . $OSPERIPH . ", ";
         }
         if ($OSVITREOUS) {
-            $ExamOFT = $ExamOFT . ("Vítreo " . $OSVITREOUS . ", ");
+            $ExamOFT .= "Vítreo " . $OSVITREOUS . ", ";
         }
-        return wordwrap($ExamOFT, 160, "</TD></TR><tr><td class='linearesumen'>");
+        //$colspanAttribute = $colspan ? " colspan='$colspan'" : "";
+        return $ExamOFT;
     }
+    return '';
 }
 
 ?>

@@ -115,6 +115,74 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             vertical-align: middle;
             font-size: 7pt;
         }
+
+        td.moradopro {
+            text-align: left;
+            vertical-align: middle;
+            background-color: #CCCCFF;
+            font-size: 9pt;
+            font-weight: bold;
+            height: 18px;
+        }
+
+        td.verdepro {
+            height: 18px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #CCFFCC;
+            font-size: 7pt;
+            font-weight: bold;
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+        }
+
+        td.verde_leftpro {
+            height: 18px;
+            text-align: left;
+            vertical-align: middle;
+            background-color: #CCFFCC;
+            font-size: 7pt;
+            font-weight: bold;
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+        }
+
+        td.verde_normalpro {
+            height: 18px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #CCFFCC;
+            font-size: 7pt;
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+        }
+
+        td.blancopro {
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+            height: 18px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 7pt;
+        }
+
+        td.blanco_breakpro {
+            border-left: 3px solid #808080;
+            border-right: 3px solid #808080;
+            height: 20px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 7pt;
+        }
+
+        td.blanco_leftpro {
+            border-top: 1px solid #808080;
+            border-right: 1px solid #808080;
+            height: 18px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 7pt;
+        }
     </style>
 </HEAD>
 <BODY>
@@ -1480,120 +1548,120 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
 <pagebreak>
     <TABLE>
         <tr>
-            <td colspan="71" class="morado">A. DATOS DEL ESTABLECIMIENTO
+            <td colspan="71" class="moradopro">A. DATOS DEL ESTABLECIMIENTO
                 Y USUARIO / PACIENTE
             </td>
         </tr>
         <tr>
-            <td colspan="15" height="27" class="verde">INSTITUCIÓN DEL SISTEMA</td>
-            <td colspan="6" class="verde">UNICÓDIGO</td>
-            <td colspan="18" class="verde">ESTABLECIMIENTO DE SALUD</td>
-            <td colspan="18" class="verde">NÚMERO DE HISTORIA CLÍNICA ÚNICA</td>
-            <td colspan="14" class="verde" style="border-right: none">NÚMERO DE ARCHIVO</td>
+            <td colspan="15" height="27" class="verdepro">INSTITUCIÓN DEL SISTEMA</td>
+            <td colspan="6" class="verdepro">UNICÓDIGO</td>
+            <td colspan="18" class="verdepro">ESTABLECIMIENTO DE SALUD</td>
+            <td colspan="18" class="verdepro">NÚMERO DE HISTORIA CLÍNICA ÚNICA</td>
+            <td colspan="14" class="verdepro" style="border-right: none">NÚMERO DE ARCHIVO</td>
         </tr>
         <tr>
-            <td colspan="15" height="27" class="blanco"><?php echo $titleres['pricelevel']; ?></td>
-            <td colspan="6" class="blanco">&nbsp;</td>
-            <td colspan="18" class="blanco">ALTA VISION</td>
-            <td colspan="18" class="blanco"><?php echo $titleres['pubpid']; ?></td>
-            <td colspan="14" class="blanco" style="border-right: none"><?php echo $titleres['pubpid']; ?></td>
+            <td colspan="15" height="27" class="blancopro"><?php echo $titleres['pricelevel']; ?></td>
+            <td colspan="6" class="blancopro">&nbsp;</td>
+            <td colspan="18" class="blancopro">ALTA VISION</td>
+            <td colspan="18" class="blancopro"><?php echo $titleres['pubpid']; ?></td>
+            <td colspan="14" class="blancopro" style="border-right: none"><?php echo $titleres['pubpid']; ?></td>
         </tr>
         <tr>
-            <td colspan="15" rowspan="2" height="41" class="verde" style="height:31.0pt;">PRIMER APELLIDO</td>
-            <td colspan="13" rowspan="2" class="verde">SEGUNDO APELLIDO</td>
-            <td colspan="13" rowspan="2" class="verde">PRIMER NOMBRE</td>
-            <td colspan="10" rowspan="2" class="verde">SEGUNDO NOMBRE</td>
-            <td colspan="3" rowspan="2" class="verde">SEXO</td>
-            <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
-            <td colspan="3" rowspan="2" class="verde">EDAD</td>
-            <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
+            <td colspan="15" rowspan="2" height="41" class="verdepro" style="height:31.0pt;">PRIMER APELLIDO</td>
+            <td colspan="13" rowspan="2" class="verdepro">SEGUNDO APELLIDO</td>
+            <td colspan="13" rowspan="2" class="verdepro">PRIMER NOMBRE</td>
+            <td colspan="10" rowspan="2" class="verdepro">SEGUNDO NOMBRE</td>
+            <td colspan="3" rowspan="2" class="verdepro">SEXO</td>
+            <td colspan="6" rowspan="2" class="verdepro">FECHA NACIMIENTO</td>
+            <td colspan="3" rowspan="2" class="verdepro">EDAD</td>
+            <td colspan="8" class="verdepro" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
                     class="font7">(MARCAR)</font></td>
         </tr>
         <tr>
-            <td colspan="2" height="17" class="verde">H</td>
-            <td colspan="2" class="verde">D</td>
-            <td colspan="2" class="verde">M</td>
-            <td colspan="2" class="verde" style="border-right: none">A</td>
+            <td colspan="2" height="17" class="verdepro">H</td>
+            <td colspan="2" class="verdepro">D</td>
+            <td colspan="2" class="verdepro">M</td>
+            <td colspan="2" class="verdepro" style="border-right: none">A</td>
         </tr>
         <tr>
-            <td colspan="15" height="27" class="blanco"><?php echo $titleres['lname']; ?></td>
-            <td colspan="13" class="blanco"><?php echo $titleres['lname2']; ?></td>
-            <td colspan="13" class="blanco"><?php echo $titleres['fname']; ?></td>
-            <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
-            <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?>
+            <td colspan="15" height="27" class="blancopro"><?php echo $titleres['lname']; ?></td>
+            <td colspan="13" class="blancopro"><?php echo $titleres['lname2']; ?></td>
+            <td colspan="13" class="blancopro"><?php echo $titleres['fname']; ?></td>
+            <td colspan="10" class="blancopro"><?php echo $titleres['mname']; ?></td>
+            <td colspan="3" class="blancopro"><?php echo substr($titleres['sex'], 0, 1); ?>
             </td>
-            <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
+            <td colspan="6" class="blancopro"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
             <td colspan="3"
-                class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
-            <td colspan="2" class="blanco">&nbsp;</td>
-            <td colspan="2" class="blanco">&nbsp;</td>
-            <td colspan="2" class="blanco">&nbsp;</td>
-            <td colspan="2" class="blanco" style="border-right: none">X</td>
+                class="blancopro"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
+            <td colspan="2" class="blancopro">&nbsp;</td>
+            <td colspan="2" class="blancopro">&nbsp;</td>
+            <td colspan="2" class="blancopro">&nbsp;</td>
+            <td colspan="2" class="blancopro" style="border-right: none">X</td>
         </tr>
     </TABLE>
     <table>
         <tr>
-            <td colspan="10" class="morado">B. DIAGNÓSTICOS</td>
-            <td colspan="2" class="morado" style="text-align: center">CIE</td>
+            <td colspan="10" class="moradopro">B. DIAGNÓSTICOS</td>
+            <td colspan="2" class="moradopro" style="text-align: center">CIE</td>
         </tr>
         <tr>
-            <td colspan="2" width="18%" rowspan="3" class="verde_left">Pre Operatorio:</td>
-            <td class="verde_left" width="2%">1.</td>
-            <td class="blanco_left"
+            <td colspan="2" width="18%" rowspan="3" class="verde_leftpro">Pre Operatorio:</td>
+            <td class="verde_leftpro" width="2%">1.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre")); ?>
             </td>
             <td class="blanco" width="20%"
                 colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre"), 6); ?></td>
         </tr>
         <tr>
-            <td class="verde_left" width="2%">2.</td>
-            <td class="blanco_left"
+            <td class="verde_leftpro" width="2%">2.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre2")); ?>
             </td>
             <td class="blanco" width="20%"
                 colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre2"), 6); ?></td>
         </tr>
         <tr>
-            <td class="verde_left" width="2%">3.</td>
-            <td class="blanco_left"
+            <td class="verde_leftpro" width="2%">3.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre3")); ?>
             </td>
             <td class="blanco" width="20%"
                 colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre3"), 6); ?></td>
         </tr>
         <tr>
-            <td colspan="2" rowspan="3" class="verde_left">Post Operatorio:</td>
-            <td class="verde_left">1.</td>
-            <td class="blanco_left"
+            <td colspan="2" rowspan="3" class="verde_leftpro">Post Operatorio:</td>
+            <td class="verde_leftpro">1.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost")); ?></td>
             <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost"), 6); ?></td>
         </tr>
         <tr>
-            <td class="verde_left">2.</td>
-            <td class="blanco_left"
+            <td class="verde_leftpro">2.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost2")); ?></td>
             <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost2"), 6); ?></td>
         </tr>
         <tr>
-            <td class="verde_left">3.</td>
-            <td class="blanco_left"
+            <td class="verde_leftpro">3.</td>
+            <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost3")); ?></td>
             <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost3"), 6); ?></td>
         </tr>
     </table>
     <table>
         <tr>
-            <td colspan="11" class="morado">C. PROCEDIMIENTO</td>
-            <td colspan="2" class="verde_left" style="text-align: center">Electiva</td>
-            <td colspan="1" class="blanco" style="text-align: center">X</td>
-            <td colspan="2" class="verde_left" style="text-align: center">Emergencia</td>
-            <td colspan="1" class="blanco" style="text-align: center"></td>
-            <td colspan="2" class="verde_left" style="text-align: center">Urgencia</td>
-            <td colspan="1" class="blanco" style="text-align: center"></td>
+            <td colspan="11" class="moradopro">C. PROCEDIMIENTO</td>
+            <td colspan="2" class="verde_leftpro" style="text-align: center">Electiva</td>
+            <td colspan="1" class="blancopro" style="text-align: center">X</td>
+            <td colspan="2" class="verde_leftpro" style="text-align: center">Emergencia</td>
+            <td colspan="1" class="blancopro" style="text-align: center"></td>
+            <td colspan="2" class="verde_leftpro" style="text-align: center">Urgencia</td>
+            <td colspan="1" class="blancopro" style="text-align: center"></td>
         </tr>
         <tr>
-            <td colspan="2" class="verde_left">Proyectado:</td>
-            <td class="blanco_left"
+            <td colspan="2" class="verde_leftpro">Proyectado:</td>
+            <td class="blanco_leftpro"
                 colspan="18"><?php
                 echo obtenerIntervencionesPropuestas(getFieldValue($form_id, "Prot_opp")) . " ";
                 $ojoValue = getFieldValue($form_id, "Prot_ojo");
@@ -1615,8 +1683,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 ?></td>
         </tr>
         <tr>
-            <td colspan="2" class="verde_left">Realizado:</td>
-            <td class="blanco_left"
+            <td colspan="2" class="verde_leftpro">Realizado:</td>
+            <td class="blanco_leftpro"
                 colspan="18">
                 <?php
                 echo implode('/', $codes);
@@ -1641,57 +1709,59 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
     </table>
     <table>
         <tr>
-            <td class="morado" colspan="20">D. INTEGRANTES DEL EQUIPO QUIRÚRGICO</td>
+            <td class="moradopro" colspan="20">D. INTEGRANTES DEL EQUIPO QUIRÚRGICO</td>
         </tr>
         <tr>
-            <td class="verde_left" colspan="2">Cirujano 1:</td>
-            <td class="blanco" colspan="8"><?php echo $providerNAME; ?></td>
-            <td class="verde_left" colspan="2">Instrumentista:</td>
-            <td class="blanco" colspan="8"><?php
+            <td class="verde_leftpro" colspan="2">Cirujano 1:</td>
+            <td class="blancopro" colspan="8"><?php echo $providerNAME; ?></td>
+            <td class="verde_leftpro" colspan="2">Instrumentista:</td>
+            <td class="blancopro" colspan="8"><?php
                 $instrumentistaOK = getFieldValue($form_id, "Prot_Instrumentistas");
                 if ($instrumentistaOK == 'Si') {
                     echo "Dr. Jorge Luis de Vera";
                 } ?></td>
         </tr>
         <tr>
-            <td class="verde_left" colspan="2">Cirujano 2:</td>
-            <td class="blanco" colspan="8"><?php echo getProviderName(getFieldValue($form_id, "Prot_Cirujano")); ?></td>
-            <td class="verde_left" colspan="2">Circulante:</td>
-            <td class="blanco" colspan="8"><?php
+            <td class="verde_leftpro" colspan="2">Cirujano 2:</td>
+            <td class="blancopro"
+                colspan="8"><?php echo getProviderName(getFieldValue($form_id, "Prot_Cirujano")); ?></td>
+            <td class="verde_leftpro" colspan="2">Circulante:</td>
+            <td class="blancopro" colspan="8"><?php
                 echo getFieldValue($form_id, "Prot_opr") == "avastin" ? " " : "Lcda. Solange Vega";
                 ?></td>
         </tr>
         <tr>
-            <td class="verde_left" colspan="3">Primer Ayudante:</td>
-            <td class="blanco" colspan="7"><?php echo getProviderName(getFieldValue($form_id, "Prot_ayudante")); ?></td>
-            <td class="verde_left" colspan="3">Anestesiologo/a:</td>
-            <td class="blanco"
+            <td class="verde_leftpro" colspan="3">Primer Ayudante:</td>
+            <td class="blancopro"
+                colspan="7"><?php echo getProviderName(getFieldValue($form_id, "Prot_ayudante")); ?></td>
+            <td class="verde_leftpro" colspan="3">Anestesiologo/a:</td>
+            <td class="blancopro"
                 colspan="7"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
         </tr>
         <tr>
-            <td class="verde_left" colspan="3">Segundo Ayudante:</td>
-            <td class="blanco" colspan="7"></td>
-            <td class="verde_left" colspan="3">Ayudante Anestesia:</td>
-            <td class="blanco" colspan="7"></td>
+            <td class="verde_leftpro" colspan="3">Segundo Ayudante:</td>
+            <td class="blancopro" colspan="7"></td>
+            <td class="verde_leftpro" colspan="3">Ayudante Anestesia:</td>
+            <td class="blancopro" colspan="7"></td>
         </tr>
         <tr>
-            <td class="verde_left" colspan="3">Tercer Ayudante:</td>
-            <td class="blanco" colspan="7"></td>
-            <td class="verde_left" colspan="1">Otros:</td>
-            <td class="blanco" colspan="9"></td>
+            <td class="verde_leftpro" colspan="3">Tercer Ayudante:</td>
+            <td class="blancopro" colspan="7"></td>
+            <td class="verde_leftpro" colspan="1">Otros:</td>
+            <td class="blancopro" colspan="9"></td>
         </tr>
     </table>
     <table>
         <tr>
-            <td colspan="70" class="morado">F. TIEMPOS QUIRÚRGICOS</td>
+            <td colspan="70" class="moradopro">F. TIEMPOS QUIRÚRGICOS</td>
         </tr>
         <tr>
-            <td colspan="19" rowspan="2" class="verde">FECHA DE OPERACIÓN</td>
-            <td colspan="5" class="verde">DIA</td>
-            <td colspan="5" class="verde">MES</td>
-            <td colspan="5" class="verde">AÑO</td>
-            <td colspan="18" class="verde">HORA DE INICIO</td>
-            <td colspan="18" class="verde">HORA DE TERMINACIÓN</td>
+            <td colspan="19" rowspan="2" class="verdepro">FECHA DE OPERACIÓN</td>
+            <td colspan="5" class="verdepro">DIA</td>
+            <td colspan="5" class="verdepro">MES</td>
+            <td colspan="5" class="verdepro">AÑO</td>
+            <td colspan="18" class="verdepro">HORA DE INICIO</td>
+            <td colspan="18" class="verdepro">HORA DE TERMINACIÓN</td>
         </tr>
         <tr>
             <?php
@@ -1705,6 +1775,10 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 $prot_hfinal_timestamp = $prot_hini_timestamp + 3600;
             } elseif (strpos($prot_opr_value, 'vpp') !== false) {
                 $prot_hfinal_timestamp = $prot_hini_timestamp + 10800;
+            } elseif (strpos($prot_opr_value, 'extaceite') !== false) {
+                $prot_hfinal_timestamp = $prot_hini_timestamp + 10800;
+            } elseif (strpos($prot_opr_value, 'facovpp') !== false) {
+                $prot_hfinal_timestamp = $prot_hini_timestamp + 10800;
             } else {
                 $prot_hfinal_timestamp = $prot_hini_timestamp + 7200;
             }
@@ -1717,30 +1791,30 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             $pot_hpre = date("H:i", $prot_hpre_timestamp);
             $pot_halta = date("H:i", $prot_halta_timestamp);
             ?>
-            <td colspan="5" class="blanco"><?php echo $dateddia; ?></td>
-            <td colspan="5" class="blanco"><?php echo $datedmes; ?></td>
-            <td colspan="5" class="blanco"><?php echo $datedano; ?></td>
-            <td colspan="18" class="blanco"><?php echo $pot_hinicio; ?></td>
-            <td colspan="18" class="blanco"><?php echo $pot_hfinal; ?></td>
+            <td colspan="5" class="blancopro"><?php echo $dateddia; ?></td>
+            <td colspan="5" class="blancopro"><?php echo $datedmes; ?></td>
+            <td colspan="5" class="blancopro"><?php echo $datedano; ?></td>
+            <td colspan="18" class="blancopro"><?php echo $pot_hinicio; ?></td>
+            <td colspan="18" class="blancopro"><?php echo $pot_hfinal; ?></td>
         </tr>
         <tr>
-            <td colspan="15" class="verde_left">Dieresis:</td>
+            <td colspan="15" class="verde_leftpro">Dieresis:</td>
             <td colspan="55"
-                class="blanco_left"><?php echo obtenerDieresis(getFieldValue($form_id, "Prot_dieresis")); ?></td>
+                class="blanco_leftpro"><?php echo obtenerDieresis(getFieldValue($form_id, "Prot_dieresis")); ?></td>
         </tr>
         <tr>
-            <td colspan="15" class="verde_left">Exposición y Exploración:</td>
+            <td colspan="15" class="verde_leftpro">Exposición y Exploración:</td>
             <td colspan="55"
-                class="blanco_left"><?php echo obtenerExposicion(getFieldValue($form_id, "Prot_expo")); ?></td>
+                class="blanco_leftpro"><?php echo obtenerExposicion(getFieldValue($form_id, "Prot_expo")); ?></td>
         </tr>
         <tr>
-            <td colspan="15" class="verde_left">Hallazgos Quirúrgicos:</td>
-            <td colspan="55" class="blanco_left"><?php echo getFieldValue($form_id, "Prot_halla"); ?></td>
+            <td colspan="15" class="verde_leftpro">Hallazgos Quirúrgicos:</td>
+            <td colspan="55" class="blanco_leftpro"><?php echo getFieldValue($form_id, "Prot_halla"); ?></td>
         </tr>
         <tr>
-            <td colspan="15" class="verde_left">Procedimiento Quirúrgicos:</td>
+            <td colspan="15" class="verde_leftpro">Procedimiento Quirúrgicos:</td>
             <td colspan="55"
-                class="blanco_left"><?php echo html_entity_decode(html_entity_decode(getFieldValue($form_id, "Prot_proced"))); ?></td>
+                class="blanco_leftpro"><?php echo html_entity_decode(html_entity_decode(getFieldValue($form_id, "Prot_proced"))); ?></td>
         </tr>
     </table>
     <table style="border: none">

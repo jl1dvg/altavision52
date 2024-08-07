@@ -33,6 +33,8 @@ if ($proced_id == '65855') {
     $proced_id = 'frp';
 } elseif ($proced_id == '281351') {
     $proced_id = 'prp';
+} elseif ($proced_id == '281340') {
+    $proced_id = 'prp';
 }
 
 ?>
@@ -71,39 +73,9 @@ if ($proced_id == '65855') {
             border-right: 1px solid #808080;
         }
 
-        td.verde_left {
-            height: 23px;
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 7pt;
-            font-weight: bold;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        td.verde_normal {
-            height: 23px;
-            text-align: center;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 7pt;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
         td.blanco {
             border-top: 1px solid #808080;
             border-right: 1px solid #808080;
-            height: 21px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 7pt;
-        }
-
-        td.blanco_break {
-            border-left: 3px solid #808080;
-            border-right: 3px solid #808080;
             height: 21px;
             text-align: center;
             vertical-align: middle;
@@ -149,8 +121,7 @@ if ($proced_id == '65855') {
         <td colspan="3" rowspan="2" class="verde">SEXO</td>
         <td colspan="6" rowspan="2" class="verde">FECHA NACIMIENTO</td>
         <td colspan="3" rowspan="2" class="verde">EDAD</td>
-        <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD <font
-                class="font7">(MARCAR)</font></td>
+        <td colspan="8" class="verde" style="border-right: none; border-bottom: none">CONDICIÓN EDAD (MARCAR)</td>
     </tr>
     <tr>
         <td colspan="2" height="17" class="verde">H</td>
@@ -219,17 +190,17 @@ if ($proced_id == '65855') {
         </td>
         <td colspan="44" class="blanco_left">
             <?php
-            $prot_dxpre1 = lookup_code_short_descriptions($resultadoDX);
-            $descriptions = $prot_dxpre1;
-
-            echo $descriptions;
+            foreach ($resultadoDX as $resultado) {
+                echo $resultado['codedesc'] . "<br>";
+            }
             ?>
         </td>
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
             <?php
-            $prot_dxpre1 = $resultadoDX;
-            echo $prot_dxpre1; ?>
+            foreach ($resultadoDX as $resultado) {
+                echo $resultado['code'] . "<br>";
+            } ?>
         </td>
     </tr>
     <tr>
