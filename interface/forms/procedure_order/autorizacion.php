@@ -6,8 +6,8 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/patient.inc");
 require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
-include_once($GLOBALS["srcdir"]."/api.inc");
-require_once(dirname(__FILE__) ."/../../../library/lists.inc");
+include_once($GLOBALS["srcdir"] . "/api.inc");
+require_once(dirname(__FILE__) . "/../../../library/lists.inc");
 
 use OpenEMR\Services\FacilityService;
 
@@ -16,7 +16,7 @@ $form_folder = "eye_mag";
 
 $facilityService = new FacilityService();
 
-require_once("../../forms/".$form_folder."/php/".$form_folder."_functions.php");
+require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
 //Datos del PACIENTE
 $titleres = getPatientData($pid, "pubpid,fname,mname,lname, lname2, genericval1, providerID,DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS");
@@ -48,7 +48,7 @@ $query = "  select  *,form_encounter.date as encounter_date
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
 //Fecha del form_eye_mag
-$queryProced="select * from procedure_order_code AS PO
+$queryProced = "select * from procedure_order_code AS PO
                 left join procedure_order as POC on (PO.procedure_order_id = POC.procedure_order_id)
                 where
                 patient_id=? and
@@ -58,17 +58,17 @@ $queryProced="select * from procedure_order_code AS PO
                 ORDER BY ojo";
 
 $OI = "OI";
-$order_dataOD = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
-$order_dataOI = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
-$order_dataAO = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
-$order_dataF = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
+$order_dataOD = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
+$order_dataOI = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
+$order_dataAO = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
+$order_dataF = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
 $order_fecha = sqlFetchArray($order_dataF);
-$order_OD = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
-$order_OI = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
-$order_AO = sqlStatement($queryProced, array($pid,$encounter,$_GET['formid']));
+$order_OD = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
+$order_OI = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
+$order_AO = sqlStatement($queryProced, array($pid, $encounter, $_GET['formid']));
 
 
-$providerID  =  getProviderIdOfEncounter($encounter);
+$providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
 
 
@@ -89,7 +89,7 @@ $meses_EN = array("January", "February", "March", "April", "May", "June", "July"
 $nombreMes = str_replace($meses_EN, $meses_ES, $datedmes);
 
 //Procedimientos solicitados
-$NombreProcedimiento =  $CarePlanSQL['procedure_name'];
+$NombreProcedimiento = $CarePlanSQL['procedure_name'];
 $CodigoProcedimiento = $CarePlanSQL['procedure_code'];
 $OjoProcedimiento = $CarePlanSQL['description'];
 $Procedimiento = $CarePlanSQL['codetext'];
@@ -171,7 +171,8 @@ ob_start();
                 <h2><?php echo $facility['name'] ?></h2>
                 <p class="texto">
                     <?php echo $facility['street'] ?><br>
-                    <?php echo $facility['city'] ?>, <?php echo $facility['country_code'] ?> <?php echo $facility['postal_code'] ?><br clear='all'>
+                    <?php echo $facility['city'] ?>
+                    , <?php echo $facility['country_code'] ?> <?php echo $facility['postal_code'] ?><br clear='all'>
                     <b>Telfs: </b><?php echo $facility['phone'] ?><br>
                     <b>E-mail: </b><?php echo $facility['email'] ?>
                 </p>
@@ -182,10 +183,11 @@ ob_start();
     <hr>
 </page_header>
 <P STYLE="margin-bottom: 0.14in" align="right"><FONT SIZE=2 STYLE="font-size: 9pt">Guayaquil,
-        <?php echo($dateddia); ?> de  <?php echo($nombreMes); ?> del <?php echo($datedano); ?><br/><br/></FONT></P>
+        <?php echo($dateddia); ?> de <?php echo($nombreMes); ?> del <?php echo($datedano); ?><br/><br/></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Se&ntilde;or
-        </FONT></P>
-<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B><?php echo getResponsableName(56);?></B></FONT></P>
+    </FONT></P>
+<P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B><?php echo getResponsableName(56); ?></B></FONT>
+</P>
 <P STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt"><B>COORDINADOR
             PROVINCIAL DE PRESTACIONES DEL SEGURO DE SALUD GUAYAS</B></FONT></P>
 <P STYLE="margin-bottom: 0.14in"><A NAME="_GoBack"></A><FONT SIZE=2 STYLE="font-size: 9pt">Cuidad.
@@ -195,24 +197,27 @@ ob_start();
         mis consideraciones:</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-bottom: 0.14in"><FONT SIZE=2 STYLE="font-size: 9pt">Por
         medio de la presente comunico que mantenemos el siguiente expediente
-        del paciente </FONT><FONT SIZE=2><B><?php echo text($titleres['lname']) . " " . text($titleres['lname2']) . " " . text($titleres['fname']) . " " . text($titleres['mname']) ?> CON
-            C.I. <?php  echo text($titleres['pubpid']) ?></B></FONT><FONT SIZE=2>, </FONT><FONT SIZE=2><B>CON
-            SEGURO IESS <?php echo text($titleres['genericval1']) ?>, </B></FONT><FONT SIZE=2>Paciente que necesita:</FONT><FONT COLOR="#000000"><FONT FACE="Arial, serif"><FONT SIZE=1 STYLE="font-size: 8pt"><B>
+        del paciente </FONT><FONT
+        SIZE=2><B><?php echo text($titleres['lname']) . " " . text($titleres['lname2']) . " " . text($titleres['fname']) . " " . text($titleres['mname']) ?>
+            CON
+            C.I. <?php echo text($titleres['pubpid']) ?></B></FONT><FONT SIZE=2>, </FONT><FONT SIZE=2><B>CON
+            SEGURO IESS <?php echo text($titleres['genericval1']) ?>, </B></FONT><FONT SIZE=2>Paciente que
+        necesita:</FONT><FONT COLOR="#000000"><FONT FACE="Arial, serif"><FONT SIZE=1 STYLE="font-size: 8pt"><B>
                     <?php
-                    $i='0';
+                    $i = '0';
                     while ($order_list = sqlFetchArray($order_dataOD)) {
-                        $newORDERdata =  array (
-                            'procedure_name'       => $order_list['procedure_name'],
-                            'procedure_code'       => $order_list['procedure_code'],
-                            'ojo'                  => $order_list['ojo'],
-                            'dosis'                  => $order_list['dosis'],
+                        $newORDERdata = array(
+                            'procedure_name' => $order_list['procedure_name'],
+                            'procedure_code' => $order_list['procedure_code'],
+                            'ojo' => $order_list['ojo'],
+                            'dosis' => $order_list['dosis'],
                         );
                         if ($newORDERdata['ojo'] == 'OD') {
                             print($newORDERdata['procedure_name']) . " (" . ($newORDERdata['procedure_code']) . "), ";
                             if ($newORDERdata['dosis']) {
                                 print ($newORDERdata['dosis']) . " dosis ";
                             }
-                            $ORDER_items[$i] =$newORDERdata;
+                            $ORDER_items[$i] = $newORDERdata;
                             $i++;
                         }
                     }
@@ -222,20 +227,20 @@ ob_start();
                             break;
                         }
                     }
-                    $i='0';
+                    $i = '0';
                     while ($order_list = sqlFetchArray($order_dataOI)) {
-                        $newORDERdata =  array (
-                            'procedure_name'       => $order_list['procedure_name'],
-                            'procedure_code'       => $order_list['procedure_code'],
-                            'ojo'                  => $order_list['ojo'],
-                            'dosis'                  => $order_list['dosis'],
+                        $newORDERdata = array(
+                            'procedure_name' => $order_list['procedure_name'],
+                            'procedure_code' => $order_list['procedure_code'],
+                            'ojo' => $order_list['ojo'],
+                            'dosis' => $order_list['dosis'],
                         );
                         if ($newORDERdata['ojo'] == 'OI') {
                             print($newORDERdata['procedure_name']) . " (" . ($newORDERdata['procedure_code']) . "), ";
                             if ($newORDERdata['dosis']) {
                                 print ($newORDERdata['dosis']) . " dosis ";
                             }
-                            $ORDER_items[$i] =$newORDERdata;
+                            $ORDER_items[$i] = $newORDERdata;
                             $i++;
                         }
                     }
@@ -245,20 +250,20 @@ ob_start();
                             break;
                         }
                     }
-                    $i='0';
+                    $i = '0';
                     while ($order_list = sqlFetchArray($order_dataAO)) {
-                        $newORDERdata =  array (
-                            'procedure_name'       => $order_list['procedure_name'],
-                            'procedure_code'       => $order_list['procedure_code'],
-                            'ojo'                  => $order_list['ojo'],
-                            'dosis'                  => $order_list['dosis'],
+                        $newORDERdata = array(
+                            'procedure_name' => $order_list['procedure_name'],
+                            'procedure_code' => $order_list['procedure_code'],
+                            'ojo' => $order_list['ojo'],
+                            'dosis' => $order_list['dosis'],
                         );
                         if ($newORDERdata['ojo'] == 'AO') {
                             print($newORDERdata['procedure_name']) . " (" . ($newORDERdata['procedure_code']) . "), ";
                             if ($newORDERdata['dosis']) {
                                 print ($newORDERdata['dosis']) . " dosis ";
                             }
-                            $ORDER_items[$i] =$newORDERdata;
+                            $ORDER_items[$i] = $newORDERdata;
                             $i++;
                         }
                     }
@@ -271,14 +276,17 @@ ob_start();
                     echo $order_fecha['clinical_hx'] . "<br />";
 
                     ?> </B></FONT></FONT></FONT><FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 9pt"><B>
-            </B></FONT><FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 9pt">Solicitamos su respectiva aprobaci&oacute;n para dicho acto quir&uacute;rgico. </FONT></FONT>
+            </B></FONT><FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 9pt">Solicitamos su respectiva aprobaci&oacute;n
+                para dicho acto quir&uacute;rgico. </FONT></FONT>
 </P>
 <P ALIGN=JUSTIFY STYLE="margin-bottom: 0.14in"><FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 9pt">Por
             la atenci&oacute;n otorgada a la presente le manifiesto mi
             agradecimiento y compromiso permanente por la atenci&oacute;n con
             celeridad, calidad esmerada y eficiente a los afiliados del IESS.</FONT></FONT></P>
 
-<P ALIGN=JUSTIFY STYLE="margin-bottom: 0.14in"><FONT COLOR="#000000"><FONT SIZE=2 STYLE="font-size: 9pt">Atentamente,</FONT></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-bottom: 0.14in"><FONT COLOR="#000000"><FONT SIZE=2
+                                                                           STYLE="font-size: 9pt">Atentamente,</FONT></FONT>
+</P>
 <P class="texto"><BR><BR>
 </P>
 <br>

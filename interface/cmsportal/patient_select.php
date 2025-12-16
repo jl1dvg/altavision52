@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Patient matching and selection for the WordPress Patient Portal.
  *
@@ -17,6 +16,9 @@
  * @package OpenEMR
  * @author  Rod Roark <rod@sunsetsystems.com>
  */
+
+
+
 
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
@@ -36,7 +38,7 @@ if ($postid) {
 ?>
 <html>
 <head>
-<?php Header::setupHeader('no_dialog'); ?>
+<?php Header::setupHeader(['no_bootstrap', 'no_fontawesome', 'no_textformat', 'no_dialog']); ?>
 <style>
 
 #searchResults {
@@ -47,29 +49,32 @@ if ($postid) {
 #searchResults table {
   width: 96%;
   border-collapse: collapse;
-  background-color: var(--white);
+  background-color: white;
 }
 #searchResults th {
-  background-color: var(--gray300);
-  font-size: 0.7rem;
+  background-color: lightgrey;
+  font-size: 0.7em;
   text-align: left;
 }
 #searchResults td {
-  font-size: 0.7rem;
-  border-bottom: 1px solid var(--gray200);
+  font-size: 0.7em;
+  border-bottom: 1px solid #eee;
   cursor: hand;
   cursor: pointer;
 }
 
 .highlight {
-  background-color: var(--primary);
-  color: var(--white);
+  background-color: #336699;
+  color: white;
 }
+
+.oneResult {}
+
 </style>
 
-<script>
+<script language="JavaScript">
 
-$(function () {
+$(function(){
   $(".oneresult").on("mouseover", function() {$(this).addClass("highlight");});
   $(".oneresult").on("mouseout", function() {$(this).removeClass("highlight");});
 });
@@ -187,12 +192,12 @@ if ($postid) {
    <th><?php echo xlt('Address'); ?></th>
   </tr>
   <tr>
-   <th class='font-weight-normal'><?php echo text($result['post']['user']); ?></th>
-   <th class='font-weight-normal'><?php echo text("$lname, $fname"); ?></th>
-   <th class='font-weight-normal'><?php echo text($phone); ?></th>
-   <th class='font-weight-normal'><?php echo text($ssn); ?></th>
-   <th class='font-weight-normal'><?php echo text($dob); ?></th>
-   <th class='font-weight-normal'><?php echo text($result['fields']['street'] . ' ' . $zip); ?></th>
+   <th style='font-weight:normal'><?php echo text($result['post']['user']); ?></th>
+   <th style='font-weight:normal'><?php echo text("$lname, $fname"); ?></th>
+   <th style='font-weight:normal'><?php echo text($phone); ?></th>
+   <th style='font-weight:normal'><?php echo text($ssn); ?></th>
+   <th style='font-weight:normal'><?php echo text($dob); ?></th>
+   <th style='font-weight:normal'><?php echo text($result['fields']['street'] . ' ' . $zip); ?></th>
   </tr>
 
     <?php
@@ -230,7 +235,7 @@ if ($postid) {
          ")\">\n";
         echo "   <td";
         if ($row['cmsportal_login'] !== '' && $result['post']['user'] !== $row['cmsportal_login']) {
-            echo " class='text-danger' title='" . xla('Portal ID does not match request from portal!') . "'";
+            echo " style='color:red' title='" . xla('Portal ID does not match request from portal!') . "'";
         }
 
         echo ">" . text($row['cmsportal_login']) . "</td>\n";
@@ -251,18 +256,20 @@ if ($login_matches == 1) {
   // There is exactly one match by portal login name, this must be it.
   // There should not be more than one, but if there is then we will
   // leave them onscreen and let the user choose.
-    echo "<script>\n";
+    echo "<script language='JavaScript'>\n";
     echo "openPatient('" . addslashes($login_pid) . "');\n";
     echo "</script>\n";
 }
 ?>
 
-<div class='btn-group'>
-  <input type='button' class='btn btn-primary' value='<?php echo xla('Add New Patient'); ?>' onclick="openPatient(0)" />
-  <input type='button' class='btn btn-secondary' value='<?php echo xla('Back'); ?>' onclick="myRestoreSession();location='list_requests.php'" />
-</div>
+<p>
+<input type='button' value='<?php echo xla('Add New Patient'); ?>' onclick="openPatient(0)" />
+&nbsp;
+<input type='button' value='<?php echo xla('Back'); ?>' onclick="myRestoreSession();location='list_requests.php'" />
+</p>
 
 </form>
 </center>
 </body>
 </html>
+

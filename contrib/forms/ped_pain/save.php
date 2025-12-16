@@ -1,5 +1,4 @@
 <?php
-
 //
 
 require_once("../../globals.php");
@@ -18,14 +17,14 @@ if ($_GET["mode"] == "new") {
 	groupname = ?,
 	user = ?
 	authorized =,
-	activity =1,
+	activity =1, 
 	date = NOW(),
 	location = ?,
 	duration = ?,
 	severity = ?,
-	fever = ?,
+	fever = ?,	
 	lethargy = ?,
-	vomiting = ?,
+	vomiting = ?,	
 	oral_hydration_capable = ?,
 	urine_output_last_6_hours = ?,
 	pain_with_urination = ?,
@@ -43,6 +42,7 @@ if ($_GET["mode"] == "new") {
 }
 
 
+$_SESSION["encounter"] = $encounter;
 
 formHeader("Redirecting....");
 formJump();

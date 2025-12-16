@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Instructions for loading DSM IV Database
  *
@@ -22,6 +21,8 @@
  * @link    http://www.open-emr.org
  */
 
+
+
 require_once("../../interface/globals.php");
 
 ?>
@@ -30,6 +31,6 @@ require_once("../../interface/globals.php");
 <ol>
 <li><?php echo xlt("This feature is not yet available"); ?> </li>
 </ol>
-<br />
+<br>
 </p>
 </div>

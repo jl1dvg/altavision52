@@ -193,7 +193,7 @@ if ($pid && $encounter && $proced_id) {
             // Realizar acciones con los items extraídos
             foreach ($items
 
-            as $item) {
+            as $item) { 
             echo $item['name'];
             ?> en ojo derecho.
         </td>

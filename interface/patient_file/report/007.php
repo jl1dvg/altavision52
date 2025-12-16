@@ -6,130 +6,85 @@ require '/var/www/html/altavision/vendor/autoload.php';
 
 use Dotenv\Dotenv;
 
-// Cambiar la ruta a la raíz del proyecto donde está el archivo .env
-$dotenv = Dotenv::create('/var/www/html/altavision');
-$dotenv->load();
+if (!function_exists('generateEnfermedadProblemaActual')) {
+    function generateEnfermedadProblemaActual($motivoConsulta, $examenFisico)
+    {
+        $apiKey = getenv('OPENAI_API_KEY');
 
-//ini_set('display_errors', 1);
-//ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+        if (!$apiKey) {
+            die('API key is missing. Please set your OpenAI API key.');
+        }
 
-function improveText($text)
-{
-    $apiKey = getenv('OPENAI_API_KEY');
-
-    if (!$apiKey) {
-        die('API key is missing. Please set your OpenAI API key.');
-    }
-
-    $data = [
-        'model' => 'gpt-3.5-turbo',
-        'messages' => [
-            ['role' => 'system', 'content' => 'Eres un asistente que corrige y mejora textos.'],
-            ['role' => 'user', 'content' => "Corrige y mejora el siguiente texto con mejor gramática y ortografía:\n\n" . $text]
-        ],
-        'max_tokens' => 500
-    ];
-
-    $options = [
-        'http' => [
-            'header' => "Content-type: application/json\r\nAuthorization: Bearer $apiKey\r\n",
-            'method' => 'POST',
-            'content' => json_encode($data),
-            'ignore_errors' => true // Capturar errores HTTP
-        ],
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents('https://api.openai.com/v1/chat/completions', false, $context);
-
-    if ($response === FALSE) {
-        $error = error_get_last();
-        die('Error occurred: ' . $error['message']);
-    }
-
-    $responseData = json_decode($response, true);
-
-    if (isset($responseData['error'])) {
-        die('API Error: ' . $responseData['error']['message']);
-    }
-
-    return $responseData['choices'][0]['message']['content'];
-}
-
-function generateEnfermedadProblemaActual($motivoConsulta, $examenFisico)
-{
-    $apiKey = getenv('OPENAI_API_KEY');
-
-    if (!$apiKey) {
-        die('API key is missing. Please set your OpenAI API key.');
-    }
-
-    // Definir el prompt
-    $prompt = "
+        // Definir el prompt
+        $prompt = "
     Motivo de consulta: $motivoConsulta
     Examen físico oftalmológico: $examenFisico
 
     Basándote en el motivo de consulta y los hallazgos del examen físico, redacta el Problema Actual del paciente de manera breve, sencilla y usando un lenguaje cotidiano, como si el paciente mismo estuviera describiendo su problema, sin darme datos de la examinacion sino de la posible sintomatologia del paciente.
     ";
 
-    $data = [
-        'model' => 'gpt-3.5-turbo',
-        'messages' => [
-            ['role' => 'system', 'content' => 'Eres un asistente médico que ayuda a redactar informes clínicos detallados.'],
-            ['role' => 'user', 'content' => $prompt]
-        ],
-        'max_tokens' => 150
-    ];
+        $data = [
+            'model' => 'gpt-3.5-turbo',
+            'messages' => [
+                ['role' => 'system', 'content' => 'Eres un asistente médico que ayuda a redactar informes clínicos detallados.'],
+                ['role' => 'user', 'content' => $prompt]
+            ],
+            'max_tokens' => 150
+        ];
 
-    $options = [
-        'http' => [
-            'header' => "Content-type: application/json\r\nAuthorization: Bearer $apiKey\r\n",
-            'method' => 'POST',
-            'content' => json_encode($data),
-            'ignore_errors' => true // Capturar errores HTTP
-        ],
-    ];
+        $options = [
+            'http' => [
+                'header' => "Content-type: application/json\r\nAuthorization: Bearer $apiKey\r\n",
+                'method' => 'POST',
+                'content' => json_encode($data),
+                'ignore_errors' => true // Capturar errores HTTP
+            ],
+        ];
 
-    $context = stream_context_create($options);
-    $response = file_get_contents('https://api.openai.com/v1/chat/completions', false, $context);
+        $context = stream_context_create($options);
+        $response = file_get_contents('https://api.openai.com/v1/chat/completions', false, $context);
 
-    if ($response === FALSE) {
-        $error = error_get_last();
-        die('Error occurred: ' . $error['message']);
+        if ($response === FALSE) {
+            $error = error_get_last();
+            die('Error occurred: ' . $error['message']);
+        }
+
+        $responseData = json_decode($response, true);
+
+        if (isset($responseData['error'])) {
+            die('API Error: ' . $responseData['error']['message']);
+        }
+
+        return $responseData['choices'][0]['message']['content'];
     }
-
-    $responseData = json_decode($response, true);
-
-    if (isset($responseData['error'])) {
-        die('API Error: ' . $responseData['error']['message']);
-    }
-
-    return $responseData['choices'][0]['message']['content'];
 }
 
-function getMedicalProblems($pid)
-{
-    $query = "SELECT diagnosis FROM lists WHERE pid = ? AND type = ?";
-    $result = sqlStatement($query, array($pid, 'medical_problem'));
-    $diagnoses = [];
 
-    while ($row = sqlFetchArray($result)) {
-        $diagnoses[] = $row['diagnosis'];
+if (!function_exists('getMedicalProblems')) {
+    function getMedicalProblems($pid)
+    {
+        $query = "SELECT diagnosis FROM lists WHERE pid = ? AND type = ?";
+        $result = sqlStatement($query, array($pid, 'medical_problem'));
+        $diagnoses = [];
+
+        while ($row = sqlFetchArray($result)) {
+            $diagnoses[] = $row['diagnosis'];
+        }
+
+        return $diagnoses;
     }
-
-    return $diagnoses;
 }
+
 
 // Limpiar (descartar) cualquier salida previa
 //ob_end_clean();
+if (!function_exists('renderPatientInfoTable')) {
+    function renderPatientInfoTable($titleres, $encounter)
+    {
+        $dobFormatted = date('d/m/Y', strtotime($titleres['DOB_TS']));
+        $age = getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter))));
 
-function renderPatientInfoTable($titleres, $encounter)
-{
-    $dobFormatted = date('d/m/Y', strtotime($titleres['DOB_TS']));
-    $age = getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter))));
-
-    echo "
+        echo "
     <TABLE class='formulario'>
         <tr>
             <td colspan='71' class='morado'>A. DATOS DEL ESTABLECIMIENTO Y USUARIO / PACIENTE</td>
@@ -178,16 +133,18 @@ function renderPatientInfoTable($titleres, $encounter)
             <td colspan='2' class='blanco' style='border-right: none'>&nbsp;</td>
         </tr>
     </TABLE>";
+    }
 }
 
 preg_match('/^(.*)_(\d+)$/', $key, $res);
+print_r($key);
+
 $formdir = $res[1];
 $form_id = $res[2];
 
 $reason = getReason($form_encounter, $pid);
 
 // Ejemplo de uso
-$improvedReason = improveText($reason);
 $providerID = getProviderIdOfEncounter($encounter);
 
 //provider name explode
@@ -208,55 +165,59 @@ $queryform = "select * from forms
                 formdir = 'newpatient' and
                 deleted = 0";
 
-function getFormDate($pid, $form_encounter)
-{
-    // Primera consulta para formdir = 'newpatient'
-    $queryform = "SELECT * FROM forms
+if (!function_exists('getFormDate')) {
+    function getFormDate($pid, $form_encounter)
+    {
+        // Primera consulta para formdir = 'newpatient'
+        $queryform = "SELECT * FROM forms
                   WHERE pid = ? AND encounter = ? AND formdir = 'newpatient' AND deleted = 0";
-    $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
+        $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
 
-    // Si se encuentra la fecha en 'newpatient'
-    if ($fechaINGRESO) {
-        $time = strtotime($fechaINGRESO['date']);
-        $hour = date("H", $time);
+        // Si se encuentra la fecha en 'newpatient'
+        if ($fechaINGRESO) {
+            $time = strtotime($fechaINGRESO['date']);
+            $hour = date("H", $time);
 
-        // Verificar si la hora está dentro del rango deseado (7 AM a 7 PM)
-        if ($hour >= 7 && $hour < 19) {
-            return $fechaINGRESO;
-        }
+            // Verificar si la hora está dentro del rango deseado (7 AM a 7 PM)
+            if ($hour >= 7 && $hour < 19) {
+                return $fechaINGRESO;
+            }
 
-        // Segunda consulta para formdir = 'eye_mag' si la hora no está dentro del rango
-    $queryform2 = "SELECT * FROM forms
+            // Segunda consulta para formdir = 'eye_mag' si la hora no está dentro del rango
+            $queryform2 = "SELECT * FROM forms
                    WHERE pid = ? AND encounter = ? AND formdir = 'eye_mag' AND deleted = 0";
-    $fechaINGRESO2 = sqlQuery($queryform2, array($pid, $form_encounter));
+            $fechaINGRESO2 = sqlQuery($queryform2, array($pid, $form_encounter));
 
-    if ($fechaINGRESO2) {
-            $time2 = strtotime($fechaINGRESO2['date']);
-            $hour2 = date("H", $time2);
+            if ($fechaINGRESO2) {
+                $time2 = strtotime($fechaINGRESO2['date']);
+                $hour2 = date("H", $time2);
 
-            if ($hour2 >= 7 && $hour2 < 19) {
-                // Combinar la fecha de 'newpatient' con la hora de 'eye_mag'
-                $newDate = date("Y-m-d", $time) . ' ' . date("H:i:s", $time2);
-                return ['date' => $newDate];
+                if ($hour2 >= 7 && $hour2 < 19) {
+                    // Combinar la fecha de 'newpatient' con la hora de 'eye_mag'
+                    $newDate = date("Y-m-d", $time) . ' ' . date("H:i:s", $time2);
+                    return ['date' => $newDate];
+                }
+            }
+
+            // Generar una hora al azar dentro del rango de 7 AM a 7 PM
+            $randomHour = rand(7, 18); // Generar una hora al azar entre 7 AM (7) y 6 PM (18)
+            $randomMinute = rand(0, 59); // Generar un minuto al azar entre 0 y 59
+            $randomTime = sprintf('%02d:%02d', $randomHour, $randomMinute);
+
+            // Combinar la fecha de 'newpatient' con el tiempo generado al azar
+            $randomDate = date('Y-m-d', $time) . ' ' . $randomTime . ':00';
+
+            return ['date' => $randomDate];
         }
+
+        // Si no se encuentra la fecha en 'newpatient', no retornar nada
+        return null;
     }
-
-        // Generar una hora al azar dentro del rango de 7 AM a 7 PM
-    $randomHour = rand(7, 18); // Generar una hora al azar entre 7 AM (7) y 6 PM (18)
-    $randomMinute = rand(0, 59); // Generar un minuto al azar entre 0 y 59
-    $randomTime = sprintf('%02d:%02d', $randomHour, $randomMinute);
-
-        // Combinar la fecha de 'newpatient' con el tiempo generado al azar
-        $randomDate = date('Y-m-d', $time) . ' ' . $randomTime . ':00';
-
-    return ['date' => $randomDate];
-}
-
-    // Si no se encuentra la fecha en 'newpatient', no retornar nada
-    return null;
 }
 
 $fechaINGRESO = getFormDate($pid, $form_encounter);
+$fecha007 = date("Y/m/d", strtotime($fechaINGRESO['date']));
+$time007 = strtotime($fechaINGRESO['date']);
 ?>
 <html>
 <HEAD>
@@ -328,7 +289,7 @@ renderPatientInfoTable($titleres, $encounter);
             echo "<tr><td colspan=\"20\" class=\"blanco_left\">$problem CIE10: $cie10<td></td>";
         }
     } else {
-        echo "<tr><td colspan=\"20\" class=\"blanco_left\">Niega<td></td>";
+        echo "<tr><td colspan=\"20\" class=\"blanco_left\">Niega</td>></tr>";
     }
     ?>
 </table>
@@ -415,22 +376,8 @@ renderPatientInfoTable($titleres, $encounter);
         <td class="verde" width="7.69%">Pulsioximetría (%)</td>
     </tr>
     <tr>
-        <?php
-        if ($fechaINGRESO) {
-            ?>
-            <td class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
-            <td class="blanco">
-                <?php
-                $time = strtotime($fechaINGRESO['date']);
-                echo date("H:i", $time);
-                ?>
-            </td>
-            <?php
-        } else {
-            echo "No se encontró una fecha válida.";
-        }
-        ?>
-        </td>
+        <td class="blanco"><?php echo $fecha007; ?></td>
+        <td class="blanco"><?php echo date("H:i", $time007); ?></td>
         <td class="blanco">N/A</td>
         <td class="blanco">N/A</td>
         <td class="blanco">N/A</td>
@@ -736,8 +683,8 @@ renderPatientInfoTable($titleres, $encounter);
             <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
         </tr>
         <tr>
-            <td colspan="8" class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
-            <td colspan="7" class="blanco"></td>
+            <td colspan="8" class="blanco"><?php echo $fecha007; ?></td>
+            <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
             <td colspan="21" class="blanco"><?php echo $mname; ?></td>
             <td colspan="19" class="blanco"><?php echo $fname; ?></td>
             <td colspan="16" class="blanco"><?php echo $lname; ?></td>
@@ -763,13 +710,6 @@ renderPatientInfoTable($titleres, $encounter);
             </TD>
         </TR>
     </TABLE>
-    <?php
-    }
-    $query = "SELECT * FROM form_eye_mag_orders WHERE form_id=? AND pid=? ORDER BY id ASC";
-    $result = sqlStatement($query, array($form_id, $pid));
-
-    if (sqlNumRows($result) > 0) {
-    ?>
     <pagebreak>
         <?php
         renderPatientInfoTable($titleres, $encounter);
@@ -942,8 +882,8 @@ renderPatientInfoTable($titleres, $encounter);
                 <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
             </tr>
             <tr>
-                <td colspan="8" class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
-                <td colspan="7" class="blanco"></td>
+                <td colspan="8" class="blanco"><?php echo $fecha007; ?></td>
+                <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
                 <td colspan="21" class="blanco"><?php echo $mname; ?></td>
                 <td colspan="19" class="blanco"><?php echo $fname; ?></td>
                 <td colspan="16" class="blanco"><?php echo $lname; ?></td>
@@ -960,7 +900,6 @@ renderPatientInfoTable($titleres, $encounter);
                 <td colspan="30" class="blanco">&nbsp;</td>
             </tr>
         </table>
-
         <table style="border: none">
             <TR>
                 <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=TOP><B><FONT SIZE=1
@@ -1204,8 +1143,8 @@ renderPatientInfoTable($titleres, $encounter);
                     </tr>
                     <tr>
                         <td colspan="8"
-                            class="blanco"><?php echo date("Y/m/d", strtotime($fechaINGRESO['date'])); ?></td>
-                        <td colspan="7" class="blanco"></td>
+                            class="blanco"><?php echo $fecha007; ?></td>
+                        <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
                         <td colspan="21" class="blanco"><?php echo $mname; ?></td>
                         <td colspan="19" class="blanco"><?php echo $fname; ?></td>
                         <td colspan="16" class="blanco"><?php echo $lname; ?></td>

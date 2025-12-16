@@ -110,21 +110,22 @@ function createFormWithFieldValues($patient_id, $visitid, $formtitle, $formname,
     ?>
 
     <script type="text/javascript">
-        $.noConflict();
-        jQuery(document).ready(function ($) {
+        jQuery.noConflict();
+        jQuery(document).ready(function () {
+            var $ = jQuery;
             var formConfig = <?php echo $esignApi->formConfigToJson(); ?>;
-            $(".esign-button-form").esign(
+            jQuery(".esign-button-form").esign(
                 formConfig,
                 {
                     afterFormSuccess: function (response) {
                         if (response.locked) {
                             var editButtonId = "form-edit-button-" + response.formDir + "-" + response.formId;
-                            $("#" + editButtonId).replaceWith(response.editButtonHtml);
+                            jQuery("#" + editButtonId).replaceWith(response.editButtonHtml);
                         }
 
                         var logId = "esign-signature-log-" + response.formDir + "-" + response.formId;
-                        $.post(formConfig.logViewAction, response, function (html) {
-                            $("#" + logId).replaceWith(html);
+                        jQuery.post(formConfig.logViewAction, response, function (html) {
+                            jQuery("#" + logId).replaceWith(html);
                         });
                     }
                 }
@@ -1323,6 +1324,13 @@ if ($pass_sens_squad &&
                 "' class='css_button_small' title='" . xl('Imprimir Informe') .
                 "' onclick='top.restoreSession()'><span>" . xlt('Imprimir Informe') . "</span></a>";
         }
+
+        if (substr($formdir, 0, 7) == 'eye_mag') {
+            // A link for a nice printout of the Encuentro
+            echo "<button class='btn btn-secondary btn-sm' id='certificados'>" .
+                xlt('Certificados') . "</button>";
+        }
+
         if (substr($formdir, 0, 7) == 'eye_mag') {
             // JavaScript function to open multiple pages
             echo "<script>
@@ -1483,5 +1491,74 @@ if (!$pass_sens_squad) {
     ?>
 </div>
 </div> <!-- end large encounter_forms DIV -->
+<div class="modal" id="exampleModalCenter">
+
+    <!-- Modal content -->
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Certificados</h5>
+                <button type="button" class="btn-danger close">
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Escoja el certificado que desea crear.</p>
+            </div>
+            <div class="modal-footer">
+                <a target="_blank"
+                   href="<?php echo $rootdir; ?>/forms/eye_mag/asistencia.php?formname=<?php echo attr_url($formdir); ?>&formid=<?php echo attr_url($iter['form_id']); ?>&visitid=<?php echo attr_url($encounter); ?>&patientid=<?php echo attr_url($pid); ?>"
+                   class="btn btn-outline-success light">Asistencia
+                </a>
+                <a target="_blank"
+                   href="<?php echo $rootdir; ?>/forms/eye_mag/asistencia.php?formname=<?php echo attr_url($formdir); ?>&formid=<?php echo attr_url($iter['form_id']); ?>&visitid=<?php echo attr_url($encounter); ?>&patientid=<?php echo attr_url($pid); ?>"
+                   class="btn btn-outline-primary">Descanso</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    jQuery.noConflict();
+    jQuery(document).ready(function ($) {
+        // Get the modal
+        var modal = document.getElementById("exampleModalCenter");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("certificados");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function () {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function toggleChevron(e) {
+            let i = e.target.closest('.form-holder').querySelector('i');
+            let o = (i.classList.contains('fa-chevron-right')) ? 'fa-chevron-right' : 'fa-chevron-down';
+            let n = (o == "fa-chevron-right") ? "fa-chevron-down" : "fa-chevron-right";
+            i.classList.replace(o, n);
+        }
+
+        // Usa $ dentro del ámbito seguro
+        $('.form-detail div').on('show.bs.collapse', toggleChevron);
+        $('.form-detail div').on('hide.bs.collapse', toggleChevron);
+    });
+</script>
 </body>
 </html>

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file implements the listing of the staged database files
  * downloaded from an external source (e.g. CMS, NIH, etc.)
@@ -27,22 +26,22 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
-require_once("../../interface/globals.php");
 
-use OpenEMR\Common\Acl\AclMain;
+require_once("../../interface/globals.php");
+require_once("$srcdir/acl.inc");
 
 // Ensure script doesn't time out and has enough memory
 set_time_limit(0);
 ini_set('memory_limit', '150M');
 
 // Control access
-if (!AclMain::aclCheckCore('admin', 'super')) {
+if (!acl_check('admin', 'super')) {
     echo xlt('Not Authorized');
     exit;
 }
 
 $db = isset($_GET['db']) ? $_GET['db'] : '0';
-$mainPATH = $GLOBALS['fileroot'] . "/contrib/" . strtolower($db);
+$mainPATH = $GLOBALS['fileroot']."/contrib/".strtolower($db);
 $file_checksum = "";
 
 //
@@ -91,7 +90,7 @@ if (is_dir($mainPATH)) {
     $i = -1;
     foreach ($files_array as $file) {
         $i++;
-        $file = $mainPATH . "/" . $file;
+        $file = $mainPATH."/".$file;
         if (is_file($file)) {
             if (!strpos($file, ".zip") !== false) {
                 unset($files_array[$i]);
@@ -105,40 +104,40 @@ if (is_dir($mainPATH)) {
                     //  (if add different RxNorm types/versions/lanuages, then can use this)
             //
                     $version = "Standard";
-                    $date_release = substr($matches[1], 4) . "-" . substr($matches[1], 0, 2) . "-" . substr($matches[1], 2, -4);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 4)."-".substr($matches[1], 0, 2)."-".substr($matches[1], 2, -4);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
                 }
-            } elseif ($db == 'SNOMED') {
+            } else if ($db == 'SNOMED') {
                 if (preg_match("/SnomedCT_INT_([0-9]{8}).zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be International:English
                     //  (if add different SNOMED types/versions/languages, then can use this)
                     //
                     $version = "International:English";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_Release_INT_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_Release_INT_([0-9]{8}).zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be International:English
                     //  (if add different SNOMED types/versions/languages, then can use this)
                     //
                     $version = "International:English";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_RF1Release_INT_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_RF1Release_INT_([0-9]{8}).zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be International:English
                     //  (if add different SNOMED types/versions/languages, then can use this)
                     //
                     $version = "International:English";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_Release_US[0-9]*_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_Release_US[0-9]*_([0-9]{8}).zip/", $file, $matches)) {
                     // This is the SNOMED US extension pack which can only be installed on top
                     // of a International SNOMED version.
                     // Hard code this version SNOMED feed to be US Extension
@@ -146,68 +145,68 @@ if (is_dir($mainPATH)) {
                     // a complete SNOMED pacakge.
                     //
                     $version = "US Extension";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/sct1_National_US_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/sct1_National_US_([0-9]{8}).zip/", $file, $matches)) {
                     // This is the SNOMED US extension pack which can only be installed on top
                     // of a International SNOMED version.
                     // Hard code this version SNOMED feed to be US Extension
                     //
                     $version = "US Extension";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_RF1Release_US[0-9]*_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_RF1Release_US[0-9]*_([0-9]{8}).zip/", $file, $matches)) {
                     // This is the Complete SNOMED US extension package
                     // Hard code this version SNOMED feed to be Complete US Extension
                     //
                     $version = "Complete US Extension";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_Release-es_INT_([0-9]{8}).zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_Release-es_INT_([0-9]{8}).zip/", $file, $matches)) {
                     // Hard code this SNOMED version feed to be International:Spanish
                     //
                     $version = "International:Spanish";
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_InternationalRF2_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_InternationalRF2_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be International:English
                     //
                     $version = "International:English";
                     $rf2 = true;
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_USEditionRF2_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_USEditionRF2_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be Complete US Extension
                     //
                     $version = "Complete US Extension";
                     $rf2 = true;
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
-                } elseif (preg_match("/SnomedCT_SpanishRelease-es_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
+                } else if (preg_match("/SnomedCT_SpanishRelease-es_PRODUCTION_([0-9]{8})[0-9a-zA-Z]{8}.zip/", $file, $matches)) {
                     // Hard code the version SNOMED feed to be International:Spanish
                     //
                     $version = "International:Spanish";
                     $rf2 = true;
-                    $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                    $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
                 } else {
                     // nothing
                 }
-            } elseif (is_numeric(strpos($db, "ICD"))) {
+            } else if (is_numeric(strpos($db, "ICD"))) {
                 $qry_str = "SELECT `load_checksum`,`load_source`,`load_release_date` FROM `supported_external_dataloads` WHERE `load_type` = ? and `load_filename` = ? and `load_checksum` = ? ORDER BY `load_release_date` DESC";
 
                 // this query determines whether you can load the data into openEMR. you must have the correct
@@ -225,15 +224,15 @@ if (is_dir($mainPATH)) {
                 if (!empty($sqlReturn)) {
                     $version = $sqlReturn['load_source'];
                     $date_release = $sqlReturn['load_release_date'];
-                    $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $file, 'checksum' => $file_checksum);
+                    $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$file, 'checksum'=>$file_checksum);
                     array_push($revisions, $temp_date);
                     $supported_file = 1;
                 }
-            } elseif ($db == 'CQM_VALUESET') {
-                if (preg_match("/ep_.*_cms_([0-9]{8}).xml.zip/", $file, $matches)) {
+            } else if ($db == 'CQM_VALUESET') {
+                if (preg_match("/ep_ec_only_cms_([0-9]{8}).xml.zip/", $file, $matches)) {
                      $version = "Standard";
-                         $date_release = substr($matches[1], 0, 4) . "-" . substr($matches[1], 4, -2) . "-" . substr($matches[1], 6);
-                         $temp_date = array('date' => $date_release, 'version' => $version, 'path' => $mainPATH . "/" . $matches[0]);
+                         $date_release = substr($matches[1], 0, 4)."-".substr($matches[1], 4, -2)."-".substr($matches[1], 6);
+                         $temp_date = array('date'=>$date_release, 'version'=>$version, 'path'=>$mainPATH."/".$matches[0]);
                          array_push($revisions, $temp_date);
                          $supported_file = 1;
                 }
@@ -244,7 +243,7 @@ if (is_dir($mainPATH)) {
                 <?php
             } else {
                 ?>
-                <div class="error_msg"><?php echo xlt("UNSUPPORTED database load file"); ?>: <br /><?php echo text(basename($file)) ?><span class="msg" id="<?php echo attr($db); ?>_unsupportedmsg">!</span></div>
+                <div class="error_msg"><?php echo xlt("UNSUPPORTED database load file"); ?>: <BR><?php echo text(basename($file)) ?><span class="msg" id="<?php echo attr($db); ?>_unsupportedmsg">!</span></div>
                 <?php
             }
         }
@@ -266,15 +265,15 @@ if (count($files_array) === 0) {
 // only render messages and action buttons when supported files exists
 // otherwise we have an error message already displayed to the user
 if ($supported_file === 1) {
-    $success_flag = 1;
+    $success_flag=1;
 
     // Only allow 1 staged revision for the SNOMED and RXNORM imports
-    if (($db == "SNOMED" || $db == "RXNORM") && (count($revisions) > 1)) {
+    if (($db=="SNOMED" || $db=="RXNORM") && (count($revisions) > 1)) {
         ?>
         <div class="error_msg"><?php echo xlt("The number of staged files is incorrect. Only place the file that you wish to install/upgrade to."); ?></div>
         <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
         <?php
-        $success_flag = 0;
+        $success_flag=0;
     }
 
     // Ensure all release dates and revisions are the same for multiple file imports
@@ -294,7 +293,7 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The staged files release dates are not all from the same release."); ?></div>
           <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-                $success_flag = 0;
+                $success_flag=0;
             }
         }
 
@@ -308,7 +307,7 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The staged files revisions are not all from the same release."); ?></div>
           <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-                $success_flag = 0;
+                $success_flag=0;
             }
         }
 
@@ -333,7 +332,7 @@ if ($supported_file === 1) {
             <div class="error_msg"><?php echo xlt("The number of staged files is incorrect. Only place the files that you wish to install/upgrade to."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
             <?php
-            $success_flag = 0;
+            $success_flag=0;
         }
     }
 
@@ -341,21 +340,21 @@ if ($supported_file === 1) {
     if ($success_flag === 1) {
         $action = "";
         if ($installed_flag === 1) {
-            if ($current_name == "SNOMED" && $current_version != $file_revision && $file_revision != "US Extension" && $current_version == "US Extension") {
+            if ($current_name=="SNOMED" && $current_version!=$file_revision && $file_revision!="US Extension" && $current_version=="US Extension") {
                 // The US extension for snomed has been previously installed, so will allow to Replace with installation of any international set.
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
                 ?>
                 <div class="stg"><?php echo text(basename($file_revision_path)); ?> <?php echo xlt("is a different version of the following database") . ": " . text($db); ?></div>
                 <?php
-                $action = xl("REPLACE");
-            } elseif ($current_name == "SNOMED" && $current_version != $file_revision && $file_revision != "US Extension") {
+                $action=xl("REPLACE");
+            } else if ($current_name=="SNOMED" && $current_version!=$file_revision && $file_revision!="US Extension") {
                 // A different language version of the SNOMED database has been staged, and will offer to Replace database with this staged version.
                 ?>
                 <div class="stg"><?php echo text(basename($file_revision_path)); ?> <?php echo xlt("is a different language version of the following database") . ": " . text($db); ?></div>
                 <?php
-                $action = xl("REPLACE");
-            } elseif ($current_name == "SNOMED" && $current_version == "US Extension" && $file_revision == "US Extension") {
+                $action=xl("REPLACE");
+            } else if ($current_name=="SNOMED" && $current_version=="US Extension" && $file_revision=="US Extension") {
                 // The Staged US Extension SNOMED package has already been installed
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -363,7 +362,7 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The compatible staged US Extension SNOMED package has already been installed."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-            } elseif ($current_name == "SNOMED" && $current_version != "International:English" && $file_revision == "US Extension") {
+            } else if ($current_name=="SNOMED" && $current_version!="International:English" && $file_revision=="US Extension") {
                 // The Staged US Extension SNOMED file is not compatible with non-english snomed sets
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -371,7 +370,7 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The installed International SNOMED version is not compatible with the staged US Extension SNOMED package."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-            } elseif (($current_name == "SNOMED" && $current_version == "International:English" && $file_revision == "US Extension") && ((strtotime($current_revision . " +6 month") < strtotime($file_revision_date)) || (strtotime($current_revision . " -6 month") > strtotime($file_revision_date)))) {
+            } else if (($current_name=="SNOMED" && $current_version=="International:English" && $file_revision=="US Extension") && ((strtotime($current_revision." +6 month") < strtotime($file_revision_date)) || (strtotime($current_revision." -6 month") > strtotime($file_revision_date)))) {
                 // The Staged US Extension SNOMED file is not compatible with the current SNOMED International Package (ie. the International package is outdated)
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -379,15 +378,15 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The installed International SNOMED version is out of date and not compatible with the staged US Extension SNOMED file."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-            } elseif ($current_name == "SNOMED" && $current_version == "International:English" && $file_revision == "US Extension") {
+            } else if ($current_name=="SNOMED" && $current_version=="International:English" && $file_revision=="US Extension") {
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
                 // Offer to upgrade to the US Extension.
                 ?>
                 <div class="stg"><?php echo text(basename($file_revision_path)); ?> <?php echo xlt("is an extension of the following database") . ": " . text($db); ?></div>
                 <?php
-                $action = xl("UPGRADE");
-            } elseif ((strtotime($current_revision) == strtotime($file_revision_date))) {
+                $action=xl("UPGRADE");
+            } else if ((strtotime($current_revision) == strtotime($file_revision_date))) {
                 // Note the exception here when installing US Extension
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -395,7 +394,7 @@ if ($supported_file === 1) {
             <div class="error_msg"><?php echo xlt("The installed version and the staged files are the same."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-            } elseif (strtotime($current_revision) > strtotime($file_revision_date)) {
+            } else if (strtotime($current_revision) > strtotime($file_revision_date)) {
                 // Note the exception here when installing US Extension
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -407,10 +406,10 @@ if ($supported_file === 1) {
                 ?>
                 <div class="stg"><?php echo text(basename($file_revision_path)); ?> <?php echo xlt("is a more recent version of the following database") . ": " . text($db); ?></div>
                 <?php
-                $action = xl("UPGRADE");
+                $action=xl("UPGRADE");
             }
         } else {
-            if ($db == "SNOMED" && $file_revision == "US Extension") {
+            if ($db=="SNOMED" && $file_revision=="US Extension") {
                 // The old Staged US Extension SNOMED package could not be installed by itself (it was done after the international package is installed).
                 // Note the US extension package has been deprecated for some time and was replaced by the Complete US extension package, which is
                 // a complete SNOMED pacakge.
@@ -418,8 +417,8 @@ if ($supported_file === 1) {
                 <div class="error_msg"><?php echo xlt("The staged US Extension SNOMED package can not be installed until after the International SNOMED package has been installed."); ?></div>
             <div class="stg msg"><?php echo xlt("Follow these instructions for installing or upgrading the following database") . ": " . text($db); ?><span class="msg" id="<?php echo attr($db); ?>_instrmsg">?</span></div>
                 <?php
-            } elseif (count($files_array) > 0) {
-                $action = xl("INSTALL");
+            } else if (count($files_array) > 0) {
+                $action=xl("INSTALL");
             } else {
                 //do nothing
             }
@@ -431,7 +430,7 @@ if ($supported_file === 1) {
                 $rf = "rf2";
             }
             ?>
-            <input id="<?php echo attr($db); ?>_install_button" class="btn btn-primary btn-sm" version="<?php echo attr($file_revision); ?>" rf="<?php echo $rf; ?>" file_revision_date="<?php echo attr($file_revision_date); ?>" file_checksum="<?php echo attr($file_checksum); ?>" type="button" value="<?php echo attr($action); ?>"/>
+            <input id="<?php echo attr($db); ?>_install_button" version="<?php echo attr($file_revision); ?>" rf="<?php echo $rf; ?>" file_revision_date="<?php echo attr($file_revision_date); ?>" file_checksum="<?php echo attr($file_checksum); ?>" type="button" value="<?php echo attr($action); ?>"/>
       </div>
             <?php
         }

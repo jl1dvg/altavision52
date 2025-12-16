@@ -1,5 +1,4 @@
 <?php
-
 //////////////////////////////////////////////////////////////////////
 // ------------------ DO NOT MODIFY VIEW.PHP !!! ---------------------
 // View.php is an exact duplicate of new.php.  If you wish to make
@@ -22,8 +21,6 @@
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
-
-use OpenEMR\Core\Header;
 
 $row = array();
 
@@ -111,7 +108,7 @@ if ($formid) {
 ?>
 <html>
 <head>
-    <?php Header::setupHeader(); ?>
+<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 </head>
 
 <body class="body_top">
@@ -186,7 +183,7 @@ if ($formid) {
  </tr>
 
  <tr>
-  <td>Body<br />Composition</td>
+  <td>Body<br>Composition</td>
   <td nowrap>
    <table width='100%'>
     <tr>

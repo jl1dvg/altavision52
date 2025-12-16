@@ -1,5 +1,4 @@
 <?php
-
 //////////////////////////////////////////////////////////////////////
 // ------------------ DO NOT MODIFY VIEW.PHP !!! ---------------------
 // View.php is an exact duplicate of new.php.  If you wish to make
@@ -22,8 +21,6 @@
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
-
-use OpenEMR\Core\Header;
 
 $row = array();
 
@@ -66,7 +63,7 @@ function rbcell($name, $value, $desc, $colname)
 function cbinput($name, $colname)
 {
     global $row;
-    $ret  = "<input type='checkbox' name='" . attr($name) . "' value='1'";
+    $ret  = "<input type='checkbox' name='" .attr($name) . "' value='1'";
     if ($row[$colname]) {
         $ret .= " checked";
     }
@@ -95,7 +92,7 @@ if ($_POST['bn_save']) {
     $simech_other = '';
     if ($_POST['activity'] == '7') {
         $simech_other = $_POST['activity_other'];
-    } elseif ($_POST['activity'] == '23') {
+    } else if ($_POST['activity'] == '23') {
         $simech_other = $_POST['activity_nc_other'];
     }
 
@@ -182,11 +179,11 @@ if ($formid) {
 ?>
 <html>
 <head>
-<?php Header::setupHeader(); ?>
+<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 <style>
 .billcell { font-family: sans-serif; font-size: 10pt }
 </style>
-<script>
+<script language="JavaScript">
 
 </script>
 </head>
@@ -416,7 +413,7 @@ if ($formid) {
  </tr>
 
  <tr>
-  <td nowrap>Removed from<br />Play/Training<br />after Injury</td>
+  <td nowrap>Removed from<br>Play/Training<br>after Injury</td>
   <td nowrap>
    <table width='100%'>
     <tr>
@@ -430,7 +427,7 @@ if ($formid) {
  </tr>
 
  <tr>
-  <td nowrap>Medical Treatment<br />Sought from</td>
+  <td nowrap>Medical Treatment<br>Sought from</td>
   <td nowrap>
    <table width='100%'>
     <tr>

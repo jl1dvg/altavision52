@@ -132,24 +132,39 @@ ob_start();
     </STYLE>
 </HEAD>
 <BODY>
-<?php
-if ($GLOBALS['header_label_type'] == 1) {
-    echo '<page_header><table><tr><td><span style="position: absolute; top: -0.67in; left: 1.81in;">';
-    echo $logo;
-    echo '</span></td><td><h2>' . htmlspecialchars($facility['name']) . '</h2><p class="texto">';
-    echo htmlspecialchars($facility['street']) . '<br>' . htmlspecialchars($facility['city']) . ', ' . htmlspecialchars($facility['country_code']) . ' ' . htmlspecialchars($facility['postal_code']) . '<br>';
-    echo '<b>Telfs: </b>' . htmlspecialchars($facility['phone']) . '<br><b>E-mail: </b>' . htmlspecialchars($facility['email']) . '</p></td></tr></table><hr></page_header>';
-} else {
-    echo '<page_header><br><br><br><hr></page_header>';
-}
-?>
+<page_header>
+    <table>
+        <tr>
+            <td>
+                <SPAN CLASS="sd-abs-pos" STYLE="position: absolute; top: -0.67in; left: 1.81in; width: 249px">
+                    <?php
+                    echo $logo;
+                    ?>
+                </SPAN>
+            </td>
+            <td>
+                <h2><?php echo $facility['name'] ?></h2>
+                <p class="texto">
+                    <?php echo $facility['street'] ?><br>
+                    <?php echo $facility['city'] ?>
+                    , <?php echo $facility['country_code'] ?> <?php echo $facility['postal_code'] ?><br clear='all'>
+                    <b>Telfs: </b><?php echo $facility['phone'] ?><br>
+                    <b>E-mail: </b><?php echo $facility['email'] ?>
+                </p>
+
+            </td>
+        </tr>
+    </table>
+    <hr>
+</page_header>
 
 <P class="titulo">CERTIFICADO DE ASISTENCIA</P>
 <p class="texto">A quien corresponda,</p>
 <P class="texto">El que suscribe, Dr(a). <b><?php echo htmlspecialchars($providerNAME); ?></b>, certifica que el(la)
     señor(a)
     <b><?php echo htmlspecialchars($titleres['lname'] . " " . $titleres['lname2'] . " " . $titleres['fname'] . " " . $titleres['mname']); ?></b>,
-    portador(a) de la cédula de identidad <b><?php echo htmlspecialchars($titleres['pubpid']); ?></b>, fue atendido(a) en
+    portador(a) de la cédula de identidad <b><?php echo htmlspecialchars($titleres['pubpid']); ?></b>, fue atendido(a)
+    en
     consulta médica en
     <b><?php echo htmlspecialchars($facility['name']); ?></b> el día
     <b><?php echo $dateddia . " de " . $nombreMes . " del " . $datedano; ?></b>.

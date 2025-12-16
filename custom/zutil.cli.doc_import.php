@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Command-line / Unattended document import utility.
  *
@@ -34,7 +33,7 @@
  */
 
 // Allow this script to be run as a cronjob
-require_once(dirname(__FILE__, 2) . "/library/allow_cronjobs.php");
+require_once(dirname(__FILE__, 2)."/library/allow_cronjobs.php");
 
 // Defaults
 $arg = array(
@@ -52,7 +51,7 @@ foreach ($arg as $key => $def) {
     }
 }
 
-require_once(dirname(__FILE__, 2) . "/interface/globals.php");
+require_once(dirname(__FILE__, 2)."/interface/globals.php");
 require_once("$srcdir/documents.php");
 
 if (isset($GLOBALS[$arg['path']])) {
@@ -103,7 +102,7 @@ foreach ($docs as $doc) {
     }
 
     $doc_pathname = $doc->getPathname();
-    $doc_url = "file://" . $doc_pathname;
+    $doc_url = "file://".$doc_pathname;
 
     $finfo = finfo_open();
     $str_mime = finfo_file($finfo, $doc_pathname, FILEINFO_MIME_TYPE);

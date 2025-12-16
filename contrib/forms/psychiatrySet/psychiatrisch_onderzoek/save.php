@@ -1,5 +1,4 @@
 <?php
-
 ////////////////////////////////////////////////////////////////////
 // Form:    Psychiatrisch Onderzoek
 // Package: Report of First visit - Dutch specific form
@@ -30,8 +29,8 @@ if ($_GET["mode"] == "new") {
     }
 } elseif ($_GET["mode"] == "update") {
     $strSql = "UPDATE form_psychiatrisch_onderzoek
-                SET pid = ?, groupname=?, user=?,
-                authorized=?, activity=1, date = NOW(),
+                SET pid = ?, groupname=?, user=?, 
+                authorized=?, activity=1, date = NOW(), 
                 datum_onderzoek=?,
                 reden_van_aanmelding=?,
                 conclusie_van_intake=?,
@@ -40,14 +39,15 @@ if ($_GET["mode"] == "new") {
                 psychiatrisch_onderzoek=?,
                 beschrijvende_conclusie=?,
                 behandelvoorstel=?,
-                autosave_flag=1,
-                autosave_datetime=NOW()
+                autosave_flag=1, 
+                autosave_datetime=NOW() 
                   WHERE id = ?;";
 
     sqlQuery($strSql, array($_SESSION["pid"], $_SESSION["authProvider"], $_SESSION["authUser"], $userauthorized, $_POST["datum_onderzoek"], $_POST["reden_van_aanmelding"],
     $_POST["conclusie_van_intake"], $_POST["medicatie"], $_POST["anamnese"], $_POST["psychiatrisch_onderzoek"], $_POST["beschrijvende_conclusie"], $_POST["behandelvoorstel"], $_GET["id"]));
 }
 
+$_SESSION["encounter"] = $encounter;
 formHeader("Redirecting....");
 formJump();
 formFooter();

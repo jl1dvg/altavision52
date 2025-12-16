@@ -1,5 +1,4 @@
 <?php
-
 // Copyright (C) 2009 Aron Racho <aron@mi-squared.com>
 //
 // This program is free software; you can redistribute it and/or
@@ -12,7 +11,7 @@ function leg_length_report($pid, $encounter, $cols, $id)
 {
     $count = 0;
     $data = formFetch("form_leg_length", $id);
-    $width = 100 / $cols;
+    $width = 100/$cols;
     if ($data) {
         ?>
 

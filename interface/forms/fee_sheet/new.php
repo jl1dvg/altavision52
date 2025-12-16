@@ -102,13 +102,17 @@ function echoServiceLines()
         $pricelevel = $li['pricelevel'];
         $justify  = $li['justify'];
 
-        $strike1 = $li['del'] ? "<strike>" : "";
-        $strike2 = $li['del'] ? "</strike>" : "";
+        $strike1 = $strike2 = "";
+        if ($li['del']) {
+            $strike1 = "<del>";
+            $strike2 = "</del>";
+        }
 
         echo "<tr>\n";
 
-        echo "<td class='billcell'>$strike1" .
-            ($codetype == 'COPAY' ? xlt($codetype) : text($codetype)) . $strike2;
+        echo "  <td class='billcell'>$strike1" . ($codetype == 'COPAY' ? xlt('COPAY') : text($codetype)) . $strike2;
+        // if the line to ouput is copay, show the date here passed as $ndc_info,
+        // since this variable is not applicable in the case of copay.
         if ($codetype == 'COPAY') {
             if (!empty($ndc_info)) {
                 echo "(" . text($ndc_info) . ")";
@@ -152,6 +156,7 @@ function echoServiceLines()
 
             if (fees_are_used()) {
                 if ($price_levels_are_used) {
+                    // Show price level for this line.
                     echo "<td class='billcell' align='center'>";
                     echo $fs->genPriceLevelSelect('', ' ', $li['hidden']['codes_id'], '', $pricelevel, true);
                     echo "</td>\n";
@@ -167,6 +172,7 @@ function echoServiceLines()
                 echo "<td class='billcell' align='center'$justifystyle>$justify</td>\n";
             }
 
+            // Show provider for this line.
             echo "<td class='billcell' align='center' $liprovstyle>";
             echo $fs->genProviderSelect('', '-- ' .xl("Default"). ' --', $li['provid'], true);
             echo "</td>\n";
@@ -181,7 +187,9 @@ function echoServiceLines()
             echo "<td class='billcell' align='center'$usbillstyle><input type='checkbox'" .
                 ($li['auth'] ? " checked" : "") . " disabled /></td>\n";
 
+            if ($GLOBALS['gbl_auto_create_rx']) {
             echo "<td class='billcell' align='center'>&nbsp;</td>\n";
+            }
 
             echo "<td class='billcell' align='center'><input type='checkbox'" .
                 " disabled /></td>\n";
@@ -254,6 +262,7 @@ function echoServiceLines()
                 }
             }
 
+            // Provider drop-list for this line.
             echo "<td class='billcell' align='center' $liprovstyle>";
             echo $fs->genProviderSelect("bill[$lino][provid]", '-- '.xl("Default").' --', $li['provid']);
             echo "</td>\n";
@@ -268,7 +277,9 @@ function echoServiceLines()
             echo "<td class='billcell' align='center'$usbillstyle><input type='checkbox' name='bill[".attr($lino) . "][auth]' " .
                 "value='1'" . ($li['auth'] ? " checked" : "") . " /></td>\n";
 
-            echo "<td class='billcell' align='center'>&nbsp;</td>\n";
+            if ($GLOBALS['gbl_auto_create_rx']) {
+                echo "  <td class='billcell' align='center'>&nbsp;</td>\n";   // KHY: May need to confirm proper location of this cell
+            }
 
             echo "<td class='billcell' align='center'><input type='checkbox' name='bill[" . attr($lino) . "][del]' " .
                 "value='1'" . ($li['del'] ? " checked" : "") . " /></td>\n";
@@ -276,6 +287,7 @@ function echoServiceLines()
 
         echo "</tr>\n";
 
+        // If NDC info exists or may be required, add a line for it.
         if (isset($li['ndcnum'])) {
             echo "<tr>\n";
             echo "<td class='billcell' colspan='2'>&nbsp;</td>\n";
@@ -443,6 +455,26 @@ if (!empty($_POST['pricelevel'])) {
 }
 
 $current_checksum = $fs->visitChecksum();
+
+// this is for a save before we open justify dialog.
+// otherwise current form state is over written in justify process.
+if ($_POST['running_as_ajax'] && $_POST['dx_update']) {
+    $main_provid = 0 + $_POST['ProviderID'];
+    $main_supid = 0 + (int)$_POST['SupervisorID'];
+    $fs->save(
+        $_POST['bill'],
+        $_POST['prod'],
+        $main_provid,
+        $main_supid,
+        $_POST['default_warehouse'],
+        $_POST['bn_save_close']
+    );
+
+    unset($_POST['dx_update']);
+    unset($_POST['bill']);
+    unset($_POST['prod']);
+}
+
 // It's important to look for a checksum mismatch even if we're just refreshing
 // the display, otherwise the error goes undetected on a refresh-then-save.
 if (isset($_POST['form_checksum'])) {

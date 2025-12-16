@@ -1,8 +1,7 @@
 <?php
-
 //------------Forms generated from formsWiz
 require_once("../../globals.php");
-require_once($GLOBALS["srcdir"] . "/api.inc");
+require_once($GLOBALS["srcdir"]."/api.inc");
 function obstetrical_report($pid, $encounter, $cols, $id)
 {
     $count = 0;
@@ -18,7 +17,7 @@ function obstetrical_report($pid, $encounter, $cols, $id)
                 $value = "yes";
             }
 
-            $key = ucwords(str_replace("_", " ", $key));
+            $key=ucwords(str_replace("_", " ", $key));
             print "<td><span class=bold>" . text($key) . ": </span><span class=text>" . text($value) . "</span></td>";
             $count++;
             if ($count == $cols) {

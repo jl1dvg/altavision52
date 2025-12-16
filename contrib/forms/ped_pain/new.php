@@ -16,8 +16,6 @@ require_once("../../globals.php");
 
 require_once("../../../library/api.inc");
 
-use OpenEMR\Core\Header;
-
 formHeader("Pediatric Pain Evaluation");
 
 
@@ -26,7 +24,7 @@ formHeader("Pediatric Pain Evaluation");
 
 <html><head>
 
-    <?php Header::setupHeader(); ?>
+<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 
 </head>
 
@@ -38,7 +36,7 @@ formHeader("Pediatric Pain Evaluation");
 
 
 
-<br />
+<br>
 
 <form method='post' action="<?php echo $rootdir;?>/forms/ped_pain/save.php?mode=new" name='ped_pain' >
 
@@ -48,7 +46,7 @@ formHeader("Pediatric Pain Evaluation");
 
 <?php
 
-    $obj = array(); // just to avoid undeclared var warning
+    $obj=array(); // just to avoid undeclared var warning
 
     require('form.php'); // to use a single file for both, empty and editing
 
@@ -62,7 +60,7 @@ formHeader("Pediatric Pain Evaluation");
 
 <a href="javascript:top.restoreSession();document.ped_pain.submit();" class="link_submit">[Save]</a>
 
-<br />
+<br>
 
 
 

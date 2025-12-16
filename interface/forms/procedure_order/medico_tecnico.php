@@ -43,7 +43,7 @@ $query = "  select  *,form_encounter.date as encounter_date
                     forms.form_id=form_eye_postseg.id and
                     forms.form_id=form_eye_neuro.id and
                     forms.form_id=form_eye_locking.id and
-                    forms.encounter=? and 
+                    forms.encounter=? and
                     forms.pid=? ";
 $encounter_data = sqlQuery($query, array($encounter, $pid));
 @extract($encounter_data);
@@ -373,19 +373,19 @@ ob_start();
                             echo text("AVSC ");
                         }
                         if ($SCODVA){
-                            echo text("OD: " . $SCODVA);
+                            echo text("Ojo Derecho: " . $SCODVA);
                         }
                         if ($SCOSVA){
-                            echo text("OI: " . $SCOSVA);
+                            echo text("Ojo Izquierdo: " . $SCOSVA);
                         }
                         if ($ODIOPAP||$OSIOPAP){
                             echo text(" PIO ");
                         }
                         if ($ODIOPAP){
-                            echo text("OD: " . $ODIOPAP);
+                            echo text("Ojo Derecho: " . $ODIOPAP);
                         }
                         if ($OSIOPAP){
-                            echo text("OI: " . $OSIOPAP);
+                            echo text("Ojo Izquierdo: " . $OSIOPAP);
                         }
 
 
@@ -400,17 +400,17 @@ ob_start();
                         if ($RBROW||$LBROW||$RUL||$LUL||$RLL||$LLL||$RMCT||$LMCT||$RADNEXA||$LADNEXA||$EXT_COMMENTS) {
                             echo "Examen Externo:";
                             if ($RBROW||$RUL||$RLL||$RMCT||$RADNEXA) {
-                                echo "OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
+                                echo "Ojo Derecho: " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ";
                             }
                             if ($LBROW||$LUL||$LLL||$LMCT||$LADNEXA) {
-                                echo "OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
+                                echo "Ojo Izquierdo: " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ";
                             }
                             echo $EXT_COMMENTS;
                         }
                         //Segmento Anterior Ojo Derecho
                         if ($ODCONJ||$ODCORNEA||$ODAC||$ODLENS||$ODIRIS) {
                             ?>
-                            <span>OD: </span>
+                            <span>Ojo Derecho: </span>
                         <?php }
                         if ($ODCONJ) {
                             ?>
@@ -435,7 +435,7 @@ ob_start();
                         //Segmento Anterior Ojo Izquierdo
                         if ($OSCONJ||$OSCORNEA||$OSAC||$OSLENS||$OSIRIS) {
                             ?>
-                            <span>OI: </span>
+                            <span>Ojo Izquierdo: </span>
                         <?php }
                         if ($OSCONJ) {
                             ?>
@@ -464,7 +464,7 @@ ob_start();
                         //Retina Ojo Derecho
                         if ($ODDISC||$ODCUP||$ODMACULA||$ODVESSELS||$ODPERIPH||$ODVITREOUS) {
                             ?>
-                            <span>OD: </span>
+                            <span>Ojo Derecho: </span>
                         <?php }
                         if ($ODDISC) {
                             ?>
@@ -494,7 +494,7 @@ ob_start();
                         //Retina Ojo Izquierdo
                         if ($OSDISC||$OSCUP||$OSMACULA||$OSVESSELS||$OSPERIPH||$OSVITREOUS) {
                             ?>
-                            <span>OI: </span>
+                            <span>Ojo Izquierdo: </span>
                         <?php }
                         if ($OSDISC) {
                             ?>

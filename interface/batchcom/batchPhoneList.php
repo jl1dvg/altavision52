@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Batch list processor, included from batchcom
  *
@@ -25,8 +24,8 @@ if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
 ?>
 <html>
 <head>
-    <?php Header::setupHeader(); ?>
-    <title><?php echo xlt("Phone Call List"); ?></title>
+<title><?php echo xlt("Phone Call List"); ?></title>
+<?php Header::setupHeader(); ?>
 </head>
 <body class="body_top container">
     <header class="row">
@@ -36,7 +35,7 @@ if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
             <small><?php echo xlt('Phone Call List report'); ?></small>
         </h1>
     </header>
-    <main class="row mx-4">
+    <main class="row">
         <div class="col-md-12">
             <table class="table table-striped table-bordered">
                 <thead>
@@ -50,7 +49,7 @@ if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
                     <?php
                     while ($row = sqlFetchArray($res)) {
                         echo "<tr><td>";
-                        echo text($row['title']) . ' ' . text($row['fname']) . ' ' . text($row['lname']);
+                        echo text($row['title']). ' ' . text($row['fname']) . ' ' . text($row['lname']);
                         echo "</td><td>";
                         echo text($row['DOB']);
                         echo "</td><td>";

@@ -426,6 +426,11 @@ $res = sqlStatement($query, $sqlBindArray);
                                             <a href='#' class='btn btn-default btn-print' id='printbutton'>
                                                 <?php echo xlt('Print'); ?>
                                             </a>
+                                            <a href='encounters_report/export_csv.php'
+                                               class='btn btn-default btn-export'
+                                               id='exportbutton'>
+                                                <?php echo xlt('Export to CSV'); ?>
+                                            </a>
                                         <?php } ?>
                                     </div>
                                 </div>
@@ -486,9 +491,9 @@ $res = sqlStatement($query, $sqlBindArray);
                         <?php echo xlt('Coding'); ?>
                     </th>
                 <?php } else { ?>
-                    <th><?php echo xlt('Provider'); ?></td>
-                    <th><?php echo xlt('Encounters'); ?></td>
-                <?php } ?>
+                <th><?php echo xlt('Provider'); ?></td>
+                <th><?php echo xlt('Encounters'); ?></td>
+                    <?php } ?>
                 </thead>
                 <tbody>
                 <?php

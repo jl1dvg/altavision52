@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Notification Settings Script
  *
@@ -11,17 +10,16 @@
  * @copyright Copyright (c) 2017 Jason 'Toolbox' Oettinger <jason@oettinger.email>
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 require_once("../globals.php");
 require_once("$srcdir/registry.inc");
+require_once("../../library/acl.inc");
 require_once("batchcom.inc.php");
 
-use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 
 // gacl control
-if (!AclMain::aclCheckCore('admin', 'notification')) {
+if (!acl_check('admin', 'notification')) {
     echo "<html>\n<body>\n<h1>";
     echo xlt('You are not authorized for this.');
     echo "</h1>\n</body>\n</html>\n";
@@ -30,25 +28,25 @@ if (!AclMain::aclCheckCore('admin', 'notification')) {
 
  $type = 'SMS/Email Settings';
 // process form
-if ($_POST['form_action'] == 'save') {
+if ($_POST['form_action']=='save') {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
 
-    if ($_POST['Send_SMS_Before_Hours'] == "") {
-        $form_err .= xl('Empty value in "SMS Hours"') . '<br />';
+    if ($_POST['Send_SMS_Before_Hours']=="") {
+        $form_err .= xl('Empty value in "SMS Hours"') . '<br>';
     }
 
-    if ($_POST['Send_Email_Before_Hours'] == "") {
-        $form_err .= xl('Empty value in "Email Hours"') . '<br />';
+    if ($_POST['Send_Email_Before_Hours']=="") {
+        $form_err .= xl('Empty value in "Email Hours"') . '<br>';
     }
 
-    if ($_POST['SMS_gateway_username'] == "") {
-        $form_err .= xl('Empty value in "Username"') . '<br />';
+    if ($_POST['SMS_gateway_username']=="") {
+        $form_err .= xl('Empty value in "Username"') . '<br>';
     }
 
-    if ($_POST['SMS_gateway_password'] == "") {
-        $form_err .= xl('Empty value in "Password"') . '<br />';
+    if ($_POST['SMS_gateway_password']=="") {
+        $form_err .= xl('Empty value in "Password"') . '<br>';
     }
 
     //process sql
@@ -69,7 +67,7 @@ if ($_POST['form_action'] == 'save') {
 }
 
 // fetch data from table
-$sql = "select * from notification_settings where type='SMS/Email Settings'";
+$sql="select * from notification_settings where type='SMS/Email Settings'";
 $result = sqlQuery($sql);
 if ($result) {
     $SettingsId = $result['SettingsId'];
@@ -96,7 +94,7 @@ if ($result) {
             <small><?php echo xlt('SMS/Email Alert Settings'); ?></small>
         </h1>
     </header>
-    <main class="mx-4">
+    <main>
         <?php
         if ($form_err) {
             echo '<div class="alert alert-danger">' . xlt('The following errors occurred') . ': ' . text($form_err) . '</div>';
@@ -139,7 +137,7 @@ if ($result) {
             </div>
             <div class="row">
                 <div class="col-md-12 form-group">
-                    <button class="btn btn-secondary btn-save" type="submit" name="form_action" value="save"><?php echo xlt('Save'); ?></button>
+                    <button class="btn btn-default btn-save" type="submit" name="form_action" value="save"><?php echo xlt('Save'); ?></button>
                 </div>
             </div>
 

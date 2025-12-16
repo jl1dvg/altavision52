@@ -15,8 +15,6 @@
  require_once("../interface/globals.php");
  require_once("../library/patient.inc");
 
- use OpenEMR\Core\Header;
-
  // FTP parameters that you must customize.  If you are not sending
  // then set $FTP_SERVER to an empty string.
  //
@@ -298,8 +296,8 @@ if ($FTP_SERVER) {
 ?>
 <html>
 <head>
-    <?php Header::setupHeader(); ?>
-    <title>Export Patient Demographics</title>
+<link rel=stylesheet href="<?php echo $css_header;?>" type="text/css">
+<title>Export Patient Demographics</title>
 </head>
 <body>
 <center>

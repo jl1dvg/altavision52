@@ -1,5 +1,4 @@
 <?php
-
 /**
  * destroy lot
  *
@@ -12,18 +11,18 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+
 require_once("../globals.php");
+require_once("$srcdir/acl.inc");
 require_once("drugs.inc.php");
 
-use OpenEMR\Common\Acl\AclMain;
 use OpenEMR\Common\Csrf\CsrfUtils;
-use OpenEMR\Core\Header;
 
 $drug_id = $_REQUEST['drug'];
 $lot_id  = $_REQUEST['lot'];
 $info_msg = "";
 
-if (!AclMain::aclCheckCore('admin', 'drugs')) {
+if (!acl_check('admin', 'drugs')) {
     die(xlt('Not authorized'));
 }
 
@@ -38,17 +37,20 @@ if (!$lot_id) {
 <html>
 <head>
 <title><?php echo xlt('Destroy Lot') ?></title>
-
-<?php Header::setupHeader('datetime-picker'); ?>
+<link rel="stylesheet" href='<?php  echo $css_header ?>' type='text/css'>
+<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
 
 <style>
-    td {
-        font-size: 0.8125rem;
-    }
+td { font-size:10pt; }
 </style>
 
-<script>
-    $(function () {
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery/dist/jquery.min.js"></script>
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+<script type="text/javascript" src="../../library/textformat.js?v=<?php echo $v_js_includes; ?>"></script>
+
+
+<script language="JavaScript">
+    $(function(){
         $('.datepicker').datetimepicker({
             <?php $datetimepicker_timepicker = false; ?>
             <?php $datetimepicker_showseconds = false; ?>
@@ -89,9 +91,9 @@ if ($_POST['form_save']) {
 
   // Close this window and redisplay the updated list of drugs.
   //
-    echo "<script>\n";
+    echo "<script language='JavaScript'>\n";
     if ($info_msg) {
-        echo " alert('" . addslashes($info_msg) . "');\n";
+        echo " alert('".addslashes($info_msg)."');\n";
     }
 
     echo " window.close();\n";
@@ -109,73 +111,77 @@ if ($_POST['form_save']) {
 
 <center>
 
-<table class='table-borderless w-100'>
+<table border='0' width='100%'>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold" width='1%'><?php echo xlt('Lot Number'); ?>:</td>
+  <td valign='top' width='1%' nowrap><b><?php echo xlt('Lot Number'); ?>:</b></td>
   <td>
     <?php echo text($row['lot_number']) ?>
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Manufacturer'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Manufacturer'); ?>:</b></td>
   <td>
     <?php echo text($row['manufacturer']) ?>
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Quantity On Hand'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Quantity On Hand'); ?>:</b></td>
   <td>
     <?php echo text($row['on_hand']) ?>
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Expiration Date'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Expiration Date'); ?>:</b></td>
   <td>
     <?php echo text($row['expiration']) ?>
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Date Destroyed'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Date Destroyed'); ?>:</b></td>
   <td>
-   <input type='text' size='10' class='datepicker' name='form_date' id='form_date' value='<?php echo $row['destroy_date'] ? attr($row['destroy_date']) : date("Y-m-d"); ?>' title='<?php echo xla('yyyy-mm-dd date destroyed'); ?>' />
+   <input type='text' size='10' class='datepicker' name='form_date' id='form_date'
+    value='<?php echo $row['destroy_date'] ? attr($row['destroy_date']) : date("Y-m-d"); ?>'
+    title='<?php echo xla('yyyy-mm-dd date destroyed'); ?>' />
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Method of Destruction'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Method of Destruction'); ?>:</b></td>
   <td>
-   <input type='text' class='w-100' size='40' name='form_method' maxlength='250'
-    value='<?php echo attr($row['destroy_method']) ?>' />
+   <input type='text' size='40' name='form_method' maxlength='250'
+    value='<?php echo attr($row['destroy_method']) ?>' style='width:100%' />
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Witness'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Witness'); ?>:</b></td>
   <td>
-   <input type='text' class='w-100' size='40' name='form_witness' maxlength='250'
-    value='<?php echo attr($row['destroy_witness']) ?>' />
+   <input type='text' size='40' name='form_witness' maxlength='250'
+    value='<?php echo attr($row['destroy_witness']) ?>' style='width:100%' />
   </td>
  </tr>
 
  <tr>
-  <td class="text-nowrap align-top font-weight-bold"><?php echo xlt('Notes'); ?>:</td>
+  <td valign='top' nowrap><b><?php echo xlt('Notes'); ?>:</b></td>
   <td>
-   <input type='text' class='w-100' size='40' name='form_notes' maxlength='250'
-    value='<?php echo attr($row['destroy_notes']) ?>' />
+   <input type='text' size='40' name='form_notes' maxlength='250'
+    value='<?php echo attr($row['destroy_notes']) ?>' style='width:100%' />
   </td>
  </tr>
 
 </table>
 
-<div class="btn-group">
-<input type='submit' class="btn btn-primary" name='form_save' value='<?php echo xla('Submit') ;?>' />
-<input type='button' class="btn btn-secondary" value='<?php echo xla('Cancel'); ?>' onclick='window.close()' />
-</div>
+<p>
+<input type='submit' name='form_save' value='<?php echo xla('Submit') ;?>' />
+
+&nbsp;
+<input type='button' value='<?php echo xla('Cancel'); ?>' onclick='window.close()' />
+</p>
 
 </center>
 </form>

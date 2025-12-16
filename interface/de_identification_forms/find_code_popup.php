@@ -1,5 +1,4 @@
 <?php
-
 /**
  * find_code_popup.php
  *
@@ -12,12 +11,12 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
 require_once("../../custom/code_types.inc.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
-use OpenEMR\Core\Header;
 
 $info_msg = "";
 $codetype = $_REQUEST['codetype'];
@@ -26,16 +25,13 @@ $form_code_type = $_POST['form_code_type'];
 <html>
 <head>
 <title><?php echo xlt('Code Finder'); ?></title>
-
-<?php Header::setupHeader(); ?>
+<link rel="stylesheet" href='<?php echo $css_header ?>' type='text/css'>
 
 <style>
-td {
-    font-size: 0.8125rem;
-}
+td { font-size:10pt; }
 </style>
 
-<script>
+<script language="JavaScript">
 //pass value selected to the parent window
  function window_submit(chk)
  {
@@ -118,11 +114,11 @@ function check_search_str()
 </script>
 </head>
 <body class="body_top">
-<form method='post' name='theform' action='find_code_popup.php' onsubmit="return check_search_str();">
+<form method='post' name='theform'  action='find_code_popup.php' onsubmit="return check_search_str();">
 <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
 <center>
  <input type="hidden" name="search_status" id="search_status" value=1;>
-<table class="border-0" cellpadding='5' cellspacing='0'>
+<table border='0' cellpadding='5' cellspacing='0'>
  <tr>
   <td height="1">
   </td>
@@ -170,7 +166,7 @@ if ($codetype) {
 </center>
 </form>
 <form method='post' name='select_diagonsis'>
-<table class='border-0'>
+<table border='0'>
  <tr>
  <td colspan="4">
 <?php if ($_REQUEST['bn_search']) {
@@ -186,7 +182,7 @@ if ($codetype) {
         "dt.selector LIKE ? ) " .
         "AND d.drug_id = dt.drug_id " .
         "ORDER BY d.name, dt.selector, dt.drug_id";
-        $res = sqlStatement($query, array('%' . $search_term . '%', '%' . $search_term . '%'));
+        $res = sqlStatement($query, array('%'.$search_term.'%', '%'.$search_term.'%'));
         $row_count = 0;
         while ($row = sqlFetchArray($res)) {
             $row_count = $row_count + 1;
@@ -194,18 +190,18 @@ if ($codetype) {
             $selector = $row['selector'];
             $desc = $row['name'];
             ?>
-             <input type="checkbox" name="diagnosis[row_count]" value="<?php echo attr($desc); ?>" > <?php echo text($drug_id) . "    " . text($selector) . "     " . text($desc) . "<br />";
+             <input type="checkbox" name="diagnosis[row_count]" value="<?php echo attr($desc); ?>" > <?php echo text($drug_id) . "    " . text($selector) . "     " . text($desc) . "</br>";
         }
     } else {
         $query = "SELECT count(*) as count FROM codes " .
         "WHERE (code_text LIKE ? OR " .
         "code LIKE ?) " ;
-        $res = sqlStatement($query, array('%' . $search_term . '%', '%' . $search_term . '%'));
+        $res = sqlStatement($query, array('%'.$search_term.'%', '%'.$search_term.'%'));
         if ($row = sqlFetchArray($res)) {
             $no_of_items = $row['count'];
             if ($no_of_items < 1) {
                 ?>
-             <script>
+             <script language='JavaScript'>
             alert(<?php echo xlj('Search string does not match with list in database'); ?> + '\n' + <?php echo xlj('Please enter new search string');?>);
           document.theform.search_term.value=" ";
              document.theform.search_term.focus();
@@ -218,14 +214,14 @@ if ($codetype) {
             "code LIKE ?) " .
             "ORDER BY code";
           // echo "\n<!-- $query -->\n"; // debugging
-            $res = sqlStatement($query, array('%' . $search_term . '%', '%' . $search_term . '%'));
+            $res = sqlStatement($query, array('%'.$search_term.'%', '%'.$search_term.'%'));
             $row_count = 0;
             while ($row = sqlFetchArray($res)) {
                 $row_count = $row_count + 1;
                 $itercode = $row['code'];
                 $itertext = ucfirst(strtolower(trim($row['code_text'])));
                 ?>
-                 <input type="checkbox" id="chkbox" value= "<?php echo attr($form_code_type) . ":" . attr($itercode) . "-" . attr($itertext); ?>" > <?php echo text($itercode) . "    " . text($itertext) . "<br />";
+                 <input type="checkbox" id="chkbox" value= "<?php echo attr($form_code_type) . ":" . attr($itercode) . "-" . attr($itertext); ?>" > <?php echo text($itercode) . "    " . text($itertext) . "</br>";
             }
         }
     }
@@ -234,16 +230,15 @@ if ($codetype) {
  </tr>
  </table>
 <center>
-<br />
-<div class="btn-group">
-     <input type='button' class="btn btn-primary" id='select_all' value='<?php echo xla('Select All'); ?>' onclick="chkbox_select_all(document.select_diagonsis.chkbox);"/>
+</br>
+ <input type='button' id='select_all' value='<?php echo xla('Select All'); ?>' onclick="chkbox_select_all(document.select_diagonsis.chkbox);"/>
 
-     <input type='button' class="btn btn-primary" id='unselect_all' value='<?php echo xla('Unselect All'); ?>' onclick="chkbox_select_none(document.select_diagonsis.chkbox);"/>
+ <input type='button' id='unselect_all' value='<?php echo xla('Unselect All'); ?>' onclick="chkbox_select_none(document.select_diagonsis.chkbox);"/>
 
-     <input type='button' class="btn btn-primary" id='submit' value='<?php echo xla('Submit'); ?>' onclick="window_submit(document.select_diagonsis.chkbox);"/>
+ <input type='button' id='submit' value='<?php echo xla('Submit'); ?>' onclick="window_submit(document.select_diagonsis.chkbox);"/>
 
-     <input type='button' class="btn btn-primary" id='cancel' value='<?php echo xla('Cancel'); ?>' onclick="window_close();"/>
-</div>
+ <input type='button' id='cancel' value='<?php echo xla('Cancel'); ?>' onclick="window_close();"/>
+
 </center>
 <?php } ?>
 </form>

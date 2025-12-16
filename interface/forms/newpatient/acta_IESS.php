@@ -208,7 +208,7 @@ while ($irow = sqlFetchArray($ires)) {
     <br>
     _______________________________<br>
     <?php
-    echo text($pat_data['fname']) . " " . text($pat_data['lname']) . " " . text($pat_data['lname2']);
+    echo text($pat_data['fname']) . " " . text($pat_data['mname']) . " " . text($pat_data['lname']) . " " . text($pat_data['lname2']);
     ?>
 </div>
 <br>

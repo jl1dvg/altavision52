@@ -96,7 +96,7 @@ $reason = $reasonSQL['reason'];
 $plan = sqlQuery($queryPlan, array($_GET['patientid'], $_GET['visitid']));
 $fechaINGRESO = sqlQuery($queryform, array($_GET['patientid'], $_GET['visitid']));
 $providerID = getProviderIdOfEncounter($encounter);
-$providerNAME = getProviderName($providerID);
+$providerNAME = getProviderNameConcat($providerID);
 $dated = new DateTime($encounter_date);
 $dateddia = $dated->format('d');
 $datedmes = $dated->format('F');
@@ -1054,7 +1054,7 @@ ob_start();
         <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
             ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFFF"><FONT SIZE=1>
                 <?php
-                echo getProviderName($providerID);
+                echo getProviderNameConcat($providerID);
                 ?>
             </FONT></TD>
         <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"

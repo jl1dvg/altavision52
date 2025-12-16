@@ -1,7 +1,6 @@
 <?php
-
 require_once("../../globals.php");
-require_once($GLOBALS["srcdir"] . "/api.inc");
+require_once($GLOBALS["srcdir"]."/api.inc");
 
 function review_of_systems_report($pid, $encounter, $cols, $id)
 {
@@ -26,7 +25,7 @@ function review_of_systems_report($pid, $encounter, $cols, $id)
                 $value = "yes";
             }
 
-            $key = ucwords(str_replace("_", " ", $key));
+            $key=ucwords(str_replace("_", " ", $key));
             if (is_numeric($key)) {
                 $key = "check";
             }

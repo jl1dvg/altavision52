@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Issue posting from the WordPress Patient Portal.
  *
@@ -8,17 +7,16 @@
  * @author    Rod Roark <rod@sunsetsystems.com>
  * @author    Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2014 Rod Roark <rod@sunsetsystems.com>
- * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2017 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
+
 
 require_once("../globals.php");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/patient.inc");
 require_once("$srcdir/lists.inc");
 require_once("portal.inc.php");
-
-use OpenEMR\Core\Header;
 
 // Consider this a step towards converting issue forms to layout-based.
 // Faking it here makes things easier.
@@ -140,7 +138,7 @@ if ($_POST['bn_save']) {
         die(text($result['errmsg']));
     }
 
-    echo "<html><body><script>\n";
+    echo "<html><body><script language='JavaScript'>\n";
     echo "if (top.restoreSession) top.restoreSession(); else opener.top.restoreSession();\n";
     echo "document.location.href = 'list_requests.php';\n";
     echo "</script></body></html>\n";
@@ -167,26 +165,22 @@ $ptid = lookup_openemr_patient($result['post']['user']);
 ?>
 <html>
 <head>
-<?php Header::setupHeader('datetime-picker'); ?>
+<link rel=stylesheet href="<?php echo $css_header; ?>" type="text/css">
+<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
 
 <style>
-tr.head {
-  font-size: 0.8125rem;
-  background-color: var(--gray400);
-  text-align: center;
-}
 
-tr.detail {
-  font-size: 0.8125rem;
-  background-color: var(--gray300);
-}
+tr.head   { font-size:10pt; background-color:#cccccc; text-align:center; }
+tr.detail { font-size:10pt; background-color:#ddddff; }
+td input  { background-color:transparent; }
 
-td input {
-  background-color: transparent;
-}
 </style>
 
-<script>
+<script type="text/javascript" src="../../library/textformat.js?v=<?php echo $v_js_includes; ?>"></script>
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-1-7-2/jquery.min.js"></script>
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+
+<script language="JavaScript">
 
 function myRestoreSession() {
  if (top.restoreSession) top.restoreSession(); else opener.top.restoreSession();
@@ -214,8 +208,8 @@ function validate() {
  return true;
 }
 
-$(function () {
-    $("#form_type").on('change', function() {
+$(function() {
+    $("#form_type").change(function() {
         myRestoreSession();
         document.forms[0].submit();
         return true;
@@ -244,11 +238,11 @@ $(function () {
 
 <form method='post' action='issue_form.php' onsubmit='return validate()'>
 
-<input type='hidden' name='ptid' value="<?php echo attr($ptid); ?>" />
+<input type='hidden' name='ptid'   value="<?php echo attr($ptid);   ?>" />
 <input type='hidden' name='postid' value="<?php echo attr($postid); ?>" />
 
-<div>
-<select class='form-control' name='issueid' onchange='myRestoreSession();this.form.submit();'>
+<p>
+<select name='issueid' onchange='myRestoreSession();this.form.submit();'>
  <option value='0'><?php echo xlt('Add New Issue'); ?></option>
 <?php
 $ires = sqlStatement(
@@ -272,9 +266,9 @@ while ($irow = sqlFetchArray($ires)) {
 }
 ?>
 </select>
-</div>
+</p>
 
-<table class='w-100' cellpadding='1' cellspacing='2'>
+<table width='100%' cellpadding='1' cellspacing='2'>
  <tr class='head'>
   <th align='left'><?php echo xlt('Field'); ?></th>
   <th align='left'><?php echo xlt('Current Value'); ?></th>
@@ -305,7 +299,7 @@ foreach ($issue_layout as $lorow) {
     }
 
     echo " <tr class='detail'>\n";
-    echo "  <td class='font-weight-bold'>" . text($field_title) . "</td>\n";
+    echo "  <td class='bold'>" . text($field_title) . "</td>\n";
     echo "  <td>";
     echo generate_display_field($lorow, $currvalue);
     echo "</td>\n";
@@ -318,15 +312,16 @@ foreach ($issue_layout as $lorow) {
 
 </table>
 
-<div class='btn-group'>
-<input type='submit' class='btn btn-primary' name='bn_save' value='<?php echo xla('Save and Delete Request'); ?>' />
+<p>
+<input type='submit' name='bn_save' value='<?php echo xla('Save and Delete Request'); ?>' />
 &nbsp;
-<input type='button' class='btn btn-secondary' value='<?php echo xla('Back'); ?>' onclick="myRestoreSession();location='list_requests.php'" />
-</div>
+<input type='button' value='<?php echo xla('Back'); ?>'
+ onclick="myRestoreSession();location='list_requests.php'" />
+</p>
 
 </form>
 
-<script>
+<script language="JavaScript">
 
 // This is a by-product of generate_form_field().
 <?php echo $date_init; ?>

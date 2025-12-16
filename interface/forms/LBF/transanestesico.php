@@ -35,7 +35,7 @@ if ($_REQUEST['formname']) {
 $titleres = getPatientData($pid, "pubpid,fname,mname,lname, lname2, sex, pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
 
 $providerID = getProviderIdOfEncounter($encounter);
-$providerNAME = getProviderName($providerID);
+$providerNAME = getProviderNameConcat($providerID);
 $resultado = getProtocolDate($_GET['formid'], $_GET['visitid']);
 
 if ($resultado) {
@@ -1063,7 +1063,7 @@ ob_start();
     <tr style="height: 11px">
         <td class="verde_left" colspan="7">ANESTESIÓLOGO</td>
         <td class="blanco_left" style="text-align: left"
-            colspan="35"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
+            colspan="35"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
         <td class="verde_left" colspan="6">AYUDANTE (S)</td>
         <td class="blanco_left" colspan="24"></td>
         <td class="verde_left" colspan="19">INSTRUMENTISTA</td>
@@ -1083,7 +1083,7 @@ ob_start();
         <td class="blanco_left" style="text-align: left" colspan="35"><?php echo $providerNAME; ?></td>
         <td class="verde_left" colspan="6">AYUDANTE (S)</td>
         <td class="blanco_left"
-            colspan="24"><?php echo getProviderName(getFieldValue($form_id, "Prot_ayudante")); ?></td>
+            colspan="24"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_ayudante")); ?></td>
         <td class="verde_left" colspan="19">CIRCULANTE</td>
         <td class="blanco_left" colspan="19"><?php
             echo getFieldValue($form_id, "Prot_opr") == "avastin" ? " " : "Lcda. Solange Vega";
@@ -7496,7 +7496,7 @@ ob_start();
             <td class="blanco" colspan="5"></td>
             <td class="verde" colspan="12">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
             <td class="blanco"
-                colspan="18"><?php echo getProviderName(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
+                colspan="18"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
             <td class="verde" colspan="4">FIRMA</td>
             <td class="blanco" colspan="12"></td>
             <td class="verde" colspan="4">SELLO Y CÓDIGO</td>

@@ -339,7 +339,7 @@ function getProviderInfo($providerID = "%", $providers_only = true, $facility = 
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
+    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1 . $param2;
     // sort by last name -- JRM June 2008
@@ -378,7 +378,7 @@ function getResponsableInfo($providerID = "%", $providers_only = true, $facility
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
+    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1 . $param2;
     // sort by last name -- JRM June 2008
@@ -445,21 +445,16 @@ function getProviderNameConcat($providerID, $provider_only = 'any')
     $pi = getProviderInfo($providerID, 'any');
 
     $fullName = '';
+    if (isset($pi[0]["fname"]) && strlen($pi[0]["fname"]) > 0) {
+        $fullName .= $pi[0]["fname"] . " ";
+    }
 
     if (isset($pi[0]["mname"]) && strlen($pi[0]["mname"]) > 0) {
         $fullName .= $pi[0]["mname"] . " ";
     }
 
-    if (isset($pi[0]["fname"]) && strlen($pi[0]["fname"]) > 0) {
-        $fullName .= $pi[0]["fname"] . " ";
-    }
-
     if (isset($pi[0]["lname"]) && strlen($pi[0]["lname"]) > 0) {
         $fullName .= $pi[0]["lname"] . " ";
-    }
-
-    if (isset($pi[0]["suffix"]) && strlen($pi[0]["suffix"]) > 0) {
-        $fullName .= $pi[0]["suffix"] . " ";
     }
 
     return trim($fullName);

@@ -3,6 +3,12 @@
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
 require_once("$srcdir/options.inc.php");
+require_once("rd_study/utils_rd.php");
+require_once("rd_study/identifiers.php");
+require_once("rd_study/oct_angio.php");
+require_once("rd_study/fluorescein.php");
+require_once("rd_study/derived_fields.php");
+require_once("rd_study/fundus.php");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -12,6 +18,12 @@ if (!empty($_POST)) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
+}
+
+// Exportación a CSV: Se debe hacer antes de cualquier salida HTML
+if ($_POST['form_csvexport']) {
+    require_once 'rd_study/datos_a_csv.php'; // Este archivo debe generar el CSV completo
+    exit;
 }
 
 // Procesamiento de fechas
@@ -28,15 +40,8 @@ if (empty($from_date) && !empty($to_date)) {
 $form_provider = empty($_POST['form_provider']) ? 0 : intval($_POST['form_provider']);
 $form_pricelevel = $_POST['form_pricelevel'];
 
-// Exportación a CSV
-if ($_POST['form_csvexport']) {
-    header("Pragma: public");
-    header("Expires: 0");
-    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-    header("Content-Type: application/force-download");
-    header("Content-Disposition: attachment; filename=patient_list.csv");
-    header("Content-Description: File Transfer");
-} else {
+// (la exportación a CSV ahora se realiza antes de cualquier salida HTML)
+{
 ?>
 <html>
 <head>
@@ -99,6 +104,21 @@ if ($_POST['form_csvexport']) {
             }
         }
 
+        .oct-angio {
+            background-color: #e0f3fa !important; /* azul clarito, o el color que prefieras */
+        }
+
+        .af-fluor {
+            background-color: #fff7e0 !important; /* amarillo suave, puedes cambiarlo */
+        }
+
+        .rd-derived {
+            background-color: #f4e2ff !important; /* lila suave, cambia el color si prefieres */
+        }
+
+        .fondo-ojo {
+            background-color: #e8ffe8 !important; /* Verde clarito, cambia a tu gusto */
+        }
     </style>
 
 </head>
@@ -224,69 +244,82 @@ if ($_POST['form_csvexport']) {
         if (!$_POST['form_csvexport']) {
             echo '<div id="report_results"><table id="mymaintable"><thead>';
             $headers = [
-                'Last Visit', 'Patient', 'ID', 'Sex', 'City', 'DOB', 'Primera Visita', 'Primer OCT',
+                'ID Unico', 'Last Visit', 'Patient', 'ID', 'Sex', 'City', 'Edad', 'DOB', 'Primera Visita', 'Primer OCT',
                 'Edema OD', 'Edema OI', 'Difuso OD', 'Difuso OI', 'Quístico OD', 'Quístico OI',
                 'EPR OD', 'EPR OI', 'Exudados OD', 'Exudados OI', 'Lipídico OD', 'Lipídico OI',
                 'Epiretinal OD', 'Epiretinal OI', 'DR OD', 'DR OI', 'Fibrosis OD', 'Fibrosis OI',
+                // Agregar columnas para TM mácula OD y OI
+                'TM mácula OD', 'TM mácula OI',
                 'Primer AF', 'Diabetica OD', 'Diabetica OI', 'Proliferativa OD', 'Proliferativa OI',
                 'No Proliferativa OD', 'No Proliferativa OI', 'Isquemia OD', 'Isquemia OI',
                 'Leve OD', 'Leve OI', 'Moderada OD', 'Moderada OI', 'Severa OD', 'Severa OI',
-                'Opacidad OD', 'Opacidad OI', 'No val OD', 'No val OI', 'Pricelevel'
+                'Opacidad OD', 'Opacidad OI', 'No val OD', 'No val OI', 'Fondo de ojo',
+                // Variables para mácula
+                'Edema macular OD', 'Edema macular OI',
+                'Exudados mácula OD', 'Exudados mácula OI',
+                'DMAE húmeda OD', 'DMAE húmeda OI',
+                'DMAE seca OD', 'DMAE seca OI',
+                'Brillo foveal conservado OD', 'Brillo foveal conservado OI',
+                'Hemorragia mácula OD', 'Hemorragia mácula OI',
+                'Fibrosis mácula OD', 'Fibrosis mácula OI',
+                'Mácula no valorable OD', 'Mácula no valorable OI',
+                'Mácula normal OD', 'Mácula normal OI',
+
+                // Variables para vessels
+                'Retinopatía diabética OD', 'Retinopatía diabética OI',
+                'Retinopatía no diabética OD', 'Retinopatía no diabética OI',
+                'Proliferativa OD', 'Proliferativa OI',
+                'Severa OD', 'Severa OI',
+                'Moderada OD', 'Moderada OI',
+                'Leve OD', 'Leve OI',
+                'Calibre alterado OD', 'Calibre alterado OI',
+                'Fotocoagulación láser OD', 'Fotocoagulación láser OI',
+                'Neovascularización OD', 'Neovascularización OI',
+                'Microaneurismas OD', 'Microaneurismas OI',
+                'Hemorragias vasos OD', 'Hemorragias vasos OI',
+                'Exudados vasos OD', 'Exudados vasos OI',
+                'Vessels normal OD', 'Vessels normal OI',
+
+                // Variables para vítreo
+                'Hemorragia vítrea OD', 'Hemorragia vítrea OI',
+                'Opacidades vítreas OD', 'Opacidades vítreas OI',
+                'Desprendimiento vítreo OD', 'Desprendimiento vítreo OI',
+                'Hialosis asteroidea OD', 'Hialosis asteroidea OI',
+                'Aceite silicón OD', 'Aceite silicón OI',
+                'Vítreo normal OD', 'Vítreo normal OI',
+                'Vítreo no valorable OD', 'Vítreo no valorable OI',
+
+                // Variables para periferia
+                'Desprendimiento retina OD', 'Desprendimiento retina OI',
+                'Degeneración retinal OD', 'Degeneración retinal OI',
+                'Hemorragias periféricas OD', 'Hemorragias periféricas OI',
+                'Atrofia retinal OD', 'Atrofia retinal OI',
+                'Lesiones periféricas OD', 'Lesiones periféricas OI',
+                'Láser periférico OD', 'Láser periférico OI',
+                'Cuadrantes afectados OD', 'Cuadrantes afectados OI',
+                'Periferia normal OD', 'Periferia normal OI',
+                'Periferia no valorable OD', 'Periferia no valorable OI',
+                // Variables para retinopatía diabética integral
+                'Pricelevel',
+                'Tipo RD OD', 'ETDRS OD', 'Tipo RD OI', 'ETDRS OI',
+                'Tipo RD integral',
+                'ETDRS integral',
             ];
+            // --- INICIO: Nueva función para determinar el tipo de retinopatía diabética integral ---
+            /**
+             * Determina el tipo de retinopatía diabética integral para un paciente,
+             * integrando hallazgos de AF (LBFaf) y OCT (LBFoct_mac, incluyendo TM mácula).
+             * @param int $pid
+             * @return string
+             */
+
+            // --- FIN: Nueva función determinarTipoRD integral ---
 
             foreach ($headers as $header) {
                 echo '<th>' . xlt($header) . '</th>';
             }
 
             echo '</thead><tbody>';
-        }
-
-        function fetchData($pid, $formdir, $fieldIdsToPrint)
-        {
-            $query = sqlStatement("SELECT f.form_id, f.encounter, f.date, l.field_id, l.field_value
-                                FROM forms AS f
-                                LEFT JOIN lbf_data AS l ON f.form_id = l.form_id
-                               WHERE f.pid = ? AND f.formdir = ? AND f.deleted = 0", [$pid, $formdir]);
-
-            if ($query) {
-                $firstEncounter = null;
-                $firstEncounterData = [];
-
-                foreach ($query as $linea) {
-                    if ($firstEncounter === null) {
-                        $firstEncounter = $linea['encounter'];
-                    }
-
-                    if ($linea['encounter'] === $firstEncounter) {
-                        $form_id = $linea['form_id'];
-                        $field_id = $linea['field_id'];
-                        $field_value = $linea['field_value'];
-
-                        // Si no existe la clave form_id en el array, se crea
-                        if (!isset($firstEncounterData[$form_id])) {
-                            $firstEncounterData[$form_id] = [];
-                        }
-
-                        // Se agrega el field_id y su valor al array
-                        $firstEncounterData[$form_id][$field_id] = $field_value;
-                    }
-                }
-
-                $output = '';
-                foreach ($firstEncounterData as $formData) {
-                    foreach ($formData as $field_id => $field_value) {
-                        // Verificar si el field_id está en la lista de los que se deben imprimir
-                        if (in_array($field_id, $fieldIdsToPrint)) {
-                            $output .= $field_value;
-                        }
-                    }
-                }
-
-                // Devolver la cadena de texto
-                return $output;
-            } else {
-                return "No se encontraron resultados.";
-            }
         }
 
         // Inicializar variables
@@ -352,246 +385,27 @@ if ($_POST['form_csvexport']) {
             }
 
             if ($_POST['form_csvexport']) {
-                // Configurar las cabeceras para indicar que se enviará un archivo CSV
-                header('Content-Type: text/csv');
-                header('Content-Disposition: attachment; filename="resultados.csv"');
-
-                // Abre el buffer de salida como un recurso de archivo
-                $salida = fopen('php://output', 'w');
-
-                // Escribe la cabecera del archivo CSV
-                fputcsv($salida, array(
-                    'Fecha de Encuentro',
-                    'Nombre',
-                    'ID Público',
-                    'Sexo',
-                    'Ciudad',
-                    'Fecha de Nacimiento',
-                    'Fecha de Primera visita',
-                    'OCT',
-                    'Edema OD',
-                    'Edema OI',
-                    'Ojo con edema',
-                    'Difuso OD',
-                    'Difuso OI',
-                    'Quístico OD',
-                    'Quístico OI',
-                    'EPR OD',
-                    'EPR OI',
-                    'Exudados OD',
-                    'Exudados OI',
-                    'Lipídico OD',
-                    'Lipídico OI',
-                    'Epiretinal OD',
-                    'Epiretinal OI',
-                    'DR OD',
-                    'DR OI',
-                    'Fibrosis OD',
-                    'Fibrosis OI',
-                    'Angio',
-                    'Diabetica OD',
-                    'Diabetica OI',
-                    'Proliferativa OD',
-                    'Proliferativa OI',
-                    'No Proliferativa OD',
-                    'No Proliferativa OI',
-                    'Isquemia OD',
-                    'Isquemia OI',
-                    'Leve OD',
-                    'Leve OI',
-                    'Moderada OD',
-                    'Moderada OI',
-                    'Severa OD',
-                    'Severa OI',
-                    'Opacidad OD',
-                    'Opacidad OI',
-                    'No val OD',
-                    'No val OI',
-                    'Nivel de Precio'
-                ));
-
-                // Itera sobre cada fila de los resultados
-                while ($row = sqlFetchArray($res)) {
-                    // Arma los datos de la fila
-                    $hasEdemaOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'edema') !== false;
-                    $hasEdemaOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'edema') !== false;
-                    $hasDifusoOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'difuso') !== false;
-                    $hasDifusoOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'difuso') !== false;
-                    $hasQuisticoOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'quistico') !== false;
-                    $hasQuisticoOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'quistico') !== false;
-                    $hasEprOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'epitelio') !== false;
-                    $hasEprOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'epitelio') !== false;
-                    $hasExudadosOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'exudados') !== false;
-                    $hasExudadosOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'exudados') !== false;
-                    $hasLipidicoOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'lipidico') !== false;
-                    $hasLipidicoOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'lipidico') !== false;
-                    $hasDrOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'desprendimiento') !== false;
-                    $hasDrOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'desprendimiento') !== false;
-                    $hasFibrosisOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'fibrosis') !== false;
-                    $hasFibrosisOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'fibrosis') !== false;
-                    $hasTraccionOD = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_od'])), 'traccion') !== false;
-                    $hasTraccionOI = stripos(text(fetchData($row['pid'], 'LBFoct_mac', ['OCT_oi'])), 'traccion') !== false;
-                    $hasDiabeticaOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'diabetica') !== false;
-                    $hasDiabeticaOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'diabetica') !== false;
-                    $hasProliferativaOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'proliferativa') !== false;
-                    $hasProliferativaOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'proliferativa') !== false;
-                    $hasNoProliferativaOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'no proliferativa') !== false;
-                    $hasNoProliferativaOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'no proliferativa') !== false;
-                    $hasIsquemiaOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'isquemia') !== false;
-                    $hasIsquemiaOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'isquemia') !== false;
-                    $hasLeveOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'leve') !== false;
-                    $hasLeveOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'leve') !== false;
-                    $hasModeradaOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'moderada') !== false;
-                    $hasModeradaOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'moderada') !== false;
-                    $hasSeveraOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'severa') !== false;
-                    $hasSeveraOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'severa') !== false;
-                    $hasOpacidadOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'opacidad') !== false;
-                    $hasOpacidadOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'opacidad') !== false;
-                    $hasNoValOD = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OD'])), 'no valorable') !== false;
-                    $hasNoValOI = stripos(text(fetchData($row['pid'], 'LBFaf', ['Angio_OI'])), 'no valorable') !== false;
-
-                    // Obtener la fecha del último OCT
-                    $queryOCT = sqlQuery("SELECT date FROM forms WHERE pid = ? AND formdir = 'LBFoct_mac' AND deleted = 0", array($row['pid']));
-                    $lastOCTDate = $queryOCT ? 'Si' : 'No';
-                    // Obtener la fecha del último OCT
-                    $queryAF = sqlQuery("SELECT date FROM forms WHERE pid = ? AND formdir = 'LBFaf' AND deleted = 0", array($row['pid']));
-                    $lastAFDate = $queryAF ? 'Si' : 'No';
-
-                    // Agrega la fila al archivo CSV
-                    fputcsv($salida, array(
-                        $row['enc_date'],  // Fecha de Encuentro
-                        $row['name'],      // Nombre
-                        $row['pid'],       // Público
-                        $row['sex'],       // Sexo
-                        $row['city'],      // Ciudad
-                        $row['dob'],       // Fecha de Nacimiento
-                        $row['last_oct'],  // Fecha del Último OCT
-                        $lastOCTDate,
-                        $hasEdemaOD ? 'Sí' : '',
-                        $hasEdemaOI ? 'Sí' : '',
-                        $hasEdemaOD || $hasEdemaOI ? 'Sí' : '',
-                        $hasDifusoOD ? 'Sí' : '',
-                        $hasDifusoOI ? 'Sí' : '',
-                        $hasQuisticoOD ? 'Sí' : '',
-                        $hasQuisticoOI ? 'Sí' : '',
-                        $hasEprOD ? 'Sí' : '',
-                        $hasEprOI ? 'Sí' : '',
-                        $hasExudadosOD ? 'Sí' : '',
-                        $hasExudadosOI ? 'Sí' : '',
-                        $hasLipidicoOD ? 'Sí' : '',
-                        $hasLipidicoOI ? 'Sí' : '',
-                        $hasTraccionOD ? 'Sí' : '',
-                        $hasTraccionOI ? 'Sí' : '',
-                        $hasDrOD ? 'Sí' : '',
-                        $hasDrOI ? 'Sí' : '',
-                        $hasFibrosisOD ? 'Sí' : '',
-                        $hasFibrosisOI ? 'Sí' : '',
-                        $lastAFDate,
-                        $hasDiabeticaOD ? 'Sí' : '',
-                        $hasDiabeticaOI ? 'Sí' : '',
-                        $hasProliferativaOD ? 'Sí' : '',
-                        $hasProliferativaOI ? 'Sí' : '',
-                        $hasNoProliferativaOD ? 'Sí' : '',
-                        $hasNoProliferativaOI ? 'Sí' : '',
-                        $hasIsquemiaOD ? 'Sí' : '',
-                        $hasIsquemiaOI ? 'Sí' : '',
-                        $hasLeveOD ? 'Sí' : '',
-                        $hasLeveOI ? 'Sí' : '',
-                        $hasModeradaOD ? 'Sí' : '',
-                        $hasModeradaOI ? 'Sí' : '',
-                        $hasSeveraOD ? 'Sí' : '',
-                        $hasSeveraOI ? 'Sí' : '',
-                        $hasOpacidadOD ? 'Sí' : '',
-                        $hasOpacidadOI ? 'Sí' : '',
-                        $hasNoValOD ? 'Sí' : '',
-                        $hasNoValOI ? 'Sí' : '',
-                        $row['price_level']  // Nivel de Precio
-                    ));
-                }
-
-                // Cierra el buffer de salida
-                fclose($salida);
-
-                // Detiene el script para evitar la salida adicional
-                exit;
+                // (La exportación CSV ahora se maneja antes de la salida HTML)
             } else {
                 echo '<tr>';
-                echo '<td>' . text(oeFormatShortDate(substr($row['edate'], 0, 10))) . '</td>';
-                echo '<td><a href="#" onclick="return topatient(\'' . attr($row['pid']) . '\')">' . text($row['lname'] . ', ' . $row['fname'] . ' ' . $row['mname']) . '</a></td>';
-                echo '<td>' . text($row['pubpid']) . '</td>';
-                echo '<td>' . xlt($row['sex']) . '</td>';
-                echo '<td>' . xlt($row['city']) . '</td>';
-                echo '<td>' . xlt(oeFormatShortDate($row['DOB'])) . '</td>';
-                echo '<td>' . text(oeFormatShortDate(substr($row['fdate'], 0, 10))) . '</td>';
+                // --- ID Unico: pid + edate (YYYYMMDD) ---
+                echo render_identifiers($row);
 
-                // Obtener fecha del último OCT
-                $queryOCT = sqlQuery("SELECT date FROM forms WHERE pid = ? AND formdir = 'LBFoct_mac' AND deleted = 0", array($row['pid']));
-                if ($queryOCT) {
-                    foreach ($queryOCT as $result) {
-                        echo '<td>Sí</td>';
-                    }
-                } else {
-                    echo '<td>No</td>';
-                }
-
-                // Función fetchData
                 $pid = $row['pid'];
-                $fieldsOCT = ['OCT_od', 'OCT_oi'];
-                $fieldsAngio = ['Angio_OD', 'Angio_OI'];
+                echo render_oct_angio($pid);
 
-                $conditionsOCT = [
-                    'edema',
-                    'difuso',
-                    'quistico',
-                    'epitelio',
-                    'exudados',
-                    'lipidico',
-                    'epiretinal',
-                    'desprendimiento',
-                    'fibrosis'
-                ];
+                // Buscar si existe al menos un formulario LBFaf (AF)
+                echo render_fluorescein($pid);
 
-                $conditionsAngio = [
-                    'diabetica',
-                    'proliferativa',
-                    'no proliferativa',
-                    'isquemia',
-                    'leve',
-                    'moderada',
-                    'severa',
-                    'opacidad',
-                    'no valorable'
-                ];
-
-                // Verificar condiciones OCT
-                foreach ($conditionsOCT as $condition) {
-                    foreach ($fieldsOCT as $field) {
-                        echo '<td>' . (stripos(text(fetchData($pid, 'LBFoct_mac', [$field])), $condition) !== false ? 'Sí' : '') . '</td>';
-                    }
-                }
-
-                // Obtener fecha del último OCT
-                $queryAF = sqlQuery("SELECT date FROM forms WHERE pid = ? AND formdir = 'LBFaf' AND deleted = 0", array($row['pid']));
-                if ($queryAF) {
-                    foreach ($queryAF as $result) {
-                        echo '<td>Sí</td>';
-                    }
-                } else {
-                    echo '<td>No</td>';
-                }
-
-                // Verificar condiciones Angio
-                foreach ($conditionsAngio as $condition) {
-                    foreach ($fieldsAngio as $field) {
-                        echo '<td>' . (stripos(text(fetchData($pid, 'LBFaf', [$field])), $condition) !== false ? 'Sí' : '') . '</td>';
-                    }
-                }
+                echo render_fundus($pid);
 
                 echo '<td>' . text($row['pricelevel']) . '</td>';
-                echo '</tr>';
+                // Añadir columnas de "Tipo RD OD" y "Tipo RD OI"
+                // (mantener por compatibilidad)
+                echo render_derived_fields($pid);
             }
             ++$totalpts;
-        } // end while
+        } // end foreach
         if (!$_POST['form_csvexport']) {
             ?>
 
@@ -599,7 +413,8 @@ if ($_POST['form_csvexport']) {
                 <td colspan='9'>
                     <?php echo xlt('Total Number of Patients'); ?>
                     :
-                    <?php echo text($totalpts); ?>
+                    <?php echo text($totalpts);
+                    ?>
                 </td>
             </tr>
 

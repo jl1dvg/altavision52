@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Generated DocBlock
  *
@@ -17,7 +16,6 @@
  * @copyright Copyright (c) 2011 cornfeed <jdough823@gmail.com>
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
-
 ?>
 <html>
 <head>
@@ -78,31 +76,31 @@ if ($_POST['submit']) {
 
     if ($dbh == false) {
         echo "ERROR.  Check your login credentials.\n";
-        echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+        echo "<p>".mysql_error()." (#".mysql_errno().")\n";
         exit;
     } else {
-        echo "OK.<br />\n";
+        echo "OK.<br>\n";
     }
 
     echo "Creating database...\n";
     flush();
     if (mysql_query("create database $dbname", $dbh) == false) {
         echo "ERROR.  Check your login credentials.\n";
-        echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+        echo "<p>".mysql_error()." (#".mysql_errno().")\n";
         exit;
     } else {
-        echo "OK.<br />\n";
+        echo "OK.<br>\n";
     }
 
     echo "Creating user with permissions for database...\n";
     flush();
     if (mysql_query("GRANT ALL PRIVILEGES ON $dbname.* TO '$login'@'$loginhost' IDENTIFIED BY '$pass'", $dbh) == false) {
         echo "ERROR when granting privileges to the specified user.\n";
-        echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+        echo "<p>".mysql_error()." (#".mysql_errno().")\n";
         echo "ERROR.\n";
         exit;
     } else {
-        echo "OK.<br />\n";
+        echo "OK.<br>\n";
     }
 
     echo "Reconnecting as new user...\n";
@@ -119,20 +117,20 @@ if ($server == "localhost") {
 
 if ($dbh == false) {
     echo "ERROR.  Check your login credentials.\n";
-    echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+    echo "<p>".mysql_error()." (#".mysql_errno().")\n";
     exit;
 } else {
-    echo "OK.<br />\n";
+    echo "OK.<br>\n";
 }
 
 echo "Opening database...";
 flush();
 if (mysql_select_db("$dbname", $dbh) == false) {
     echo "ERROR.  Check your login credentials.\n";
-    echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+    echo "<p>".mysql_error()." (#".mysql_errno().")\n";
     exit;
 } else {
-    echo "OK.<br />\n";
+    echo "OK.<br>\n";
 }
 
     flush();
@@ -164,8 +162,8 @@ if ($upgrade != 1) {
             continue;
         }
 
-        $query = $query . $line;      // Check for full query
-        $chr = substr($query, strlen($query) - 1, 1);
+        $query = $query.$line;      // Check for full query
+        $chr = substr($query, strlen($query)-1, 1);
         if ($chr == ";") { // valid query, execute
             $query = rtrim($query, ";");
             mysql_query("$query", $dbh);
@@ -173,7 +171,7 @@ if ($upgrade != 1) {
         }
     }
 
-    echo "OK<br />\n";
+    echo "OK<br>\n";
     fclose($fd);
     flush();
     echo "Adding Initial User...\n";
@@ -181,10 +179,10 @@ if ($upgrade != 1) {
     $iuser = "admin";
     $iuname = "admin";
     $igroup = $newname;
-    //echo "INSERT INTO `groups` VALUES (1,'$igroup','$iuser')<br />\n";
+    //echo "INSERT INTO `groups` VALUES (1,'$igroup','$iuser')<br>\n";
     if (mysql_query("INSERT INTO `groups` (id, name, user) VALUES (1,'$igroup','$iuser')") == false) {
         echo "ERROR.  Could not run queries.\n";
-        echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+        echo "<p>".mysql_error()." (#".mysql_errno().")\n";
         flush();
         exit;
     }
@@ -192,12 +190,12 @@ if ($upgrade != 1) {
     //// ViCareplus : As per NIST standard, SHA1 hash/digest of 'pass' is used
     if (mysql_query("INSERT INTO users (id, username, password, authorized, lname,fname) VALUES (1,'$iuser','9d4e1e23bd5b727046a9e3b4b7db57bd8d6ee684',1,'$iuname','')") == false) {
         echo "ERROR.  Could not run queries.\n";
-        echo "<p>" . mysql_error() . " (#" . mysql_errno() . ")\n";
+        echo "<p>".mysql_error()." (#".mysql_errno().")\n";
         flush();
         exit;
     }
 
-    echo "OK<br />\n";
+    echo "OK<br>\n";
     flush();
 
     //Now write sqlconf file
@@ -255,20 +253,20 @@ if ($upgrade != 1) {
     //Now, use new name and fix globals.php and rename directory!!!
     $d = getcwd();
     $dn = dirname($d);
-    $contents = file_get_contents($d . '/interface/globals.php');
+    $contents = file_get_contents($d.'/interface/globals.php');
     $contents = preg_replace(
         '/\$webserver_root\s+=\s+[\"\'].*?[\"\'];/',
-        "\$webserver_root = '" . $dn . "/" . $newname . "';",
+        "\$webserver_root = '".$dn."/".$newname."';",
         $contents
     );
     $contents = preg_replace(
         '/\$web_root\s+=\s+[\"\'].*?[\"\'];/',
-        "\$web_root = '/" . $newname . "';",
+        "\$web_root = '/".$newname."';",
         $contents
     );
-    file_put_contents($d . '/interface/globals.php', $contents);
-    if (rename($d, $dn . '/' . $newname)) {
-        echo "<br/><a href='http://localhost/" . $newname . "'>click here</a>";
+    file_put_contents($d.'/interface/globals.php', $contents);
+    if (rename($d, $dn.'/'.$newname)) {
+        echo "<br/><a href='http://localhost/".$newname."'>click here</a>";
     }
 }
 ?>

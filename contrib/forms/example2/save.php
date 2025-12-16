@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This saves the submitted form
  */
@@ -12,6 +11,7 @@
  * @copyright Copyright (c) 2018 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
+
 
 require_once("../../globals.php");
 require_once("$srcdir/api.inc");
@@ -55,6 +55,7 @@ if ($_GET["mode"] == "new") {
     $success = formUpdate($table_name, $_POST, $_GET["id"], $userauthorized);
 }
 
+$_SESSION["encounter"] = $encounter;
 formHeader("Redirecting....");
 formJump();
 formFooter();

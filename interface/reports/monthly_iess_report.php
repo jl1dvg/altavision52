@@ -44,13 +44,10 @@ $alertmsg = '';
  * @param string $pricelevel
  * @return array
  */
-function getFormsForPatient($pid, $fromDate, $toDate, $providerId, $pricelevel, $lookbackDays = 45)
+function getFormsForPatient($pid, $fromDate, $toDate, $providerId, $pricelevel)
 {
-    $fromExtended = date('Y-m-d', strtotime($fromDate . " -{$lookbackDays} days"));
-
-    $bind = array($pid, $fromExtended . ' 00:00:00', $toDate . ' 23:59:59');
-
-    $sql = "SELECT f.form_id, f.formdir, f.encounter, fe.date
+    $bind = array($pid, $fromDate . ' 00:00:00', $toDate . ' 23:59:59');
+    $sql = "SELECT f.form_id, f.formdir, f.encounter
             FROM forms AS f
             INNER JOIN form_encounter AS fe ON fe.pid = f.pid AND fe.encounter = f.encounter
             INNER JOIN patient_data AS p ON p.pid = f.pid
@@ -66,15 +63,45 @@ function getFormsForPatient($pid, $fromDate, $toDate, $providerId, $pricelevel, 
         $bind[] = $pricelevel;
     }
 
-    // IMPORTANTÍSIMO: traer SOLO los formularios relevantes (para no imprimir “todo”)
-    $sql .= " AND (
-                f.formdir IN ('newpatient','treatment_plan','eye_mag')
-                OR f.formdir LIKE 'LBF%'
-             )";
-
-    $sql .= " ORDER BY fe.date ASC";
+    // Orden igual que patient_report: por encounter descendente, fecha de encounter descendente,
+    // y fecha del form ascendente (f.date puede venir como dd-mm-YYYY).
+    $sql .= " ORDER BY fe.encounter DESC, fe.date DESC, STR_TO_DATE(f.date, '%d-%m-%Y') ASC";
 
     return sqlStatement($sql, $bind);
+}
+
+/**
+ * Get derivation (LBTref) active for a given date.
+ *
+ * @param int $pid
+ * @param string $encDate
+ * @return array|null
+ */
+function getDerivationForDate($pid, $encDate)
+{
+    $sql = "SELECT t.id,
+                   MAX(CASE WHEN d.field_id = 'refer_id' THEN d.field_value END) AS refer_id,
+                   MAX(CASE WHEN d.field_id = 'refer_date' THEN d.field_value END) AS refer_date,
+                   MAX(CASE WHEN d.field_id = 'refer_end_date' THEN d.field_value END) AS refer_end_date,
+                   MAX(CASE WHEN d.field_id = 'refer_to' THEN d.field_value END) AS refer_to,
+                   MAX(CASE WHEN d.field_id = 'refer_from' THEN d.field_value END) AS refer_from,
+                   MAX(CASE WHEN d.field_id = 'refer_diag' THEN d.field_value END) AS refer_diag,
+                   MAX(CASE WHEN d.field_id = 'refer_related_code' THEN d.field_value END) AS refer_related_code,
+                   MAX(CASE WHEN d.field_id = 'body' THEN d.field_value END) AS body
+            FROM transactions AS t
+            LEFT JOIN lbt_data AS d ON d.form_id = t.id
+            WHERE t.title = 'LBTref' AND t.pid = ?
+            GROUP BY t.id
+            HAVING (refer_date IS NULL OR refer_date <= ?) AND (refer_end_date IS NULL OR refer_end_date >= ?)
+            ORDER BY refer_date DESC
+            LIMIT 1";
+
+    $row = sqlQuery($sql, array($pid, $encDate, $encDate));
+    if (!empty($row['id'])) {
+        return $row;
+    }
+
+    return null;
 }
 
 // Fetch encounters grouped by patient with applied filters
@@ -135,6 +162,15 @@ while ($row = sqlFetchArray($encRes)) {
 
         .encounter-list div {
             margin-bottom: 4px;
+        }
+
+        .encounter-table th, .encounter-table td {
+            font-size: 12px;
+        }
+
+        .out-of-range {
+            color: #b30000;
+            font-weight: bold;
         }
     </style>
     <script>
@@ -211,12 +247,12 @@ while ($row = sqlFetchArray($encRes)) {
                         <th><?php echo xlt('Paciente'); ?></th>
                         <th><?php echo xlt('ID'); ?></th>
                         <th><?php echo xlt('Convenio'); ?></th>
-                        <th><?php echo xlt('Total atenciones'); ?></th>
-                        <th><?php echo xlt('Detalle del mes'); ?></th>
-                        <th><?php echo xlt('PDF IESS'); ?></th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                    <th><?php echo xlt('Total atenciones'); ?></th>
+                    <th><?php echo xlt('Detalle del mes'); ?></th>
+                    <th><?php echo xlt('PDF IESS'); ?></th>
+                </tr>
+                </thead>
+                <tbody>
                     <?php foreach ($patients as $patient) { ?>
                         <tr>
                             <td><?php echo text($patient['name']); ?></td>
@@ -224,17 +260,59 @@ while ($row = sqlFetchArray($encRes)) {
                             <td><?php echo text($patient['pricelevel']); ?></td>
                             <td><?php echo text(count($patient['encounters'])); ?></td>
                             <td class="encounter-list">
-                                <?php foreach ($patient['encounters'] as $enc) { ?>
-                                    <div>
-                                        <strong><?php echo text(oeFormatShortDate(substr($enc['date'], 0, 10))); ?></strong>
-                                        <?php if (!empty($enc['provider'])) { ?>
-                                            - <?php echo text($enc['provider']); ?>
-                                        <?php } ?>
-                                        <?php if (!empty($enc['reason'])) { ?>
-                                            : <?php echo text($enc['reason']); ?>
-                                        <?php } ?>
-                                    </div>
-                                <?php } ?>
+                                <table class="table table-condensed encounter-table">
+                                    <thead>
+                                    <tr>
+                                        <th><?php echo xlt('Fecha/Detalle'); ?></th>
+                                        <th><?php echo xlt('Derivación'); ?></th>
+                                        <th><?php echo xlt('Vigencia'); ?></th>
+                                        <th><?php echo xlt('Diag'); ?></th>
+                                        <th><?php echo xlt('Relacionado'); ?></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php foreach ($patient['encounters'] as $enc) {
+                                        $encDate = substr($enc['date'], 0, 10);
+                                        $deriv = getDerivationForDate($patient['pid'], $encDate);
+                                        $hasDerivation = ($deriv && !empty($deriv['refer_id']));
+                                        $vigencia = '';
+                                        if ($hasDerivation) {
+                                            $vigencia = trim($deriv['refer_date'] . ' - ' . $deriv['refer_end_date']);
+                                        }
+                                        $rowClass = $hasDerivation ? '' : 'out-of-range';
+                                        ?>
+                                        <tr class="<?php echo attr($rowClass); ?>">
+                                            <td>
+                                                <strong><?php echo text(oeFormatShortDate($encDate)); ?></strong>
+                                                <?php if (!empty($enc['provider'])) { ?>
+                                                    - <?php echo text($enc['provider']); ?>
+                                                <?php } ?>
+                                                <?php if (!empty($enc['reason'])) { ?>
+                                                    : <?php echo text($enc['reason']); ?>
+                                                <?php } ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                if ($hasDerivation) {
+                                                    echo text($deriv['refer_id']);
+                                                } else {
+                                                    echo xlt('Sin derivación vigente');
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php echo $vigencia ? text($vigencia) : '&mdash;'; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo $hasDerivation && $deriv['refer_diag'] ? text($deriv['refer_diag']) : '&mdash;'; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo $hasDerivation && $deriv['refer_related_code'] ? text($deriv['refer_related_code']) : '&mdash;'; ?>
+                                            </td>
+                                        </tr>
+                                    <?php } ?>
+                                    </tbody>
+                                </table>
                             </td>
                             <td>
                                 <?php

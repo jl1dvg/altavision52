@@ -13,7 +13,7 @@
  * @author  Brady Miller <brady.g.miller@gmail.com>
  * @author  Ray Magauran <magauran@medexbank.com>
  * @copyright Copyright (c) 2015-2017 Terry Hill <terry@lillysystems.com>
- * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2017-2018 Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2017 Ray Magauran <magauran@medexbank.com>
  * @license https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
@@ -165,19 +165,23 @@ if (!$_REQUEST['flb_table']) {
     ?>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="author" content="OpenEMR: MedExBank">
-    <?php Header::setupHeader(['datetime-picker', 'opener', 'purecss']); ?>
     <title><?php echo xlt('Flow Board'); ?></title>
+
+    <?php Header::setupHeader(['datetime-picker', 'jquery-ui', 'jquery-ui-cupertino', 'opener', 'pure']); ?>
+
     <script type="text/javascript">
         <?php require_once "$srcdir/restoreSession.php"; ?>
     </script>
 
-    <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']; ?>/library/css/bootstrap_navbar.css?v=<?php echo $v_js_includes; ?>">
+    <link rel="stylesheet" href="<?php echo $GLOBALS['web_root']; ?>/library/css/bootstrap_navbar.css?v=<?php echo $v_js_includes; ?>" type="text/css">
     <script type="text/javascript" src="<?php echo $GLOBALS['web_root']; ?>/interface/main/messages/js/reminder_appts.js?v=<?php echo $v_js_includes; ?>"></script>
 
     <link rel="shortcut icon" href="<?php echo $webroot; ?>/sites/default/favicon.ico" />
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="OpenEMR: MedExBank">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         label {
             font-weight: 400;
@@ -187,61 +191,60 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
+        .btn{
+            border: solid black 0.5pt;
+            box-shadow: 3px 3px 3px #7b777760;
+            color:white;
+        }
+
         .dialogIframe {
             border: none;
         }
 
         .scheduled {
-            background-color: var(--light);
+            background-color: white;
+            color: black;
             padding: 5px;
         }
 
         .divTable {
             display: table;
-            font-size: 0.9rem;
-            background: var(--light);
-            box-shadow: 2px 3px 9px var(--gray400);
+            font-size: 0.9em;
+            background: white;
+            box-shadow: 2px 3px 9px #c0c0c0;
             border-radius: 8px;
             padding: 10px;
             margin: 15px auto;
             overflow: hidden;
         }
 
-        .head {
-            font-size: 0.9rem;
-            background: var(--light);
-            box-shadow: 2px 3px 9px var(--gray400);
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px auto;
-            overflow: hidden;
-            width: 85%;
-        }
-
         .title {
-            font-family: "Georgia", sans-serif;
+            font-family: Georgia, serif;
             font-weight: bold;
             padding: 3px 10px;
             text-transform: uppercase;
-            line-height: 1.5rem;
-            border-bottom: 2px solid var(--black);
+            line-height: 1.5em;
+            color: #455832;
+            border-bottom: 2px solid #455832;
             margin: 0 auto;
             width: 70%;
         }
-
+        .ui-datepicker-year {
+            color: #000;
+        }
         input[type="text"] {
             text-align: center;
         }
 
         .ui-widget {
-            font-size: 1.0rem;
+            font-size: 1.0em;
         }
 
         body_top {
             height: 100%;
         }
         a:hover {
-            color: var(--black);
+            color:black;
             text-decoration: none;
         }
     </style>
@@ -251,7 +254,6 @@ if (!$_REQUEST['flb_table']) {
 <body class="body_top">
     <?php
     if (($GLOBALS['medex_enable'] == '1') && (empty($_REQUEST['nomenu']))) {
-        $logged_in = $MedEx->login();
         $MedEx->display->navigation($logged_in);
     }
     ?>
@@ -269,7 +271,7 @@ if (!$_REQUEST['flb_table']) {
                     $last_col_width = "nodisplay";
                 }
                 ?>
-
+                <br/>
                 <form name="flb" id="flb" method="post">
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
@@ -434,7 +436,7 @@ if (!$_REQUEST['flb_table']) {
             <div class="text-center row divTable" style="width: 85%; padding: 10px 10px 0; margin: 10px auto;">
                 <div class="col-sm-12" id="loader">
                     <div class="text-center">
-                        <i class="fa fa-spinner fa-pulse fa-fw" style="font-size: 140px; color: var(--gray700); padding: 20px"></i>
+                        <i class="fa fa-spinner fa-pulse fa-fw" style="font-size: 140px; color: #0000cc; padding: 20px"></i>
                         <h2><?php echo xlt('Loading data'); ?>...</h2>
                     </div>
                 </div>

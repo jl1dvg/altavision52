@@ -1,5 +1,4 @@
 <?php
-
 /**
  * will display the couchdb log
  *
@@ -10,16 +9,12 @@
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
 
+
 require_once("../globals.php");
 
 use OpenEMR\Common\Crypto\CryptoGen;
 
 $filename = $GLOBALS['OE_SITE_DIR'] . '/documents/couchdb/log.txt';
-
-if (!file_exists($filename)) {
-    echo xlt("CouchDB error log is empty");
-    exit;
-}
 
 $fh = file_get_contents($filename);
 

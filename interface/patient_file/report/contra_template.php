@@ -152,25 +152,42 @@ foreach ($ar as $key => $val) {
                 <tr>
                     <td class="blanco" colspan="8" rowspan="1" height="28">
                         <?php
-                        $max_form_id = -1;
+                        // Imprimir UNA sola fecha de referencia: la fecha del último formulario `newpatient`
+                        $max_newpatient_form_id = -1;
+                        $max_newpatient_date = null;
 
                         foreach ($ar as $key => $val) {
-                            if ($key == 'pdf' || $key == 'include_demographics') {
+                            if ($key === 'pdf' || $key === 'include_demographics') {
                                 continue;
                             }
-                            preg_match('/^(.*)_(\d+)$/', $key, $res);
-                            $form_id = $res[2];
 
-                            if ($form_id > $max_form_id) {
-                                $max_form_id = $form_id;
+                            // Asegurar formato esperado: formdir_formid
+                            if (!preg_match('/^(.*)_(\d+)$/', $key, $res)) {
+                                continue;
+                            }
 
-                                if ($res[1] == 'newpatient') {
-                                    $plan_sql = "SELECT * FROM forms WHERE form_id = ? AND formdir = 'newpatient'
-                                 ORDER BY date DESC LIMIT 1";
-                                    $plan = sqlQuery($plan_sql, array($form_id));
-                                    echo date("d/m/Y", strtotime($plan['date']));
+                            $formdir = $res[1];
+                            $form_id = (int)$res[2];
+
+                            if ($formdir !== 'newpatient') {
+                                continue;
+                            }
+
+                            // Quedarnos con el mayor form_id de newpatient
+                            if ($form_id > $max_newpatient_form_id) {
+                                $max_newpatient_form_id = $form_id;
+
+                                $plan_sql = "SELECT `date` FROM `forms` WHERE `form_id` = ? AND `formdir` = 'newpatient' LIMIT 1";
+                                $plan = sqlQuery($plan_sql, array($form_id));
+
+                                if (!empty($plan['date'])) {
+                                    $max_newpatient_date = $plan['date'];
                                 }
                             }
+                        }
+
+                        if ($max_newpatient_date) {
+                            echo date('d/m/Y', strtotime($max_newpatient_date));
                         }
                         ?>
                     </td>
@@ -282,68 +299,91 @@ foreach ($ar as $key => $val) {
     <tr>
         <td class="morado">2 HALLAZGOS RELEVANTES DE EXAMENES Y PROCEDIMIENTOS DIAGNOSTICOS</td>
     </tr>
-    <tr>
-        <td class='blanco_left'>
-            <?php
-            $items = [];
+    <?php
+    $items = [];
 
-            foreach ($ar as $key => $val) {
-                // Ignorar claves 'pdf'
-                if ($key == 'pdf') {
-                    continue;
-                }
+    foreach ($ar as $key => $val) {
+        // Ignorar claves 'pdf'
+        if ($key == 'pdf') {
+            continue;
+        }
 
-                // Comprobar si la clave comienza con 'eye_mag' o 'LBF'
-                if (strpos($key, 'eye_mag') === 0 || strpos($key, 'LBF') === 0 || strpos($key, 'care_plan') === 0) {
-                    // Extraer form_id y formdir de la clave
-                    preg_match('/^(.*)_(\d+)$/', $key, $res);
-                    $form_id = $res[2];
-                    $formdir = $res[1];
+        // Comprobar si la clave comienza con 'eye_mag' o 'LBF'
+        if (strpos($key, 'eye_mag') === 0 || strpos($key, 'LBF') === 0 || strpos($key, 'care_plan') === 0) {
+            // Extraer form_id y formdir de la clave
+            preg_match('/^(.*)_(\d+)$/', $key, $res);
+            $form_id = $res[2];
+            $formdir = $res[1];
 
-                    $dateArray = getEncounterDateByEncounter($val);
-                    $date = $dateArray['date'];
+            $dateArray = getEncounterDateByEncounter($val);
+            $date = $dateArray['date'];
 
-                    // Almacenar en el arreglo con la fecha como clave
-                    if (!isset($items[$date])) {
-                        $items[$date] = [];
-                    }
-                    $items[$date][] = ['val' => $val, 'formdir' => $formdir, 'form_id' => $form_id];
-                }
+            // Almacenar en el arreglo con la fecha como clave
+            if (!isset($items[$date])) {
+                $items[$date] = [];
             }
+            $items[$date][] = ['val' => $val, 'formdir' => $formdir, 'form_id' => $form_id];
+        }
+    }
 
-            // Ordenar el arreglo por clave (que son fechas)
-            ksort($items);
+    // Ordenar el arreglo por clave (que son fechas)
+    ksort($items);
 
-            // Procesar y mostrar cada elemento ordenado
-            foreach ($items as $date => $entries) {
-                foreach ($entries as $entry) {
-                    $val = $entry['val'];
-                    $formdir = $entry['formdir'];
-                    $form_id = $entry['form_id'];
+    // Procesar y mostrar cada elemento ordenado
+    foreach ($items as $date => $entries) {
+        // Inicia una nueva fila para cada fecha
+        //echo "<tr><td class='blanco_left'><strong>Fecha: $date</strong></td></tr>";
 
-                    // Obtener datos adicionales
-                    if ($formdir === 'eye_mag') {
-                        $encounter_data = getEyeMagEncounterData($val, $pid);
-                        if ($encounter_data) {
-                            extract($encounter_data);
-                            $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
-                                $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
-                                $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
-                            if (!empty($examOutput)) {
-                                echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
-                            }
+        foreach ($entries as $entry) {
+            $val = $entry['val'];
+            $formdir = $entry['formdir'];
+            $form_id = $entry['form_id'];
+
+            // Obtener datos adicionales
+            if ($formdir === 'eye_mag') {
+                $encounter_data = getEyeMagEncounterData($val, $pid);
+                if ($encounter_data) {
+                    extract($encounter_data);
+                    $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
+                        $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
+                        $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
+                    if (!empty($examOutput)) {
+                        // Establecer el límite de caracteres por línea (ajustar según el diseño)
+                        $line_limit = 165; // Ajusta este valor según el ancho disponible en tu formulario
+
+                        // Dividir el texto en líneas controladas por el límite de caracteres
+                        $wrappedText = wordwrap($examOutput, $line_limit, "\n", true);
+
+                        // Reemplazar los saltos de línea con la estructura de tabla
+                        $lines = explode("\n", $wrappedText);
+                        foreach ($lines as $line) {
+                            echo "<tr><td class='blanco_left'>$line</td></tr>";
                         }
-                    } elseif (substr($formdir, 0, 3) == 'LBF' && substr($formdir, 0, 12) !== 'LBFprotocolo') {
-                        echo "<tr><td class='blanco_left'>";
-                        echo "<b>" . ImageStudyName($pid, $val, $form_id, $formdir) . ": </b>";
-                        echo ExamenesImagenes($pid, $val, $form_id, $formdir);
+                    } else {
+                        echo 'no hay examen';
                     }
+                }
+            } elseif (substr($formdir, 0, 3) == 'LBF' && substr($formdir, 0, 12) !== 'LBFprotocolo') {
+                // Llamar a la función unificada para obtener el informe completo (nombre del estudio + descripción)
+                $imageReport = ImageStudyReport($pid, $val, $form_id, $formdir);
 
+                // Definir el límite de caracteres por línea
+                $line_limit = 165; // Ajusta este valor según el ancho disponible en tu formulario
+
+                // Aplicar `wordwrap` para ajustar el texto al límite de caracteres por línea
+                $wrappedText = wordwrap($imageReport, $line_limit, "\n", true);
+
+                // Dividir el texto en líneas según el límite de caracteres
+                $lines = explode("\n", $wrappedText);
+
+                // Iterar sobre las líneas y mostrarlas en la tabla
+                foreach ($lines as $line) {
+                    echo "<tr><td class='blanco_left'>$line</td></tr>";
                 }
             }
-            ?>
-        </td>
-    </tr>
+        }
+    }
+    ?>
 </table>
 <table>
     <TR>
@@ -507,7 +547,7 @@ foreach ($ar as $key => $val) {
                 <TD class="verde">PROFESIONAL</TD>
                 <TD class="blanco">
                     <?php
-                    echo getProviderName($providerID['provider_id']);
+                    echo getProviderNameConcat($providerID['provider_id']);
                     ?>
                 </TD>
                 <TD class="blanco">

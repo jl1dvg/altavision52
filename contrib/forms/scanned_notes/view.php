@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Encounter form for entering clinical data as a scanned document.
  *

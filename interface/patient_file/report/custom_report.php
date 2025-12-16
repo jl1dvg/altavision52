@@ -38,13 +38,15 @@ $facilityService = new FacilityService();
 // For those who care that this is the patient report.
 $GLOBALS['PATIENT_REPORT_ACTIVE'] = true;
 
-if ($_POST['pdf'] == 1) {
-    $PDF_OUTPUT = 1; // Activar la variable $PDF_OUTPUT
-} elseif ($_POST['pdf'] == 3) {
-    $PDF_OUTPUT = 1; // Desactivar la variable $PDF_OUTPUT
-    $PDF_CONTRA = 1; // Activar la variable $PDF_CONTRA
+// Permitir activar PDF/PDF_CONTRA vía GET o POST (ej. links generados por reportes).
+$pdfParam = $_POST['pdf'] ?? $_GET['pdf'] ?? null;
+if ($pdfParam == 1) {
+    $PDF_OUTPUT = 1;
+} elseif ($pdfParam == 3) {
+    $PDF_OUTPUT = 1;
+    $PDF_CONTRA = 1;
 } else {
-    $PDF_OUTPUT = 0; // Valor por defecto para $PDF_OUTPUT
+    $PDF_OUTPUT = 0;
 }
 
 
@@ -841,7 +843,7 @@ function postToGet($arin)
                     echo "(" . text(oeFormatSDFT(strtotime($dateres["date"]))) . ") ";
                     if ($res[1] == 'newpatient') {
                         // display the provider info
-                        echo ' ' . xlt('Provider') . ': ' . text(getProviderName(getProviderIdOfEncounter($form_encounter)));
+                        echo ' ' . xlt('Provider') . ': ' . text(getProviderNameConcat(getProviderIdOfEncounter($form_encounter)));
                     }
 
                     echo "<br>\n";
@@ -891,71 +893,114 @@ function postToGet($arin)
         } // end if('include_')... else...
     } // end $ar loop
 
-    if ($PDF_CONTRA) {
-        $config_mpdf = array(
-            'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
-            'mode' => $GLOBALS['pdf_language'],
-            'format' => $GLOBALS['pdf_size'],
-            'default_font_size' => '9',
-            'default_font' => 'dejavusans',
-            'margin_left' => '10',
-            'margin_right' => '10',
-            'margin_top' => '8',
-            'margin_bottom' => '8',
-            'margin_header' => '',
-            'margin_footer' => '',
-            'orientation' => $GLOBALS['pdf_layout'],
-            'shrink_tables_to_fit' => 1,
-            'use_kwt' => true,
-            'autoScriptToLang' => true,
-            'keep_table_proportions' => true
-        );
-        $pdf = new mPDF($config_mpdf);
-        if ($_SESSION['language_direction'] == 'rtl') {
-            $pdf->SetDirectionality('rtl');
+        if ($PDF_CONTRA) {
+            $config_mpdf = array(
+                'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
+                'mode' => $GLOBALS['pdf_language'],
+                'format' => $GLOBALS['pdf_size'],
+                'default_font_size' => '9',
+                'default_font' => 'dejavusans',
+                'margin_left' => '5',
+                'margin_right' => '5',
+                'margin_top' => '5',
+                'margin_bottom' => '5',
+                'margin_header' => '',
+                'margin_footer' => '',
+                'orientation' => $GLOBALS['pdf_layout'],
+                'shrink_tables_to_fit' => 1,
+                'use_kwt' => true,
+                'autoScriptToLang' => true,
+                'keep_table_proportions' => true
+            );
+            $pdf = new mPDF($config_mpdf);
+            if ($_SESSION['language_direction'] == 'rtl') {
+                $pdf->SetDirectionality('rtl');
+            }
+
+            // Incluir el contenido de contra_template.php en el PDF
+            include("contra_template.php");
+            $contra_content = ob_get_clean();
+
+            // Imprimir el contenido de contra_template.php
+            $pdf->WriteHTML($contra_content);
+
+            // Ordenar y recorrer el array $ar
+
+            asort($ar);
+            foreach ($ar as $key => $value) {
+                $form_encounter = $value;
+
+                // Verificar si se debe agregar una nueva página
+                if (strpos($key, 'eye_mag') === 0 ||
+                    strpos($key, 'LBF') === 0 ||
+                    strpos($key, 'LBFprotocolo') === 0 ||
+                    strpos($key, 'care_plan') === 0) {
+                    $pdf->AddPage(); // Crear una nueva página en el PDF
+                }
+
+                if (strpos($key, 'eye_mag') === 0) {
+                    $contentFile = "007.php";
+                } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') === false) {
+                    $contentFile = "examenes.php";
+                } elseif (strpos($key, 'LBFprotocolo') === 0) {
+                    // Definir un arreglo con los nombres de los archivos a incluir para este caso
+                    $filesToInclude = array(
+                        "protocolo.php",
+                        "005.php",
+                        "administracion_medicamentos.php",
+                        "constantes_vitales.php",
+                        "preanestesico.php",
+                        "transanestesico.php",
+                        //"postanestesico_anverso.php",
+                        //"postanestesico_reverso.php",
+                        "consumo_oxigeno.php",
+                        "insumos.php",
+                        "egreso_template.php"
+                        // Agrega otros archivos si es necesario
+                    );
+
+                    // Recorrer cada archivo, incluirlo y escribir su contenido en el PDF
+                    $lastIndex = count($filesToInclude) - 1;
+                    foreach ($filesToInclude as $index => $file) {
+                        ob_start();
+                        include($file);
+                        $content = ob_get_clean();
+
+                        if ($file == "postanestesico_anverso.php") {
+                            $pdf->AddPage('L');
+                            $pdf->WriteHTML($content);
+                            $pdf->AddPage('P');
+                        } elseif ($file == "transanestesico.php") {
+                            $pdf->AddPage('L');
+                            $pdf->WriteHTML($content);
+                            $pdf->AddPage('P');
+                        } else {
+                            $pdf->WriteHTML($content);
+                            if ($index !== $lastIndex) {
+                                $pdf->AddPage(); // Solo añade página si no es el último archivo
+                            }
+                        }
+                    }
+                } elseif (strpos($key, 'eye_mag') === 0) {
+                    $contentFile = "007.php";
+                } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') === false) {
+                    $contentFile = "examenes.php";
+                } elseif (strpos($key, 'care_plan') === 0) {
+                    $contentFile = "no_invasivo.php";
+                }
+
+                if (isset($contentFile)) {
+                    ob_start();
+                    include($contentFile);
+                    $content = ob_get_clean();
+                    $pdf->WriteHTML($content);
+                    unset($contentFile);
+                }
+            } // Fin foreach
+
+            // Salida del PDF
+            $pdf->Output();
         }
-
-        // Incluir el contenido de contra_template.php en el PDF
-        include("contra_template.php");
-        $contra_content = ob_get_clean();
-
-        // Imprimir el contenido de contra_template.php
-        $pdf->WriteHTML($contra_content);
-
-        // Ordenar y recorrer el array $ar
-
-        asort($ar);
-        foreach ($ar as $key => $value) {
-            $form_encounter = $value;
-
-            // Verificar si se debe agregar una nueva página
-            if (strpos($key, 'eye_mag') === 0 ||
-                strpos($key, 'LBF') === 0 ||
-                strpos($key, 'LBFprotocolo') === 0 ||
-                strpos($key, 'care_plan') === 0) {
-                $pdf->AddPage(); // Crear una nueva página en el PDF
-            }
-
-            if (strpos($key, 'eye_mag') === 0) {
-                $contentFile = "007.php";
-            } elseif (strpos($key, 'LBF') === 0 && strpos($key, 'LBFprotocolo') !== 0) {
-                $contentFile = "examenes.php";
-            } elseif (strpos($key, 'LBFprotocolo') === 0) {
-                $contentFile = "protocolo.php";
-            } elseif (strpos($key, 'care_plan') === 0) {
-                $contentFile = "no_invasivo.php";
-            }
-
-            if (isset($contentFile)) {
-                ob_start();
-                include($contentFile);
-                $content = ob_get_clean();
-                $pdf->WriteHTML($content);
-                unset($contentFile);
-            }
-        }        // Salida del PDF
-        $pdf->Output();
-    }
 
     if ($printable && !$PDF_OUTPUT) {// Patched out of pdf 04/20/2017 sjpadgett
         echo "<br /><br />" . xlt('Signature') . ": _______________________________<br />";

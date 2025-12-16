@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Insurance form posting for the WordPress Patient Portal.
  *
@@ -8,16 +7,15 @@
  * @author    Rod Roark <rod@sunsetsystems.com>
  * @author    Brady Miller <brady.g.miller@gmail.com>
  * @copyright Copyright (c) 2014 Rod Roark <rod@sunsetsystems.com>
- * @copyright Copyright (c) 2017-2019 Brady Miller <brady.g.miller@gmail.com>
+ * @copyright Copyright (c) 2017 Brady Miller <brady.g.miller@gmail.com>
  * @license   https://github.com/openemr/openemr/blob/master/LICENSE GNU General Public License 3
  */
+
 
 require_once("../globals.php");
 require_once("$srcdir/patient.inc");
 require_once("$srcdir/options.inc.php");
 require_once("portal.inc.php");
-
-use OpenEMR\Core\Header;
 
 // Consider this a step towards converting the insurance form to layout-based.
 // Faking it here makes things easier.
@@ -223,26 +221,22 @@ $ptid = lookup_openemr_patient($result['post']['user']);
 ?>
 <html>
 <head>
-<?php Header::setupHeader('datetime-picker'); ?>
+<link rel=stylesheet href="<?php echo $css_header; ?>" type="text/css">
+<link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.min.css">
 
 <style>
-tr.head {
-  font-size: 0.8125rem;
-  background-color: var(--gray400);
-  text-align: center;
-}
 
-tr.detail {
-  font-size: 0.8125rem;
-  background-color: var(--gray300);
-}
+tr.head   { font-size:10pt; background-color:#cccccc; text-align:center; }
+tr.detail { font-size:10pt; background-color:#ddddff; }
+td input  { background-color:transparent; }
 
-td input {
-  background-color: transparent;
-}
 </style>
 
-<script>
+<script type="text/javascript" src="../../library/textformat.js?v=<?php echo $v_js_includes; ?>"></script>
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-1-7-2/jquery.min.js"></script>
+<script type="text/javascript" src="<?php echo $GLOBALS['assets_static_relative']; ?>/jquery-datetimepicker/build/jquery.datetimepicker.full.min.js"></script>
+
+<script language="JavaScript">
 
 var mypcc = '<?php echo $GLOBALS['phone_country_code'] ?>';
 
@@ -272,7 +266,7 @@ function validate() {
  return true;
 }
 
-$(function () {
+$(function() {
     $('.datepicker').datetimepicker({
         <?php $datetimepicker_timepicker = false; ?>
         <?php $datetimepicker_showseconds = false; ?>
@@ -297,10 +291,10 @@ $(function () {
 
 <form method='post' action='insurance_form.php' onsubmit='return validate()'>
 
-<input type='hidden' name='ptid' value='<?php echo attr($ptid); ?>' />
+<input type='hidden' name='ptid'   value='<?php echo attr($ptid);   ?>' />
 <input type='hidden' name='postid' value='<?php echo attr($postid); ?>' />
 
-<table class='w-100' cellpadding='1' cellspacing='2'>
+<table width='100%' cellpadding='1' cellspacing='2'>
  <tr class='head'>
   <th align='left'><?php echo xlt('Field'); ?></th>
   <th align='left'><?php echo xlt('Current Value'); ?></th>
@@ -345,7 +339,7 @@ foreach ($insurance_layout as $lorow) {
     }
 
     echo " <tr class='detail'>\n";
-    echo "  <td class='font-weight-bold'>" . text($field_title) . "</td>\n";
+    echo "  <td class='bold'>" . text($field_title) . "</td>\n";
     echo "  <td>";
     echo generate_display_field($lorow, $currvalue);
     echo "</td>\n";
@@ -358,11 +352,12 @@ foreach ($insurance_layout as $lorow) {
 
 </table>
 
-<div class="btn-group">
-<input type='submit' class='btn btn-primary' name='bn_save' value='<?php echo xla('Save and Delete Request'); ?>' />
-<input type='button' class='btn btn-secondary' value='<?php echo xla('Back'); ?>' onclick="window.history.back()" />
+<p>
+<input type='submit' name='bn_save' value='<?php echo xla('Save and Delete Request'); ?>' />
+&nbsp;
+<input type='button' value='<?php echo xla('Back'); ?>' onclick="window.history.back()" />
 <!-- Was: onclick="myRestoreSession();location='list_requests.php'" -->
-</div>
+</p>
 
 </form>
 

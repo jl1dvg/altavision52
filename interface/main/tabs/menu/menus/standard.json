@@ -1521,6 +1521,19 @@
             "global_req": "!disable_calendar"
           },
           {
+            "label": "IESS Mensual",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/monthly_iess_report.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ],
+            "global_req": "!disable_calendar"
+          },
+          {
             "label": "Superbill",
             "menu_id": "rep0",
             "target": "rep",
@@ -1890,6 +1903,74 @@
         ],
         "requirement": 0,
         "global_req": "ippf_specific"
+      },
+      {
+        "label": "Estadisticas",
+        "icon": "fa-caret-right",
+        "children": [
+          {
+            "label": "Estudio Diabetes",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/dr_study.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ]
+          },
+          {
+            "label": "GCAC Stats",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/ippf_statistics.php?t=g",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ]
+          },
+          {
+            "label": "MA Stats",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/ippf_statistics.php?t=m",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ]
+          },
+          {
+            "label": "CYP",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/ippf_cyp_report.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ]
+          },
+          {
+            "label": "Daily Record",
+            "menu_id": "rep0",
+            "target": "rep",
+            "url": "/interface/reports/ippf_daily.php",
+            "children": [],
+            "requirement": 0,
+            "acl_req": [
+              "acct",
+              "rep_a"
+            ]
+          }
+        ],
+        "requirement": 0,
+        "global_req": "!simplified_demographics"
       },
       {
         "label": "Services",

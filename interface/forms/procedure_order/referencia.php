@@ -315,32 +315,32 @@ ob_start();
                 if ($SCODVA || $SCOSVA || $ODIOPAP || $OSIOPAP || $RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
                     $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
                     if ($SCODVA) {
-                        $ExamOFT = $ExamOFT . ("OD: " . $SCODVA . ", ");
+                        $ExamOFT = $ExamOFT . ("Ojo Derecho: " . $SCODVA . ", ");
                     }
                     if ($SCOSVA) {
-                        $ExamOFT = $ExamOFT . ("OI: " . $SCOSVA . ", ");
+                        $ExamOFT = $ExamOFT . ("Ojo Izquierdo: " . $SCOSVA . ", ");
                     }
                     if ($ODIOPAP) {
-                        $ExamOFT = $ExamOFT . ("OD: " . $ODIOPAP . ", ");
+                        $ExamOFT = $ExamOFT . ("Ojo Derecho: " . $ODIOPAP . ", ");
                     }
                     if ($OSIOPAP) {
-                        $ExamOFT = $ExamOFT . ("OI: " . $OSIOPAP . ", ");
+                        $ExamOFT = $ExamOFT . ("Ojo Izquierdo: " . $OSIOPAP . ", ");
                     }
                     $ExamOFT = $ExamOFT . "Luego de realizar examen fisico oftalmologico y fondo de ojo con oftalmoscopia indirecta con lupa de 20 Dioptrias bajo dilatacion con gotas de tropicamida y fenilefrina a la Biomicroscopia se observa: ";
                     if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
                         $ExamOFT = $ExamOFT . "Examen Externo:";
                     }
                     if ($RBROW || $RUL || $RLL || $RMCT || $RADNEXA) {
-                        $ExamOFT = $ExamOFT . ("OD " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ");
+                        $ExamOFT = $ExamOFT . ("Ojo Derecho: " . $RBROW . " " . $RUL . " " . $RLL . " " . $RMCT . " " . $RADNEXA . " ");
                     }
                     if ($LBROW || $LUL || $LLL || $LMCT || $LADNEXA) {
-                        $ExamOFT = $ExamOFT . ("OI " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ");
+                        $ExamOFT = $ExamOFT . ("Ojo Izquierdo: " . $LBROW . " " . $LUL . " " . $LLL . " " . $LMCT . " " . $LADNEXA . " ");
                     }
                     if ($EXT_COMMENTS) {
                         $ExamOFT = $ExamOFT . $EXT_COMMENTS;
                     }
                     if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
-                        $ExamOFT = $ExamOFT . "OD: ";
+                        $ExamOFT = $ExamOFT . "Ojo Derecho: ";
                     }
                     if ($ODCONJ) {
                         $ExamOFT = $ExamOFT . ("Conjuntiva " . $ODCONJ . ", ");
@@ -358,7 +358,7 @@ ob_start();
                         $ExamOFT = $ExamOFT . ("Iris " . $ODIRIS . ", ");
                     }
                     if ($OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
-                        $ExamOFT = $ExamOFT . "OI: ";
+                        $ExamOFT = $ExamOFT . "Ojo Izquierdo: ";
                     }
                     if ($OSCONJ) {
                         $ExamOFT = $ExamOFT . ("Conjuntiva " . $OSCONJ . ", ");
@@ -380,7 +380,7 @@ ob_start();
                     }
                     //Retina Ojo Derecho
                     if ($ODDISC || $ODCUP || $ODMACULA || $ODVESSELS || $ODPERIPH || $ODVITREOUS) {
-                        $ExamOFT = $ExamOFT . "OD: ";
+                        $ExamOFT = $ExamOFT . "Ojo Derecho: ";
                     }
                     if ($ODDISC) {
                         $ExamOFT = $ExamOFT . ("Disco " . $ODDISC . ", ");
@@ -402,7 +402,7 @@ ob_start();
                     }
                     //Retina Ojo Izquierdo
                     if ($OSDISC || $OSCUP || $OSMACULA || $OSVESSELS || $OSPERIPH || $OSVITREOUS) {
-                        $ExamOFT = $ExamOFT . "OI: ";
+                        $ExamOFT = $ExamOFT . "Ojo Izquierdo: ";
                     }
                     if ($OSDISC) {
                         $ExamOFT = $ExamOFT . ("Disco " . $OSDISC . ", ");
@@ -435,7 +435,7 @@ ob_start();
                     $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
                     $SegAntOD = "Luego de realizar examen fisico oftalmologico y fondo de ojo con oftalmoscopia indirecta con lupa de 20 Dioptrias bajo dilatacion con gotas de tropicamida y fenilefrina a la Biomicroscopia se observa:";
                     if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS) {
-                        $SegAntOD = $SegAntOD . "OD: ";
+                        $SegAntOD = $SegAntOD . "Ojo Derecho: ";
                     }
                     if ($ODCONJ) {
                         $SegAntOD = $SegAntOD . "Conjuntiva " . $ODCONJ . ", ";

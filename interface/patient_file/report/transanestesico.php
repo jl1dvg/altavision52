@@ -122,880 +122,80 @@ if ($shouldRender) {
     ?>
 <html>
 <head>
-    <style type="text/css">
-        /* Scoped overrides to prevent bleeding from other forms */
-        #transanestesico-wrapper table {
-            width: 100%;
-            border: 3px solid #808080;
-            border-collapse: collapse;
-            margin-bottom: 4px;
-            table-layout: fixed;
-        }
-
-        #transanestesico-wrapper td.morado {
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCCCFF;
-            font-size: 2pt;
-            font-weight: bold;
-        }
-
-        #transanestesico-wrapper td.verde {
-            text-align: center;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 5pt;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        #transanestesico-wrapper td.verde_left {
-            text-align: left;
-            vertical-align: middle;
-            background-color: #CCFFCC;
-            font-size: 5pt;
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-        }
-
-        #transanestesico-wrapper td.blanco {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 5pt;
-        }
-
-        #transanestesico-wrapper td.blanco_break {
-            border-left: 3px solid #808080;
-            border-right: 3px solid #808080;
-            height: 21px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 5pt;
-        }
-
-        #transanestesico-wrapper td.blanco_left {
-            border-top: 1px solid #808080;
-            border-right: 1px solid #808080;
-            text-align: left;
-            vertical-align: middle;
-            font-size: 5pt;
-        }
-
-        #transanestesico-wrapper a {
-            color: inherit;
-        }
-
-        .s110 {
-            border-bottom: 3px SOLID #a5a5a5;
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s127 {
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s39 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Noto Sans Symbols', Arial;
-            font-size: 8pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s44 {
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 5pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s42 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s51 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s74 {
-            border-bottom: 3px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 10pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s49 {
-            border-bottom: 1px SOLID #808080;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 7pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s71 {
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s75 {
-            border-bottom: 1px SOLID #7f7f7f;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 5pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s48 {
-            border-bottom: 1px SOLID #c0c0c0;
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s55 {
-            border-right: none;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 5pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s124 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s73 {
-            border-bottom: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s70 {
-            border-bottom: 3px SOLID #000000;
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s61 {
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s126 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s108 {
-            border-bottom: 3px SOLID #a5a5a5;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s37 {
-            border-bottom: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s45 {
-            border-bottom: 1px SOLID #808080;
-            background-color: #ffffff;
-            text-align: left;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s107 {
-            border-bottom: 3px SOLID #a5a5a5;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s69 {
-            border-bottom: 3px SOLID #000000;
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s54 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Noto Sans Symbols', Arial;
-            font-size: 8pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s63 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s57 {
-            border-left: none;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s62 {
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s64 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s72 {
-            border-bottom: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s43 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s40 {
-            border-bottom: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Noto Sans Symbols', Arial;
-            font-size: 8pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s66 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0;
-        }
-
-        .s65 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s52 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s46 {
-            border-bottom: 1px SOLID #c0c0c0;
-            background-color: #ffffff;
-            text-align: left;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s38 {
-            border-bottom: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s92 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 10pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s60 {
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 10pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s68 {
-            border-bottom: 3px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s67 {
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: right;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s50 {
-            border-bottom: 1px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s109 {
-            border-bottom: 3px SOLID #a5a5a5;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s53 {
-            border-right: 2px SOLID #7f7f7f;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Calibri', Arial;
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s47 {
-            border-bottom: 1px SOLID #c0c0c0;
-            border-right: 1px SOLID #c0c0c0;
-            background-color: #ffffff;
-            text-align: left;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s138 {
-            background-color: #ffffff;
-            text-align: left;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 4pt;
-            vertical-align: top;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s140 {
-            background-color: #ffffff;
-            text-align: right;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 4pt;
-            vertical-align: top;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s56 {
-            border-left: none;
-            border-right: none;
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s41 {
-            border-bottom: 1px SOLID #7f7f7f;
-            border-right: 3px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s59 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'docs-Noto Sans Symbols', Arial;
-            font-size: 11pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s36 {
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 5pt;
-            vertical-align: middle;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s125 {
-            background-color: #ffffff;
-            text-align: center;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: middle;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s58 {
-            background-color: #ffffff;
-            text-align: left;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 6pt;
-            vertical-align: bottom;
-            white-space: nowrap;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-
-        .s77 {
-            border-bottom: 3px SOLID #000000;
-            border-right: 1px SOLID #000000;
-            background-color: #ffffff;
-            text-align: center;
-            font-weight: bold;
-            color: #000000;
-            font-family: 'Arial';
-            font-size: 5pt;
-            vertical-align: bottom;
-            white-space: normal;
-            overflow: hidden;
-            word-wrap: break-word;
-            direction: ltr;
-            padding: 0px 3px 0px 3px;
-        }
-    </style>
 </head>
-<body id="transanestesico-wrapper">
+<body>
 <table>
     <tr style="height: 18px">
-        <td class="morado" colspan="138">A. DATOS DEL ESTABLECIMIENTO Y USUARIO</td>
+        <td class="morado_ta" colspan="138">A. DATOS DEL ESTABLECIMIENTO Y USUARIO</td>
     </tr>
     <tr style="height: 16px">
-        <td class="verde" colspan="27">INSTITUCIÓN DEL SISTEMA</td>
-        <td class="verde" colspan="45">ESTABLECIMIENTO DE SALUD</td>
-        <td class="verde" colspan="40">NÚMERO DE HISTORIA CLÍNICA ÚNICA</td>
-        <td class="verde" colspan="26">NÚMERO DE ARCHIVO</td>
+        <td class="verde_ta" colspan="27">INSTITUCIÓN DEL SISTEMA</td>
+        <td class="verde_ta" colspan="45">ESTABLECIMIENTO DE SALUD</td>
+        <td class="verde_ta" colspan="40">NÚMERO DE HISTORIA CLÍNICA ÚNICA</td>
+        <td class="verde_ta" colspan="26">NÚMERO DE ARCHIVO</td>
     </tr>
     <tr style="height: 16px">
-        <td class="blanco" colspan="27"><?php echo $titleres['pricelevel']; ?></td>
-        <td class="blanco" colspan="45">AlTA VISION</td>
-        <td class="blanco" colspan="40"><?php echo $titleres['pubpid']; ?></td>
-        <td class="blanco" colspan="26"><?php echo $titleres['pubpid']; ?></td>
+        <td class="blanco_ta" colspan="27"><?php echo $titleres['pricelevel']; ?></td>
+        <td class="blanco_ta" colspan="45">AlTA VISION</td>
+        <td class="blanco_ta" colspan="40"><?php echo $titleres['pubpid']; ?></td>
+        <td class="blanco_ta" colspan="26"><?php echo $titleres['pubpid']; ?></td>
     </tr>
     <tr style="height: 16px">
-        <td class="verde" colspan="23" rowspan="2">PRIMER APELLIDO</td>
-        <td class="verde" colspan="21" rowspan="2">SEGUNDO APELLIDO</td>
-        <td class="verde" colspan="25" rowspan="2">PRIMER NOMBRE</td>
-        <td class="verde" colspan="24" rowspan="2">SEGUNDO NOMBRE</td>
-        <td class="verde" colspan="8" rowspan="2">SEXO</td>
-        <td class="verde" colspan="16" rowspan="2">FECHA NACIMIENTO</td>
-        <td class="verde" colspan="12" rowspan="2">EDAD</td>
-        <td class="verde" colspan="9">CONDICIÓN EDAD</td>
+        <td class="verde_ta" colspan="23" rowspan="2">PRIMER APELLIDO</td>
+        <td class="verde_ta" colspan="21" rowspan="2">SEGUNDO APELLIDO</td>
+        <td class="verde_ta" colspan="25" rowspan="2">PRIMER NOMBRE</td>
+        <td class="verde_ta" colspan="24" rowspan="2">SEGUNDO NOMBRE</td>
+        <td class="verde_ta" colspan="8" rowspan="2">SEXO</td>
+        <td class="verde_ta" colspan="16" rowspan="2">FECHA NACIMIENTO</td>
+        <td class="verde_ta" colspan="12" rowspan="2">EDAD</td>
+        <td class="verde_ta" colspan="9">CONDICIÓN EDAD</td>
     </tr>
     <tr style="height: 11px">
-        <td class="blanco" colspan="2">H</td>
-        <td class="blanco" colspan="2">D</td>
-        <td class="blanco" colspan="2">M</td>
-        <td class="blanco" colspan="3">A</td>
+        <td class="blanco_ta" colspan="2">H</td>
+        <td class="blanco_ta" colspan="2">D</td>
+        <td class="blanco_ta" colspan="2">M</td>
+        <td class="blanco_ta" colspan="3">A</td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco" colspan="23"><?php echo $titleres['lname']; ?></td>
-        <td class="blanco" colspan="21"><?php echo $titleres['lname2']; ?></td>
-        <td class="blanco" colspan="25"><?php echo $titleres['fname']; ?></td>
-        <td class="blanco" colspan="24"><?php echo $titleres['mname']; ?></td>
-        <td class="blanco" colspan="8"><?php echo substr($titleres['sex'], 0, 1); ?></td>
-        <td class="blanco" colspan="16"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td class="blanco" colspan="12"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
-        <td class="blanco" colspan="2"></td>
-        <td class="blanco" colspan="2"></td>
-        <td class="blanco" colspan="2"></td>
-        <td class="blanco" colspan="3">X</td>
+        <td class="blanco_ta" colspan="23"><?php echo $titleres['lname']; ?></td>
+        <td class="blanco_ta" colspan="21"><?php echo $titleres['lname2']; ?></td>
+        <td class="blanco_ta" colspan="25"><?php echo $titleres['fname']; ?></td>
+        <td class="blanco_ta" colspan="24"><?php echo $titleres['mname']; ?></td>
+        <td class="blanco_ta" colspan="8"><?php echo substr($titleres['sex'], 0, 1); ?></td>
+        <td class="blanco_ta" colspan="16"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
+        <td class="blanco_ta" colspan="12"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
+        <td class="blanco_ta" colspan="2"></td>
+        <td class="blanco_ta" colspan="2"></td>
+        <td class="blanco_ta" colspan="2"></td>
+        <td class="blanco_ta" colspan="3">X</td>
     </tr>
     <tr style="height: 17px">
-        <td class="verde" colspan="9">FECHA:</td>
-        <td class="blanco" colspan="18">
+        <td class="verde_ta" colspan="9">FECHA:</td>
+        <td class="blanco_ta" colspan="18">
             <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
         </td>
-        <td class="verde" colspan="6">TALLA (cm)</td>
-        <td class="blanco" colspan="14"></td>
-        <td class="verde" colspan="14">PESO (kg)</td>
-        <td class="blanco" colspan="11"></td>
-        <td class="verde" colspan="4">IMC</td>
-        <td class="blanco" colspan="18"></td>
-        <td class="verde" colspan="14">GRUPO Y FACTOR</td>
-        <td class="blanco" colspan="4"></td>
-        <td class="verde" colspan="20">CONSENTIMIENTO INFORMADO</td>
-        <td class="verde">SI</td>
-        <td class="blanco">X</td>
-        <td class="verde" colspan="2">NO</td>
-        <td class="blanco" colspan="2"></td>
+        <td class="verde_ta" colspan="6">TALLA (cm)</td>
+        <td class="blanco_ta" colspan="14"></td>
+        <td class="verde_ta" colspan="14">PESO (kg)</td>
+        <td class="blanco_ta" colspan="11"></td>
+        <td class="verde_ta" colspan="4">IMC</td>
+        <td class="blanco_ta" colspan="18"></td>
+        <td class="verde_ta" colspan="14">GRUPO Y FACTOR</td>
+        <td class="blanco_ta" colspan="4"></td>
+        <td class="verde_ta" colspan="20">CONSENTIMIENTO INFORMADO</td>
+        <td class="verde_ta">SI</td>
+        <td class="blanco_ta">X</td>
+        <td class="verde_ta" colspan="2">NO</td>
+        <td class="blanco_ta" colspan="2"></td>
     </tr>
 </table>
 <table>
     <tr style="height: 18px">
-        <td class="morado" colspan="138">B. SERVICIO Y PRIORIDAD DE ATENCIÓN</td>
+        <td class="morado_ta" colspan="138">B. SERVICIO Y PRIORIDAD DE ATENCIÓN</td>
     </tr>
     <tr style="height: 12px">
-        <td class="verde_left" colspan="13">DIAGNÓSTICO PREOPERATORIO</td>
-        <td class="blanco" style="text-align: left"
+        <td class="verde_left_ta" colspan="13">DIAGNÓSTICO PREOPERATORIO</td>
+        <td class="blanco_ta" style="text-align: left"
             colspan="29">
             <?php
             $prot_dxpre = (getFieldValue($formid, "Prot_dxpre"));
@@ -1013,8 +213,8 @@ if ($shouldRender) {
             }
             ?>
         </td>
-        <td class="verde_left" colspan="3">CIE</td>
-        <td class="blanco" style="text-align: left" colspan="16">
+        <td class="verde_left_ta" colspan="3">CIE</td>
+        <td class="blanco_ta" style="text-align: left" colspan="16">
             <?php
             echo substr($prot_dxpre, 6);
             if ($prot_dxpre2 !== null) {
@@ -1026,8 +226,8 @@ if ($shouldRender) {
             }
             ?>
         </td>
-        <td class="verde_left" colspan="11">CIRUGÍA PROPUESTA</td>
-        <td class="blanco" style="text-align: left" colspan="38">
+        <td class="verde_left_ta" colspan="11">CIRUGÍA PROPUESTA</td>
+        <td class="blanco_ta" style="text-align: left" colspan="38">
             <?php echo obtenerIntervencionesPropuestas(getFieldValue($formid, "Prot_opp")) . " ";
             $ojoValue = getFieldValue($formid, "Prot_ojo");
 
@@ -1041,14 +241,14 @@ if ($shouldRender) {
                 echo "Valor no válido";
             } ?>
         </td>
-        <td class="verde_left" colspan="8">ESPECIALIDAD</td>
-        <td class="verde_left" colspan="11" rowspan="4">PRIORIDAD</td>
-        <td class="blanco_left" colspan="6">EMERGENTE</td>
-        <td class="blanco" colspan="3"></td>
+        <td class="verde_left_ta" colspan="8">ESPECIALIDAD</td>
+        <td class="verde_left_ta" colspan="11" rowspan="4">PRIORIDAD</td>
+        <td class="blanco_left_ta" colspan="6">EMERGENTE</td>
+        <td class="blanco_ta" colspan="3"></td>
     </tr>
     <tr style="height: 11px">
-        <td class="verde_left" colspan="13">DIAGNÓSTICO POSTOPERATORIO</td>
-        <td class="blanco_left" style="text-align: left" colspan="29"><?php
+        <td class="verde_left_ta" colspan="13">DIAGNÓSTICO POSTOPERATORIO</td>
+        <td class="blanco_left_ta" style="text-align: left" colspan="29"><?php
             $prot_dxpost = (getFieldValue($formid, "Prot_dxpost"));
             $prot_dxpost2 = getFieldValue($formid, "Prot_dxpost2");
             $prot_dxpost3 = getFieldValue($formid, "Prot_dxpost3");
@@ -1064,8 +264,8 @@ if ($shouldRender) {
             }
             ?>
         </td>
-        <td class="verde_left" colspan="3">CIE</td>
-        <td class="blanco_left" style="text-align: left" colspan="16"><?php
+        <td class="verde_left_ta" colspan="3">CIE</td>
+        <td class="blanco_left_ta" style="text-align: left" colspan="16"><?php
             echo substr($prot_dxpost, 6);
             if ($prot_dxpost2 !== null) {
                 echo ", " . substr($prot_dxpost2, 6);
@@ -1076,8 +276,8 @@ if ($shouldRender) {
             }
             ?>
         </td>
-        <td class="verde_left" colspan="11">CIRUGÍA REALIZADA</td>
-        <td class="blanco_left" style="text-align: left" colspan="38">
+        <td class="verde_left_ta" colspan="11">CIRUGÍA REALIZADA</td>
+        <td class="blanco_left_ta" style="text-align: left" colspan="38">
             <?php echo obtenerIntervencionesPropuestas(getFieldValue($formid, "Prot_opr")) . " ";
             if ($ojoValue == 'OI') {
                 echo "Ojo izquierdo";
@@ -1090,85 +290,85 @@ if ($shouldRender) {
             }
             ?>
         </td>
-        <td class="blanco_left" colspan="8">Oftalmología</td>
-        <td class="blanco_left" colspan="6">URGENTE</td>
-        <td class="blanco_left" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="8">Oftalmología</td>
+        <td class="blanco_left_ta" colspan="6">URGENTE</td>
+        <td class="blanco_left_ta" colspan="3"></td>
     </tr>
     <tr style="height: 11px">
-        <td class="verde_left" colspan="7">ANESTESIÓLOGO</td>
-        <td class="blanco_left" style="text-align: left"
+        <td class="verde_left_ta" colspan="7">ANESTESIÓLOGO</td>
+        <td class="blanco_left_ta" style="text-align: left"
             colspan="35"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
-        <td class="verde_left" colspan="6">AYUDANTE (S)</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="verde_left" colspan="19">INSTRUMENTISTA</td>
-        <td class="blanco_left" colspan="19">
+        <td class="verde_left_ta" colspan="6">AYUDANTE (S)</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="verde_left_ta" colspan="19">INSTRUMENTISTA</td>
+        <td class="blanco_left_ta" colspan="19">
             <?php
             $instrumentistaOK = getFieldValue($form_id, "Prot_Instrumentistas");
             if ($instrumentistaOK == 'Si') {
-                echo "Dr. Jorge Luis de Vera";
+                echo "Dr. Jorge Luis de Vera Gutierrez";
             } ?>
         </td>
-        <td class="verde_left" colspan="8">QUIRÓFANO</td>
-        <td class="blanco_left" colspan="6">ELECTIVO</td>
-        <td class="blanco_left" colspan="3">X</td>
+        <td class="verde_left_ta" colspan="8">QUIRÓFANO</td>
+        <td class="blanco_left_ta" colspan="6">ELECTIVO</td>
+        <td class="blanco_left_ta" colspan="3">X</td>
     </tr>
     <tr style="height: 11px">
-        <td class="verde_left" colspan="7">CIRUJANO</td>
-        <td class="blanco_left" style="text-align: left" colspan="35"><?php echo $providerNAME; ?></td>
-        <td class="verde_left" colspan="6">AYUDANTE (S)</td>
-        <td class="blanco_left"
+        <td class="verde_left_ta" colspan="7">CIRUJANO</td>
+        <td class="blanco_left_ta" style="text-align: left" colspan="35"><?php echo $providerNAME; ?></td>
+        <td class="verde_left_ta" colspan="6">AYUDANTE (S)</td>
+        <td class="blanco_left_ta"
             colspan="24"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_ayudante")); ?></td>
-        <td class="verde_left" colspan="19">CIRCULANTE</td>
-        <td class="blanco_left" colspan="19"><?php
-            echo getFieldValue($form_id, "Prot_opr") == "avastin" ? " " : "Lcda. Solange Vega";
+        <td class="verde_left_ta" colspan="19">CIRCULANTE</td>
+        <td class="blanco_left_ta" colspan="19"><?php
+            echo getFieldValue($form_id, "Prot_opr") == "avastin" ? " " : "Lcda. Solange Antonella Vega Pilco";
             ?></td>
         </td>
-        <td class="blanco_left" colspan="8">1</td>
-        <td class="blanco_left" colspan="6"></td>
-        <td class="blanco_left" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="8">1</td>
+        <td class="blanco_left_ta" colspan="6"></td>
+        <td class="blanco_left_ta" colspan="3"></td>
     </tr>
 </table>
 <table>
     <tr style="height: 18px">
-        <td class="morado" colspan="138">C. REGIÓN OPERATORIA</td>
+        <td class="morado_ta" colspan="138">C. REGIÓN OPERATORIA</td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="6"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="8"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="5">CABEZA</td>
-        <td class="blanco_left" colspan="2">X</td>
-        <td class="blanco_left" colspan="3">ORGANOS DE LOS SENTIDOS</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="5">CUELLO</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="8">COLUMNA</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="10">TORAX</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="6">ABDOMEN</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="7">PELVIS</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="7">EXTREMIDADES SUPERIORES</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="15">EXTREMIDADES INFERIORES</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="8"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">PERINEAL</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="6"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="7"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="6"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="8"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="5">CABEZA</td>
+        <td class="blanco_left_ta" colspan="2">X</td>
+        <td class="blanco_left_ta" colspan="3">ORGANOS DE LOS SENTIDOS</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="5">CUELLO</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="8">COLUMNA</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="10">TORAX</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="6">ABDOMEN</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="7">PELVIS</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="7">EXTREMIDADES SUPERIORES</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="15">EXTREMIDADES INFERIORES</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="8"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">PERINEAL</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="6"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="7"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="3"></td>
     </tr>
 </table>
 <table>
     <tr style="height: 18px">
-        <td class="morado" colspan="138">D. REGISTRO TRANSANESTÉSICO</td>
+        <td class="morado_ta" colspan="138">D. REGISTRO TRANSANESTÉSICO</td>
     </tr>
     <tr style="height: 12px">
         <td class="s36" colspan="30">AGENTE INHALATORIO / INFUSIÓN CONTINUA</td>
@@ -6183,15 +5383,15 @@ if ($shouldRender) {
     </tr>
     <tr style="height: 12px">
         <td class="s75" colspan="30" rowspan="3">DROGAS ADMINISTRADAS</td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
-        <td class="blanco" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
+        <td class="blanco_ta" colspan="12" rowspan="3"></td>
     </tr>
     <tr style="height: 12px">
     </tr>
@@ -6199,396 +5399,396 @@ if ($shouldRender) {
     </tr>
     <tr style="height: 12px">
         <td class="s77" colspan="30">POSICIÓN</td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
-        <td class="blanco" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
+        <td class="blanco_ta" colspan="12"></td>
     </tr>
 </table>
 <table>
     <tr style="height: 18px">
-        <td class="morado" colspan="138">E. DROGAS ADMINISTRADAS</td>
+        <td class="morado_ta" colspan="138">E. DROGAS ADMINISTRADAS</td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left">1</td>
-        <td class="blanco_left" colspan="18">MIDAZOLAM 1 MG</td>
-        <td class="blanco_left">5</td>
-        <td class="blanco_left" colspan="22">KETOROLACO 60MG</td>
-        <td class="blanco_left">9</td>
-        <td class="blanco_left" colspan="24">GENTAMICINA 80MG/ML</td>
-        <td class="blanco_left">13</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">17</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left">21</td>
-        <td class="blanco_left" colspan="23"></td>
+        <td class="blanco_left_ta">1</td>
+        <td class="blanco_left_ta" colspan="18">MIDAZOLAM 1 MG</td>
+        <td class="blanco_left_ta">5</td>
+        <td class="blanco_left_ta" colspan="22">KETOROLACO 60MG</td>
+        <td class="blanco_left_ta">9</td>
+        <td class="blanco_left_ta" colspan="24">GENTAMICINA 80MG/ML</td>
+        <td class="blanco_left_ta">13</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">17</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta">21</td>
+        <td class="blanco_left_ta" colspan="23"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left">2</td>
-        <td class="blanco_left" colspan="18">FENTALINO 25MG</td>
-        <td class="blanco_left">6</td>
-        <td class="blanco_left" colspan="22">ONDASETRON 4MG</td>
-        <td class="blanco_left">10</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">14</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">18</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left">22</td>
-        <td class="blanco_left" colspan="23"></td>
+        <td class="blanco_left_ta">2</td>
+        <td class="blanco_left_ta" colspan="18">FENTALINO 25MG</td>
+        <td class="blanco_left_ta">6</td>
+        <td class="blanco_left_ta" colspan="22">ONDASETRON 4MG</td>
+        <td class="blanco_left_ta">10</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">14</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">18</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta">22</td>
+        <td class="blanco_left_ta" colspan="23"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left">3</td>
-        <td class="blanco_left" colspan="18">LIDOCAINA 2% 40MG</td>
-        <td class="blanco_left">7</td>
-        <td class="blanco_left" colspan="22">DEXAMETASONA 4MG</td>
-        <td class="blanco_left">11</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">15</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">19</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left">23</td>
-        <td class="blanco_left" colspan="23"></td>
+        <td class="blanco_left_ta">3</td>
+        <td class="blanco_left_ta" colspan="18">LIDOCAINA 2% 40MG</td>
+        <td class="blanco_left_ta">7</td>
+        <td class="blanco_left_ta" colspan="22">DEXAMETASONA 4MG</td>
+        <td class="blanco_left_ta">11</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">15</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">19</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta">23</td>
+        <td class="blanco_left_ta" colspan="23"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left">4</td>
-        <td class="blanco_left" colspan="18">BUPIVACAINA 0,5% 10MG</td>
-        <td class="blanco_left">8</td>
-        <td class="blanco_left" colspan="22">CEXFTRIAXONA 1G</td>
-        <td class="blanco_left">12</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">16</td>
-        <td class="blanco_left" colspan="24"></td>
-        <td class="blanco_left">20</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left">24</td>
-        <td class="blanco_left" colspan="23"></td>
+        <td class="blanco_left_ta">4</td>
+        <td class="blanco_left_ta" colspan="18">BUPIVACAINA 0,5% 10MG</td>
+        <td class="blanco_left_ta">8</td>
+        <td class="blanco_left_ta" colspan="22">CEXFTRIAXONA 1G</td>
+        <td class="blanco_left_ta">12</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">16</td>
+        <td class="blanco_left_ta" colspan="24"></td>
+        <td class="blanco_left_ta">20</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta">24</td>
+        <td class="blanco_left_ta" colspan="23"></td>
     </tr>
 </table>
 <table>
     <tr style="height: 17px">
-        <td class="morado" colspan="138">F. TÉCNICA ANESTÉSICA</td>
+        <td class="morado_ta" colspan="138">F. TÉCNICA ANESTÉSICA</td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco" colspan="49"><b>GENERAL</b></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco" colspan="50"><b>REGIONAL</b></td>
-        <td class="blanco"></td>
-        <td class="blanco"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco" colspan="33"><b>SEDO - ANALGESIA</b></td>
+        <td class="blanco_ta" colspan="49"><b>GENERAL</b></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_ta" colspan="50"><b>REGIONAL</b></td>
+        <td class="blanco_ta"></td>
+        <td class="blanco_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_ta" colspan="33"><b>SEDO - ANALGESIA</b></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="25">SISTEMA</td>
-        <td class="blanco_left" colspan="24">APARATO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="9">ASEPSIA CON:</td>
-        <td class="blanco" colspan="21"><b>ALCOHOL</b></td>
-        <td class="blanco_left" colspan="5">HABÓN CON:</td>
-        <td class="blanco_left" colspan="15"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="25">SISTEMA</td>
+        <td class="blanco_left_ta" colspan="24">APARATO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="9">ASEPSIA CON:</td>
+        <td class="blanco_ta" colspan="21"><b>ALCOHOL</b></td>
+        <td class="blanco_left_ta" colspan="5">HABÓN CON:</td>
+        <td class="blanco_left_ta" colspan="15"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="4">ABIERTO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="6">SEMICERRADO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="12">CERRADO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="9">CIRCUITO CIRCULAR</td>
-        <td class="blanco_left" colspan="5"></td>
-        <td class="blanco_left" colspan="6">UNIDIRECCIONAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="9">LOCAL ASISTIDA</td>
-        <td class="blanco_left" colspan="21"><b>BLOQUEO RETROBULBAR</b></td>
-        <td class="blanco_left" colspan="5">INTRAVENOSA</td>
-        <td class="blanco" colspan="15"><b>X</b></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="4">ABIERTO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="6">SEMICERRADO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="12">CERRADO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="9">CIRCUITO CIRCULAR</td>
+        <td class="blanco_left_ta" colspan="5"></td>
+        <td class="blanco_left_ta" colspan="6">UNIDIRECCIONAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="9">LOCAL ASISTIDA</td>
+        <td class="blanco_left_ta" colspan="21"><b>BLOQUEO RETROBULBAR</b></td>
+        <td class="blanco_left_ta" colspan="5">INTRAVENOSA</td>
+        <td class="blanco_ta" colspan="15"><b>X</b></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="49">MANEJO DE VÍA AÉREA</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco" colspan="50"><b>TRONCULAR</b></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="49">MANEJO DE VÍA AÉREA</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_ta" colspan="50"><b>TRONCULAR</b></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="13">MÁSCARA FACIAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="13">SUPRAGLÓTICA</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="13">TRAQUEOTOMO</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">BLOQUEO DE NERVIO</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left" colspan="9">No. INTENTOS</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="13">MÁSCARA FACIAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="13">SUPRAGLÓTICA</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="13">TRAQUEOTOMO</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">BLOQUEO DE NERVIO</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta" colspan="9">No. INTENTOS</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="49">INTUBACIÓN</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">BLOQUEO DEL PLEXO</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left" colspan="9">No. INTENTOS</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="49">INTUBACIÓN</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">BLOQUEO DEL PLEXO</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta" colspan="9">No. INTENTOS</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="5">NASAL</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="5">ORAL</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="9">SUBMENTONEANA</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="9">VISIÓN DIRECTA</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="5">A CIEGAS</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">ANESTÉSICO LOCAL</td>
-        <td class="blanco" colspan="21"><b>REGIONAL</b></td>
-        <td class="blanco_left" colspan="9">COADYUVANTE</td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="5">NASAL</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="5">ORAL</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="9">SUBMENTONEANA</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="9">VISIÓN DIRECTA</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="5">A CIEGAS</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">ANESTÉSICO LOCAL</td>
+        <td class="blanco_ta" colspan="21"><b>REGIONAL</b></td>
+        <td class="blanco_left_ta" colspan="9">COADYUVANTE</td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="49">TIPO DE TUBO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">TIPO DE AGUJA</td>
-        <td class="blanco" colspan="21"><b>25X1</b></td>
-        <td class="blanco_left" colspan="9">EQUIPO</td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="49">TIPO DE TUBO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">TIPO DE AGUJA</td>
+        <td class="blanco_ta" colspan="21"><b>25X1</b></td>
+        <td class="blanco_left_ta" colspan="9">EQUIPO</td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="8">CONVENCIONAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="10">PREFORMADO ORAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="9">PREFORMADO NASAL</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="7">REFORZADO</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco" colspan="50"><b>NEUROAXIAL</b></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="8">CONVENCIONAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="10">PREFORMADO ORAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="9">PREFORMADO NASAL</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="7">REFORZADO</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_ta" colspan="50"><b>NEUROAXIAL</b></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="8">DOBLE LUMEN</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="7">DIÁMETRO</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="3">BALÓN</td>
-        <td class="blanco_left">SI</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="3">NO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">TAPONAMIENTO</td>
-        <td class="blanco_left">SI</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2">NO</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="6">RAQUÍDEA</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="5">EPIDURAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="4">CAUDAL</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="5"></td>
-        <td class="blanco_left" colspan="4">CATETER</td>
-        <td class="blanco_left" colspan="5"></td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="5"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="8">DOBLE LUMEN</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="7">DIÁMETRO</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="3">BALÓN</td>
+        <td class="blanco_left_ta">SI</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="3">NO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">TAPONAMIENTO</td>
+        <td class="blanco_left_ta">SI</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2">NO</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="6">RAQUÍDEA</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="5">EPIDURAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="4">CAUDAL</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="5"></td>
+        <td class="blanco_left_ta" colspan="4">CATETER</td>
+        <td class="blanco_left_ta" colspan="5"></td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="5"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left">
+        <td class="blanco_left_ta">
             <div class="softmerge-inner" style="width:128px;left:-1px">EQUIPO PARA INTUBACIÓN</div>
         </td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="39"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="6">TIPO AGUJA</td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left" colspan="19">NÚMERO AGUJA</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="9">No. INTENTOS</td>
-        <td class="blanco_left" colspan="5"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="39"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="6">TIPO AGUJA</td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta" colspan="19">NÚMERO AGUJA</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="9">No. INTENTOS</td>
+        <td class="blanco_left_ta" colspan="5"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="5">CORMACK:</td>
-        <td class="blanco_left" colspan="2">I</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="2">II</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2">III</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2">IV</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="9">NÚMERO DE INTENTOS</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="6">BORBOTAJE</td>
-        <td class="blanco_left" colspan="3">SI</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2">NO</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">ACCESO</td>
-        <td class="blanco_left" colspan="4">MEDIAL</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">LATERAL</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="7">SITIO DE PUNCIÓN</td>
-        <td class="blanco_left" colspan="11"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33"></td>
+        <td class="blanco_left_ta" colspan="5">CORMACK:</td>
+        <td class="blanco_left_ta" colspan="2">I</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="2">II</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2">III</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2">IV</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="9">NÚMERO DE INTENTOS</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="6">BORBOTAJE</td>
+        <td class="blanco_left_ta" colspan="3">SI</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2">NO</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">ACCESO</td>
+        <td class="blanco_left_ta" colspan="4">MEDIAL</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">LATERAL</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="7">SITIO DE PUNCIÓN</td>
+        <td class="blanco_left_ta" colspan="11"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33"></td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="21">INDUCCIÓN</td>
-        <td class="blanco_left" colspan="28">MANTENIMIENTO</td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11"></td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="33">ESCALA DE RAMSAY</td>
+        <td class="blanco_left_ta" colspan="21">INDUCCIÓN</td>
+        <td class="blanco_left_ta" colspan="28">MANTENIMIENTO</td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11"></td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="33">ESCALA DE RAMSAY</td>
     </tr>
     <tr style="height: 12px">
-        <td class="blanco_left" colspan="9">INHALATORIA</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="6">INTRAVENOSA</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="6">INHALATORIA</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left" colspan="6">INTRAVENOSA</td>
-        <td class="blanco_left" colspan="4"></td>
-        <td class="blanco_left" colspan="6">BALANCEADA</td>
-        <td class="blanco_left" colspan="3"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="11">DERMATOMA</td>
-        <td class="blanco_left" colspan="21"></td>
-        <td class="blanco_left" colspan="9">POSICIÓN</td>
-        <td class="blanco_left" colspan="9"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left"></td>
-        <td class="blanco_left" colspan="4">1</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">2</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">3</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="4">4</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="3">5</td>
-        <td class="blanco_left" colspan="2"></td>
-        <td class="blanco_left" colspan="2">6</td>
-        <td class="blanco_left" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="9">INHALATORIA</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="6">INTRAVENOSA</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="6">INHALATORIA</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta" colspan="6">INTRAVENOSA</td>
+        <td class="blanco_left_ta" colspan="4"></td>
+        <td class="blanco_left_ta" colspan="6">BALANCEADA</td>
+        <td class="blanco_left_ta" colspan="3"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="11">DERMATOMA</td>
+        <td class="blanco_left_ta" colspan="21"></td>
+        <td class="blanco_left_ta" colspan="9">POSICIÓN</td>
+        <td class="blanco_left_ta" colspan="9"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta"></td>
+        <td class="blanco_left_ta" colspan="4">1</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">2</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">3</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="4">4</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="3">5</td>
+        <td class="blanco_left_ta" colspan="2"></td>
+        <td class="blanco_left_ta" colspan="2">6</td>
+        <td class="blanco_left_ta" colspan="2"></td>
     </tr>
     <tr style="height: 12px">
         <td class="s107"></td>
@@ -6740,99 +5940,99 @@ if ($shouldRender) {
 <pagebreak>
     <table>
         <tr style="height: 18px">
-            <td class="morado" colspan="42">G. ACCESOS VASCULARES</td>
-            <td class="morado" colspan="48">H. REPOSICIÓN VOLÉMICA (ml)</td>
-            <td class="morado" colspan="48">I. PERDIDAS</td>
+            <td class="morado_ta" colspan="42">G. ACCESOS VASCULARES</td>
+            <td class="morado_ta" colspan="48">H. REPOSICIÓN VOLÉMICA (ml)</td>
+            <td class="morado_ta" colspan="48">I. PERDIDAS</td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6"><b>TIPO</b></td>
-            <td class="blanco" colspan="7"><b>CALIBRE</b></td>
-            <td class="blanco" colspan="29"><b>SITIO</b></td>
-            <td class="blanco_left" colspan="12">DEXTROSA 5%</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">SANGRE</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">SANGRADO</td>
-            <td class="blanco_left" colspan="12"><b>MINIMO</b></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6"><b>TIPO</b></td>
+            <td class="blanco_ta" colspan="7"><b>CALIBRE</b></td>
+            <td class="blanco_ta" colspan="29"><b>SITIO</b></td>
+            <td class="blanco_left_ta" colspan="12">DEXTROSA 5%</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">SANGRE</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">SANGRADO</td>
+            <td class="blanco_left_ta" colspan="12"><b>MINIMO</b></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">IV PERIFÉRICO 1</td>
-            <td class="blanco" colspan="7"><b>"22"</b></td>
+            <td class="blanco_left_ta" colspan="6">IV PERIFÉRICO 1</td>
+            <td class="blanco_ta" colspan="7"><b>"22"</b></td>
             <td class="blancO" colspan="29"><b>ANTEBRAZO</b></td>
-            <td class="blanco_left" colspan="12">DEXTROSA 10%</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">PLASMA</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">DIURESIS</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">DEXTROSA 10%</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">PLASMA</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">DIURESIS</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">IV PERIFÉRICO 2</td>
-            <td class="blanco_left" colspan="7"></td>
-            <td class="blanco_left" colspan="29"></td>
-            <td class="blanco_left" colspan="12">DEXTROSA 50%</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">PLAQUETAS</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">OTROS</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">IV PERIFÉRICO 2</td>
+            <td class="blanco_left_ta" colspan="7"></td>
+            <td class="blanco_left_ta" colspan="29"></td>
+            <td class="blanco_left_ta" colspan="12">DEXTROSA 50%</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">PLAQUETAS</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">OTROS</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">IV PERIFÉRICO 3</td>
-            <td class="blanco_left" colspan="7"></td>
-            <td class="blanco_left" colspan="29"></td>
-            <td class="blanco_left" colspan="12">DEXTROSA EN SS</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">CRIOPRECIPITADOS</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12">TOTAL</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">IV PERIFÉRICO 3</td>
+            <td class="blanco_left_ta" colspan="7"></td>
+            <td class="blanco_left_ta" colspan="29"></td>
+            <td class="blanco_left_ta" colspan="12">DEXTROSA EN SS</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">CRIOPRECIPITADOS</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12">TOTAL</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">IV CENTRAL</td>
-            <td class="blanco_left" colspan="7"></td>
-            <td class="blanco_left" colspan="29"></td>
-            <td class="blanco_left" colspan="12">SS 0.9%</td>
-            <td class="blanco" colspan="12"><b>1000 ML</b></td>
-            <td class="blanco_left" colspan="12" rowspan="2">OTROS</td>
-            <td class="blanco_left" colspan="12"><b>MANITOL 20% 100ML</b></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">IV CENTRAL</td>
+            <td class="blanco_left_ta" colspan="7"></td>
+            <td class="blanco_left_ta" colspan="29"></td>
+            <td class="blanco_left_ta" colspan="12">SS 0.9%</td>
+            <td class="blanco_ta" colspan="12"><b>1000 ML</b></td>
+            <td class="blanco_left_ta" colspan="12" rowspan="2">OTROS</td>
+            <td class="blanco_left_ta" colspan="12"><b>MANITOL 20% 100ML</b></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">INTRA ARTERIAL</td>
-            <td class="blanco_left" colspan="7"></td>
-            <td class="blanco_left" colspan="29"></td>
-            <td class="blanco_left" colspan="12">LACTATO RINGER</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">INTRA ARTERIAL</td>
+            <td class="blanco_left_ta" colspan="7"></td>
+            <td class="blanco_left_ta" colspan="29"></td>
+            <td class="blanco_left_ta" colspan="12">LACTATO RINGER</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco_left" colspan="6">OTRO</td>
-            <td class="blanco_left" colspan="7"></td>
-            <td class="blanco_left" colspan="29"></td>
-            <td class="blanco_left" colspan="12">EXPANSORES</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"><b>TOTAL</b></td>
-            <td class="blanco" colspan="12"><b>1100 ML</b></td>
-            <td class="blanco_left" colspan="12">BALANCE</td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">OTRO</td>
+            <td class="blanco_left_ta" colspan="7"></td>
+            <td class="blanco_left_ta" colspan="29"></td>
+            <td class="blanco_left_ta" colspan="12">EXPANSORES</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"><b>TOTAL</b></td>
+            <td class="blanco_ta" colspan="12"><b>1100 ML</b></td>
+            <td class="blanco_left_ta" colspan="12">BALANCE</td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
             <td class="s124"></td>
@@ -6977,17 +6177,17 @@ if ($shouldRender) {
     </table>
     <table>
         <tr style="height: 18px">
-            <td class="morado" colspan="22">J. DATOS DEL RECIÉN NACIDO</td>
-            <td class="morado" colspan="116">K. TIEMPOS TRANSCURRIDOS</td>
+            <td class="morado_ta" colspan="22">J. DATOS DEL RECIÉN NACIDO</td>
+            <td class="morado_ta" colspan="116">K. TIEMPOS TRANSCURRIDOS</td>
         </tr>
         <tr style="height: 16px">
-            <td class="blanco_left" colspan="4" rowspan="2">APGAR</td>
-            <td class="blanco_left" colspan="6">FETO MUERTO</td>
-            <td class="blanco_left" colspan="2"></td>
-            <td class="blanco_left" colspan="8">5 MINUTOS</td>
-            <td class="blanco_left" colspan="2"></td>
-            <td class="verde" colspan="14">DURACIÓN ANESTESIA</td>
-            <td class="blanco_left" colspan="14">
+            <td class="blanco_left_ta" colspan="4" rowspan="2">APGAR</td>
+            <td class="blanco_left_ta" colspan="6">FETO MUERTO</td>
+            <td class="blanco_left_ta" colspan="2"></td>
+            <td class="blanco_left_ta" colspan="8">5 MINUTOS</td>
+            <td class="blanco_left_ta" colspan="2"></td>
+            <td class="verde_ta" colspan="14">DURACIÓN ANESTESIA</td>
+            <td class="blanco_left_ta" colspan="14">
                 <?php
                 $horaInicio = strtotime(getFieldValue($formid, "Prot_hini"));
                 $horaFin = $horaInicio + 7200;
@@ -7011,8 +6211,8 @@ if ($shouldRender) {
                 echo "<b>" . $horas . " horas y " . $minutos . " minutos.</b>";
                 ?>
             </td>
-            <td class="verde" colspan="13">DURACIÓN DE CIRUGÍA</td>
-            <td class="blanco_left" colspan="27">
+            <td class="verde_ta" colspan="13">DURACIÓN DE CIRUGÍA</td>
+            <td class="blanco_left_ta" colspan="27">
                 <?php
                 $diferencia = $horaFin - $horaInicio;
 
@@ -7023,26 +6223,26 @@ if ($shouldRender) {
                 echo "<b>" . $horas . " horas y " . $minutos . " minutos.</b>";
                 ?>
             </td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 16px">
-            <td class="blanco_left" colspan="6">1 MINUTO</td>
-            <td class="blanco_left" colspan="2"></td>
-            <td class="blanco_left" colspan="8">10 MINUTOS</td>
-            <td class="blanco_left" colspan="2"></td>
-            <td class="blanco_left" colspan="8"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
-            <td class="blanco_left" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="6">1 MINUTO</td>
+            <td class="blanco_left_ta" colspan="2"></td>
+            <td class="blanco_left_ta" colspan="8">10 MINUTOS</td>
+            <td class="blanco_left_ta" colspan="2"></td>
+            <td class="blanco_left_ta" colspan="8"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
+            <td class="blanco_left_ta" colspan="12"></td>
         </tr>
         <tr style="height: 12px">
             <td class="s92"></td>
@@ -7187,354 +6387,354 @@ if ($shouldRender) {
     </table>
     <table>
         <tr style="height: 12px">
-            <td class="morado" colspan="68">L. TÉCNICAS ESPECIALES</td>
+            <td class="morado_ta" colspan="68">L. TÉCNICAS ESPECIALES</td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="11">HEMODILUCIÓN</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">AUTOTRANSFUSIÓN</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">HIPOTENSIÓN</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">HIPOTERMIA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="13">CIRCULACIÓN EXTRACORPÓREA</td>
-            <td class="blanco" colspan="3"></td>
+            <td class="blanco_ta" colspan="11">HEMODILUCIÓN</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">AUTOTRANSFUSIÓN</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">HIPOTENSIÓN</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">HIPOTERMIA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="13">CIRCULACIÓN EXTRACORPÓREA</td>
+            <td class="blanco_ta" colspan="3"></td>
         </tr>
     </table>
     <table>
         <tr style="height: 12px">
-            <td class="morado" colspan="68">M. MANTENIMIENTO TEMPERATURA CORPORAL</td>
+            <td class="morado_ta" colspan="68">M. MANTENIMIENTO TEMPERATURA CORPORAL</td>
         </tr>
         <tr style="height: 17px">
-            <td class="blanco" colspan="11">MANTA TÉRMICA</td>
-            <td class="blanco" colspan="2">X</td>
-            <td class="blanco" colspan="11">CALENTAMIENTO DE FLUIDOS</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="4">OTROS</td>
-            <td class="blanco" colspan="38"></td>
+            <td class="blanco_ta" colspan="11">MANTA TÉRMICA</td>
+            <td class="blanco_ta" colspan="2">X</td>
+            <td class="blanco_ta" colspan="11">CALENTAMIENTO DE FLUIDOS</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="4">OTROS</td>
+            <td class="blanco_ta" colspan="38"></td>
         </tr>
     </table>
     <table>
         <tr style="height: 20px">
-            <td class="morado" colspan="68">N. INCIDENTES</td>
+            <td class="morado_ta" colspan="68">N. INCIDENTES</td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="11">ACTIVIDAD ELÉCTRICA SIN PULSO</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">ARRITMIA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">ASISTOLIA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">BRADICARDIA INESTABLE</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="13">TROMBOEMBOLIA PULMONAR</td>
-            <td class="blanco" colspan="3"></td>
+            <td class="blanco_ta" colspan="11">ACTIVIDAD ELÉCTRICA SIN PULSO</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">ARRITMIA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">ASISTOLIA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">BRADICARDIA INESTABLE</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="13">TROMBOEMBOLIA PULMONAR</td>
+            <td class="blanco_ta" colspan="3"></td>
         </tr>
         <tr style="height: 16px">
-            <td class="blanco" colspan="11">HIPERTERMIA MALIGNA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">ANAFILAXIA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">ISQUEMIA MIOCÁRDICA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">HIPOXEMIA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="13">NEUMOTÓRAX</td>
-            <td class="blanco" colspan="3"></td>
+            <td class="blanco_ta" colspan="11">HIPERTERMIA MALIGNA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">ANAFILAXIA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">ISQUEMIA MIOCÁRDICA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">HIPOXEMIA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="13">NEUMOTÓRAX</td>
+            <td class="blanco_ta" colspan="3"></td>
         </tr>
         <tr style="height: 16px">
-            <td class="blanco" colspan="11">BRONCOESPASMO</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">DESPERTAR PROLONGADO</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">EMBOLIA AÉREA VENOSA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="11">REACCIÓN A LA TRANSFUSIÓN</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="13">LARINGOESPASMO</td>
-            <td class="blanco" colspan="3"></td>
+            <td class="blanco_ta" colspan="11">BRONCOESPASMO</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">DESPERTAR PROLONGADO</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">EMBOLIA AÉREA VENOSA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="11">REACCIÓN A LA TRANSFUSIÓN</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="13">LARINGOESPASMO</td>
+            <td class="blanco_ta" colspan="3"></td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="11">DIFICULTAD DE LA TÉCNICA</td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="55">OTROS</td>
+            <td class="blanco_ta" colspan="11">DIFICULTAD DE LA TÉCNICA</td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="55">OTROS</td>
         </tr>
     </table>
     <table>
         <tr style="height: 20px">
-            <td class="morado" colspan="68">O. RESULTADO DE EXÁMENES DE LABORATORIO</td>
+            <td class="morado_ta" colspan="68">O. RESULTADO DE EXÁMENES DE LABORATORIO</td>
         </tr>
         <tr style="height: 16px">
-            <td class="blanco"></td>
-            <td class="blanco" colspan="4">HORA</td>
-            <td class="blanco" colspan="5">pH</td>
-            <td class="blanco" colspan="5">PO2</td>
-            <td class="blanco" colspan="5">PCO2</td>
-            <td class="blanco" colspan="5">HCO3</td>
-            <td class="blanco" colspan="5">EB</td>
-            <td class="blanco" colspan="5">SAT. O2</td>
-            <td class="blanco" colspan="5">LACTATO</td>
-            <td class="blanco" colspan="5">GLUCOSA</td>
-            <td class="blanco" colspan="4">Na</td>
-            <td class="blanco" colspan="3">K</td>
-            <td class="blanco" colspan="3">Cl</td>
-            <td class="blanco" colspan="3">HCTO</td>
-            <td class="blanco" colspan="2">HB</td>
-            <td class="blanco" colspan="8">OTRO</td>
+            <td class="blanco_ta"></td>
+            <td class="blanco_ta" colspan="4">HORA</td>
+            <td class="blanco_ta" colspan="5">pH</td>
+            <td class="blanco_ta" colspan="5">PO2</td>
+            <td class="blanco_ta" colspan="5">PCO2</td>
+            <td class="blanco_ta" colspan="5">HCO3</td>
+            <td class="blanco_ta" colspan="5">EB</td>
+            <td class="blanco_ta" colspan="5">SAT. O2</td>
+            <td class="blanco_ta" colspan="5">LACTATO</td>
+            <td class="blanco_ta" colspan="5">GLUCOSA</td>
+            <td class="blanco_ta" colspan="4">Na</td>
+            <td class="blanco_ta" colspan="3">K</td>
+            <td class="blanco_ta" colspan="3">Cl</td>
+            <td class="blanco_ta" colspan="3">HCTO</td>
+            <td class="blanco_ta" colspan="2">HB</td>
+            <td class="blanco_ta" colspan="8">OTRO</td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">1</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">1</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">2</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">2</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">3</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">3</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">4</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">4</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">5</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">5</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">6</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">6</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">7</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">7</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">7</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">7</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">9</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">9</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
         <tr style="height: 12px">
-            <td class="blanco">10</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="3"></td>
-            <td class="blanco" colspan="2"></td>
-            <td class="blanco" colspan="8"></td>
+            <td class="blanco_ta">10</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="3"></td>
+            <td class="blanco_ta" colspan="2"></td>
+            <td class="blanco_ta" colspan="8"></td>
         </tr>
     </table>
     <table>
         <tr style="height: 20px">
-            <td class="morado" colspan="68">P. OBSERVACIONES</td>
+            <td class="morado_ta" colspan="68">P. OBSERVACIONES</td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
         <tr style="height: 15px">
-            <td class="blanco" colspan="68"><br></td>
+            <td class="blanco_ta" colspan="68"><br></td>
         </tr>
     </table>
     <table>
         <tr style="height: 20px">
-            <td class="morado" colspan="68">R. CONDICIÓN DE EGRESO</td>
+            <td class="morado_ta" colspan="68">R. CONDICIÓN DE EGRESO</td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="13" rowspan="2">CONDICIONES AL SALIR</td>
-            <td class="blanco" colspan="7">EXTUBADO</td>
-            <td class="blanco" colspan="4"></td>
-            <td class="blanco" colspan="7" rowspan="2">CONDUCIDO A:</td>
-            <td class="blanco" colspan="7" rowspan="2">UNIDAD DE CUIDADOS POST ANESTÉSICOS</td>
-            <td class="blanco" colspan="3" rowspan="2">X</td>
-            <td class="blanco" colspan="6" rowspan="2">UNIDAD CUIDADOS INTENSIVOS</td>
-            <td class="blanco" colspan="3" rowspan="2"></td>
-            <td class="blanco" colspan="7" rowspan="2">CRÍTICOS DE EMERGENCIA</td>
-            <td class="blanco" colspan="3" rowspan="2"></td>
-            <td class="blanco" colspan="5" rowspan="2">MORGUE</td>
-            <td class="blanco" colspan="3" rowspan="2"></td>
+            <td class="blanco_ta" colspan="13" rowspan="2">CONDICIONES AL SALIR</td>
+            <td class="blanco_ta" colspan="7">EXTUBADO</td>
+            <td class="blanco_ta" colspan="4"></td>
+            <td class="blanco_ta" colspan="7" rowspan="2">CONDUCIDO A:</td>
+            <td class="blanco_ta" colspan="7" rowspan="2">UNIDAD DE CUIDADOS POST ANESTÉSICOS</td>
+            <td class="blanco_ta" colspan="3" rowspan="2">X</td>
+            <td class="blanco_ta" colspan="6" rowspan="2">UNIDAD CUIDADOS INTENSIVOS</td>
+            <td class="blanco_ta" colspan="3" rowspan="2"></td>
+            <td class="blanco_ta" colspan="7" rowspan="2">CRÍTICOS DE EMERGENCIA</td>
+            <td class="blanco_ta" colspan="3" rowspan="2"></td>
+            <td class="blanco_ta" colspan="5" rowspan="2">MORGUE</td>
+            <td class="blanco_ta" colspan="3" rowspan="2"></td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="7">INTUBADO</td>
-            <td class="blanco" colspan="4"></td>
+            <td class="blanco_ta" colspan="7">INTUBADO</td>
+            <td class="blanco_ta" colspan="4"></td>
         </tr>
         <tr style="height: 23px">
-            <td class="blanco" colspan="13">CONSTANTES VITALES DE ENTREGA</td>
-            <td class="blanco" colspan="14">TA: 103/96</td>
-            <td class="blanco" colspan="10">FC: 74</td>
-            <td class="blanco" colspan="10">FR: 20</td>
-            <td class="blanco" colspan="12">SAT. O2: 99%</td>
-            <td class="blanco" colspan="9">T: 37.5°</td>
+            <td class="blanco_ta" colspan="13">CONSTANTES VITALES DE ENTREGA</td>
+            <td class="blanco_ta" colspan="14">TA: 103/96</td>
+            <td class="blanco_ta" colspan="10">FC: 74</td>
+            <td class="blanco_ta" colspan="10">FR: 20</td>
+            <td class="blanco_ta" colspan="12">SAT. O2: 99%</td>
+            <td class="blanco_ta" colspan="9">T: 37.5°</td>
         </tr>
     </table>
     <table>
         <tr style="height: 20px">
-            <td class="morado" colspan="68">S. DATOS DEL PROFESIONAL RESPONSABLE</td>
+            <td class="morado_ta" colspan="68">S. DATOS DEL PROFESIONAL RESPONSABLE</td>
         </tr>
         <tr style="height: 50px">
-            <td class="verde" style="height: 40px" colspan="3">HORA</td>
-            <td class="blanco" colspan="5"></td>
-            <td class="verde" colspan="12">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
-            <td class="blanco"
+            <td class="verde_ta" style="height: 40px" colspan="3">HORA</td>
+            <td class="blanco_ta" colspan="5"></td>
+            <td class="verde_ta" colspan="12">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
+            <td class="blanco_ta"
                 colspan="18"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
-            <td class="verde" colspan="4">FIRMA</td>
-            <td class="blanco" colspan="12"></td>
-            <td class="verde" colspan="4">SELLO Y CÓDIGO</td>
-            <td class="blanco" colspan="10"></td>
+            <td class="verde_ta" colspan="4">FIRMA</td>
+            <td class="blanco_ta" colspan="12"></td>
+            <td class="verde_ta" colspan="4">SELLO Y CÓDIGO</td>
+            <td class="blanco_ta" colspan="10"></td>
         </tr>
     </table>
     <table style="border: none">

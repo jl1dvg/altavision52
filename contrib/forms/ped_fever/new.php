@@ -13,9 +13,8 @@
 
 
 require_once("../../globals.php");
-require_once("../../../library/api.inc");
 
-use OpenEMR\Core\Header;
+require_once("../../../library/api.inc");
 
 formHeader("Pediatric Fever Evaluation");
 
@@ -23,7 +22,7 @@ formHeader("Pediatric Fever Evaluation");
 
 <html><head>
 
-<?php Header::setupHeader(); ?>
+<link rel="stylesheet" href="<?php echo $css_header;?>" type="text/css">
 
 </head>
 
@@ -35,7 +34,7 @@ formHeader("Pediatric Fever Evaluation");
 
 
 
-<br />
+<br>
 
 <form method='post' action="<?php echo $rootdir;?>/forms/ped_fever/save.php?mode=new" name='ped_fever' >
 
@@ -45,7 +44,7 @@ formHeader("Pediatric Fever Evaluation");
 
 <?php
 
-    $obj = array(); // just to avoid undeclared var warning
+    $obj=array(); // just to avoid undeclared var warning
 
     require('form.php'); // to use a single file for both, empty and editing
 
@@ -59,7 +58,7 @@ formHeader("Pediatric Fever Evaluation");
 
 <a href="javascript:top.restoreSession();document.ped_fever.submit();" class="link_submit">[Save]</a>
 
-<br />
+<br>
 
 
 

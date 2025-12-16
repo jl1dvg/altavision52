@@ -28,11 +28,10 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
 /* for $GLOBALS[], ?? */
 require_once('../../globals.php');
+/* for acl_check(), ?? */
 require_once($GLOBALS['srcdir'].'/api.inc');
 /* for ??? */
 require_once($GLOBALS['srcdir'].'/forms.inc');
-
-use OpenEMR\Common\Acl\AclMain;
 
 ]]></xsl:text>
 <xsl:apply-templates select="table|RealName|safename|acl|layout"/>
@@ -226,6 +225,8 @@ elseif ($_GET['mode'] == 'update') {
 ]]></xsl:text>
 </xsl:if>
 <xsl:text disable-output-escaping="yes"><![CDATA[
+
+$_SESSION['encounter'] = $encounter;
 
 formHeader('Redirecting....');
 ]]></xsl:text>

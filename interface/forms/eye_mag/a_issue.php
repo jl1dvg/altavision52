@@ -1362,7 +1362,7 @@ foreach (explode(',', $given) as $item) {
       </div>
         <p class="text-center" style="width:100%;margin-top:0px;">
           <input type="hidden" id="issue_js" name="issue_js" value="test">
-          <input type="hidden" id="pid" name="pid" value="<?php echo $pid; ?>">
+          <input type="hidden" id="pid" name="pid" value="<?php echo attr($pid); ?>">
           <input type='button' id='form_save' name='form_save'
           class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only navy"
           onclick='top.restoreSession();submit_this_form();' value='<?php echo xla('Save'); ?>' />

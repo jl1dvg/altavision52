@@ -987,7 +987,7 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
         if ($cols != 'Fax') {
             ?><!-- start of the refraction boxes -->
             <?php
-            if ($ODVA || $OSVA || $ARODSPH || $AROSSPH || $MRODSPH || $MROSSPH || $CRODSPH || $CROSSPH || $CTLODSPH || $CTLOSSPH || $IOPTIME) { ?>
+            if ($ODVA||$OSVA||$ARODSPH||$AROSSPH||$MRODSPH||$MROSSPH||$CRODSPH||$CROSSPH||$CTLODSPH||$CTLOSSPH) { ?>
                 <br/>
                 <table class="refraction_tables">
                 <tr>
@@ -2016,16 +2016,17 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
         </table>
         <?php
     }
+}
+    //end choice !== 'TEXT' -- include this in summary mouseover report.
     ?>
         <!-- start of IMPPLAN exam -->
-        <br/>
         <table class="report_exam_group">
             <tr>
                 <td style="text-align:left;padding:1px;vertical-align:top;width:480px;">
                     <b><u><?php echo xlt('Impression/Plan'); ?>:</u></b>
-                </td>
-            </tr>
+          <table style="">
             <tr>
+              <td style="padding:5px;text-align: left;text-align:justify;width:475px;">
                 <?php
     /**
      *  Retrieve and Display the IMPPLAN_items for the Impression/Plan zone.
@@ -2071,7 +2072,6 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
                                 echo $item['plan'] . "</div><br />";
                             }
                         }
-                    }
                 $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
                 $PLAN_results = sqlStatement($query, array($form_id, $pid));
 
