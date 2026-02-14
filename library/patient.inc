@@ -460,6 +460,60 @@ function getProviderNameConcat($providerID, $provider_only = 'any')
     return trim($fullName);
 }
 
+function getProviderNameParts($providerID)
+{
+    $pi = getProviderInfo($providerID, 'any');
+
+    if (empty($pi[0])) {
+        return null;
+    }
+
+    $fname = trim($pi[0]['fname'] ?? '');
+    $mname = trim($pi[0]['mname'] ?? '');
+    $lname = trim($pi[0]['lname'] ?? '');
+
+    $tokens = preg_split('/\s+/', $lname);
+
+    $prefijos = ['de', 'del', 'la', 'los', 'las'];
+    $apellidos = [];
+
+    $i = 0;
+    while ($i < count($tokens)) {
+        $token = strtolower($tokens[$i]);
+
+        // Prefijos tipo: de, del, de la, de los, etc.
+        if ($token === 'de') {
+            $compuesto = $tokens[$i];
+
+            // de + la / los / las
+            if (isset($tokens[$i + 1]) && in_array(strtolower($tokens[$i + 1]), ['la', 'los', 'las'])) {
+                $compuesto .= ' ' . $tokens[$i + 1];
+                $i++;
+            }
+
+            // agregar la siguiente palabra (apellido real)
+            if (isset($tokens[$i + 1])) {
+                $compuesto .= ' ' . $tokens[$i + 1];
+                $i++;
+            }
+
+            $apellidos[] = $compuesto;
+        } else {
+            $apellidos[] = $tokens[$i];
+        }
+
+        $i++;
+    }
+
+    return [
+        'fname'       => $fname,
+        'mname'       => $mname,
+        'apellido_1'  => $apellidos[0] ?? '',
+        'apellido_2'  => $apellidos[1] ?? '',
+        'apellidos'   => implode(' ', $apellidos),
+        'full_name'   => trim("$fname $mname " . implode(' ', $apellidos))
+    ];
+}
 
 function getResponsableName($providerID)
 {

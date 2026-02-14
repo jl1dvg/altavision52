@@ -150,14 +150,8 @@ $providerID = getProviderIdOfEncounter($encounter);
 //provider name explode
 $fullName = getProviderNameConcat($providerID);
 
-// Extraer los componentes del nombre
-$nameComponents = explode(" ", $fullName);
+$doc = getProviderNameParts($providerID);
 
-// Obtener los componentes individuales
-$mname = isset($nameComponents[0]) ? $nameComponents[0] : '';
-$fname = isset($nameComponents[1]) ? $nameComponents[1] : '';
-$lname = isset($nameComponents[2]) ? $nameComponents[2] : '';
-$suffix = isset($nameComponents[3]) ? $nameComponents[3] : '';
 $queryform = "select * from forms
                 where
                 pid=? and
@@ -678,16 +672,17 @@ renderPatientInfoTable($titleres, $encounter);
             <td colspan="7" class="verde">HORA<br>
                 <font class="font5">(hh:mm)</font>
             </td>
-            <td colspan="21" class="verde">PRIMER NOMBRE</td>
+            <td colspan="21" class="verde">NOMBRES</td>
             <td colspan="19" class="verde">PRIMER APELLIDO</td>
             <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
         </tr>
         <tr>
-            <td colspan="8" class="blanco"><?php echo $fecha007; ?></td>
+            <td colspan="8"
+                class="blanco"><?php echo $fecha007; ?></td>
             <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
-            <td colspan="21" class="blanco"><?php echo $mname; ?></td>
-            <td colspan="19" class="blanco"><?php echo $fname; ?></td>
-            <td colspan="16" class="blanco"><?php echo $lname; ?></td>
+            <td colspan="21" class="blanco"><?php echo $doc['fname'] . " " . $doc['mname']; ?></td>
+            <td colspan="19" class="blanco"><?php echo $doc['apellido_1']; ?></td>
+            <td colspan="16" class="blanco"><?php echo $doc['apellido_2']; ?></td>
         </tr>
         <tr>
             <td colspan="15" class="verde">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -877,16 +872,17 @@ renderPatientInfoTable($titleres, $encounter);
                 <td colspan="7" class="verde">HORA<br>
                     <font class="font5">(hh:mm)</font>
                 </td>
-                <td colspan="21" class="verde">PRIMER NOMBRE</td>
+                <td colspan="21" class="verde">NOMBRES</td>
                 <td colspan="19" class="verde">PRIMER APELLIDO</td>
                 <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
             </tr>
             <tr>
-                <td colspan="8" class="blanco"><?php echo $fecha007; ?></td>
+                <td colspan="8"
+                    class="blanco"><?php echo $fecha007; ?></td>
                 <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
-                <td colspan="21" class="blanco"><?php echo $mname; ?></td>
-                <td colspan="19" class="blanco"><?php echo $fname; ?></td>
-                <td colspan="16" class="blanco"><?php echo $lname; ?></td>
+                <td colspan="21" class="blanco"><?php echo $doc['fname'] . " " . $doc['mname']; ?></td>
+                <td colspan="19" class="blanco"><?php echo $doc['apellido_1']; ?></td>
+                <td colspan="16" class="blanco"><?php echo $doc['apellido_2']; ?></td>
             </tr>
             <tr>
                 <td colspan="15" class="verde">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -1137,7 +1133,7 @@ renderPatientInfoTable($titleres, $encounter);
                         <td colspan="7" class="verde">HORA<br>
                             <font class="font5">(hh:mm)</font>
                         </td>
-                        <td colspan="21" class="verde">PRIMER NOMBRE</td>
+                        <td colspan="21" class="verde">NOMBRES</td>
                         <td colspan="19" class="verde">PRIMER APELLIDO</td>
                         <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
                     </tr>
@@ -1145,9 +1141,9 @@ renderPatientInfoTable($titleres, $encounter);
                         <td colspan="8"
                             class="blanco"><?php echo $fecha007; ?></td>
                         <td colspan="7" class="blanco"><?php echo date("H:i", $time007); ?></td>
-                        <td colspan="21" class="blanco"><?php echo $mname; ?></td>
-                        <td colspan="19" class="blanco"><?php echo $fname; ?></td>
-                        <td colspan="16" class="blanco"><?php echo $lname; ?></td>
+                        <td colspan="21" class="blanco"><?php echo $doc['fname'] . " " . $doc['mname']; ?></td>
+                        <td colspan="19" class="blanco"><?php echo $doc['apellido_1']; ?></td>
+                        <td colspan="16" class="blanco"><?php echo $doc['apellido_2']; ?></td>
                     </tr>
                     <tr>
                         <td colspan="15" class="verde">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -1161,7 +1157,6 @@ renderPatientInfoTable($titleres, $encounter);
                         <td colspan="30" class="blanco">&nbsp;</td>
                     </tr>
                 </table>
-
                 <table style="border: none">
                     <TR>
                         <TD colspan="6" HEIGHT=24 ALIGN=LEFT VALIGN=TOP><B><FONT SIZE=1 COLOR="#000000">SNS-MSP /

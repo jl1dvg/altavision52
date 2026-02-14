@@ -50,9 +50,9 @@
 <div id="autouploader">
   <h3>Scaneo</h3>
 
-  <button type="button" onclick="scanAndUploadDirectly();">Scaneo and Previsualización</button>
+  <button type="button" onclick="scanAndUploadDirectly('{$GLOBALS.webroot}/library/ajax/upload.php?patient_id={$patient_id|attr_url}&parent_id={$category_id|attr_url}&csrf_token_form={$CSRF_TOKEN_FORM|attr_url}');">Scaneo and Previsualización</button>
     <br><br><br>
-    <button type="button" onclick="scanWithoutAspriseDialog();">Scaneo directo</button>
+    <button type="button" onclick="scanWithoutAspriseDialog('{$GLOBALS.webroot}/library/ajax/upload.php?patient_id={$patient_id|attr_url}&parent_id={$category_id|attr_url}&csrf_token_form={$CSRF_TOKEN_FORM|attr_url}');">Scaneo directo</button>
 
   <div id="server_response"></div>
     <div id="images"></div>

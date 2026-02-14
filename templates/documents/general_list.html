@@ -145,7 +145,7 @@ $("#list_collapse").detach().appendTo("#objTreeMenu_1_node_1 nobr");
 //
 
 /** Scan and upload in one go */
-function scanAndUploadDirectly() {
+function scanAndUploadDirectly(uploadUrl) {
     scanner.scan(displayServerResponse,
         {
             "output_settings": [
@@ -155,7 +155,7 @@ function scanAndUploadDirectly() {
                     "discard_blank_pages": "false", /** Default value: false */
                     "blank_page_threshold": "0.02", /** Max ink coverage consider as blank */
                     "upload_target": {
-                        "url": "http://192.168.85.126/altavision/templates/documents/upload.php?action=dump"
+                        "url": uploadUrl || "{$GLOBALS.webroot}/templates/documents/upload.php?action=dump"
                     }
                 }
             ]
@@ -164,7 +164,7 @@ function scanAndUploadDirectly() {
 }
 
 
-function scanWithoutAspriseDialog() {
+function scanWithoutAspriseDialog(uploadUrl) {
     scanner.scan(displayServerResponse,
         {
             "use_asprise_dialog": false,
@@ -175,7 +175,7 @@ function scanWithoutAspriseDialog() {
                     "discard_blank_pages": "true", /** Default value: false */
                     "blank_page_threshold": "0.02", /** Max ink coverage consider as blank */
                     "upload_target": {
-                        "url": "http://192.168.85.126/altavision/templates/documents/upload.php?action=dump"
+                        "url": uploadUrl || "{$GLOBALS.webroot}/templates/documents/upload.php?action=dump"
                     }
                 }
             ]

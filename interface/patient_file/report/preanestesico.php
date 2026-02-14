@@ -700,7 +700,7 @@ include("common_header.php");
 
                 <font class="font5">(hh:mm)</font>
             </td>
-            <td colspan="21" class="verde" style="height: 15px;">PRIMER NOMBRE</td>
+            <td colspan="21" class="verde" style="height: 15px;">NOMBRES</td>
             <td colspan="19" class="verde" style="height: 15px;">PRIMER APELLIDO</td>
             <td colspan="16" class="verde" style="height: 15px;">SEGUNDO APELLIDO</td>
         </tr>
@@ -710,7 +710,7 @@ include("common_header.php");
                 <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
             </td>
             <td colspan="7" class="blanco" style="height: 15px;"></td>
-            <td colspan="21" class="blanco" style="height: 15px;">María</td>
+            <td colspan="21" class="blanco" style="height: 15px;">María Patricia</td>
             <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
             <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
         </tr>

@@ -25,11 +25,15 @@ $patient_id = filter_input(INPUT_GET, 'patient_id');
 $category_id = filter_input(INPUT_GET, 'parent_id');
 
 if (!empty($_FILES)) {
-    $name     = $_FILES['file']['name'];
-    $type     = $_FILES['file']['type'];
-    $tmp_name = $_FILES['file']['tmp_name'];
-    $size     = $_FILES['file']['size'];
-    $owner    = $GLOBALS['userauthorized'];
+    $uploadedFile = $_FILES['file'] ?? reset($_FILES);
+    $name = $uploadedFile['name'] ?? null;
+    $type = $uploadedFile['type'] ?? null;
+    $tmp_name = $uploadedFile['tmp_name'] ?? null;
+    $error = $uploadedFile['error'] ?? UPLOAD_ERR_NO_FILE;
+    $size = $uploadedFile['size'] ?? 0;
+    $owner = $GLOBALS['userauthorized'];
 
-    addNewDocument($name, $type, $tmp_name, $error, $size, $owner, $patient_id, $category_id);
+    if (!empty($name) && $error === UPLOAD_ERR_OK) {
+        addNewDocument($name, $type, $tmp_name, $error, $size, $owner, $patient_id, $category_id);
+    }
 }

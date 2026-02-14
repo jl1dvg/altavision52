@@ -521,7 +521,8 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td colspan="11" class="verde">FECHA
             </td>
             <td colspan="56" class="blanco_left">
-                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
+                <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter)));
+                echo $resultado;?>
             </td>
         </tr>
         <tr>

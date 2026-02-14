@@ -183,7 +183,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         <td colspan="7" class="verde">HORA<br>
             <font class="font5">(hh:mm)</font>
         </td>
-        <td colspan="21" class="verde">PRIMER NOMBRE</td>
+        <td colspan="21" class="verde">NOMBRES</td>
         <td colspan="19" class="verde">PRIMER APELLIDO</td>
         <td colspan="16" class="verde">SEGUNDO APELLIDO</td>
     </tr>
