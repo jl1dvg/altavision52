@@ -9,7 +9,7 @@ $form_id = $res[2];
 $providerID = getProviderIdOfEncounter($form_encounter);
 $providerNAME = getProviderNameConcat($providerID);
 
-$resultado = getProtocolDate($form_id, $form_encounter);
+$resultado = getClinicalDateParts($form_id, $form_encounter, 'numeric');
 
 if ($resultado) {
     $dateddia = $resultado['dia'];
@@ -18,7 +18,9 @@ if ($resultado) {
 
     // Realizar cualquier otra acción con los componentes de la fecha
 } else {
-    // La fecha del protocolo no se encontró, manejar este caso según corresponda
+    $dateddia = '';
+    $datedmes = '';
+    $datedano = '';
 }
 
 

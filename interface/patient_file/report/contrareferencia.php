@@ -19,30 +19,25 @@ $facilityService = new FacilityService();
 
 require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
-if ($_REQUEST['CHOICE']) {
+$reportContext = normalizeReportContext();
+$pid = $reportContext['pid'] ?? ($pid ?? null);
+$encounter = $reportContext['encounter'] ?? ($encounter ?? null);
+$form_id = $reportContext['form_id'] ?? ($form_id ?? null);
+$form_name = $_REQUEST['formname'] ?? $_REQUEST['formdir'] ?? ($reportContext['formdir'] ?? ($form_name ?? null));
+syncReportContextToRequest($reportContext);
+
+if (!empty($_REQUEST['choice'])) {
     $choice = $_REQUEST['choice'];
-}
-
-if ($_REQUEST['ptid']) {
-    $pid = $_REQUEST['ptid'];
-}
-
-if ($_REQUEST['encid']) {
-    $encounter = $_REQUEST['encid'];
+} elseif (!empty($_REQUEST['CHOICE'])) {
+    $choice = $_REQUEST['CHOICE'];
 }
 
 $queryformidOFT = "select * from forms where pid=? and encounter=? and formdir = 'eye_mag' and deleted = 0 ORDER BY date DESC ";
-$OFTid_SQL = sqlQuery($queryformidOFT, array($_GET['patientid'], $_GET['visitid']));
+$OFTid_SQL = sqlQuery($queryformidOFT, array($pid, $encounter));
 
 
-if ($_REQUEST['formid']) {
-    $form_id = $_REQUEST['formid'];
-} else {
+if (empty($form_id)) {
     $form_id = $OFTid_SQL['form_id'];
-}
-
-if ($_REQUEST['formname']) {
-    $form_name = $_REQUEST['formname'];
 }
 
 if (!$id) {
@@ -91,17 +86,17 @@ $queryPlan = "select tp.admit_date AS alta, tp.recommendation_for_follow_up AS r
 $reasonQuery = "SELECT * FROM form_encounter WHERE encounter=? AND pid=? ";
 
 
-$reasonSQL = sqlQuery($reasonQuery, array($_GET['visitid'], $_GET['patientid']));
+$reasonSQL = sqlQuery($reasonQuery, array($encounter, $pid));
 $reason = $reasonSQL['reason'];
-$plan = sqlQuery($queryPlan, array($_GET['patientid'], $_GET['visitid']));
-$fechaINGRESO = sqlQuery($queryform, array($_GET['patientid'], $_GET['visitid']));
+$plan = sqlQuery($queryPlan, array($pid, $encounter));
+$fechaINGRESO = sqlQuery($queryform, array($pid, $encounter));
 $providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderNameConcat($providerID);
-$dated = new DateTime($encounter_date);
-$dateddia = $dated->format('d');
-$datedmes = $dated->format('F');
-$datedano = $dated->format('Y');
-$visit_date = oeFormatShortDate($dated);
+$dated = getClinicalDateTime($form_id, $encounter);
+$dateddia = $dated ? $dated->format('d') : '';
+$datedmes = $dated ? $dated->format('m') : '';
+$datedano = $dated ? $dated->format('Y') : '';
+$visit_date = $dated ? $dated->format('d/m/Y') : '';
 
 
 $facility = null;

@@ -11,13 +11,22 @@ if ($_SESSION['pc_facility']) {
 $ma_logo_path = "sites/" . $_SESSION['site_id'] . "/images/ma_logo.png";
 $logo = "<img src='$web_root/$ma_logo_path' style='height:" . attr(round(9 * 7.50)) . "pt' />";
 
-preg_match('/^(.*)_(\d+)$/', $key, $res);
-$form_id = $res[2];
+$form_id = null;
 
-$encounterDate = fetchDateByEncounter($form_encounter);
-$mesesEnIngles = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
-$mesesEnEspanol = array('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre');
-$fechaCompleta = date($mesesEnEspanol[date('n', strtotime($encounterDate)) - 1]) . ' ' . date('Y', strtotime($encounterDate));
+$reportContext = normalizeReportContext();
+if (!empty($reportContext['pid']) && empty($pid)) {
+    $pid = $reportContext['pid'];
+}
+if (!empty($reportContext['encounter']) && empty($form_encounter)) {
+    $form_encounter = $reportContext['encounter'];
+}
+if (!empty($reportContext['form_id'])) {
+    $form_id = $reportContext['form_id'];
+}
+syncReportContextToRequest($reportContext);
+
+$clinicalDate = getClinicalDateParts($form_id, $form_encounter, 'es');
+$fechaCompleta = $clinicalDate ? ($clinicalDate['mes'] . ' ' . $clinicalDate['ano']) : '';
 
 ?>
 <html>

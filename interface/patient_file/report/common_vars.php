@@ -16,14 +16,16 @@ $form_id = $res[2];
 $providerID = getProviderIdOfEncounter($form_encounter);
 $providerNAME = getProviderNameConcat($providerID);
 
-$resultado = getProtocolDate($form_id, $form_encounter);
+$resultado = getClinicalDateParts($form_id, $form_encounter, 'numeric');
 
 if ($resultado) {
     $dateddia = $resultado['dia'];
     $datedmes = $resultado['mes'];
     $datedano = $resultado['ano'];
 } else {
-    // Manejo de error o valores por defecto
+    $dateddia = '';
+    $datedmes = '';
+    $datedano = '';
 }
 
 $codes = getCPT4Codes($titleres['pricelevel'], $form_id);

@@ -9,7 +9,8 @@ require_once("$srcdir/iess.inc.php");
 </head>
 <body>
 <?php
-$arr = array_reverse($ar);
+$ar = sortReportSelectionsByEncounterDate($ar, true);
+$ar_desc = sortReportSelectionsByEncounterDate($ar, false);
 foreach ($ar as $key => $val) {
 
     if ($key == 'pdf') {
@@ -152,8 +153,8 @@ foreach ($ar as $key => $val) {
                 <tr>
                     <td class="blanco" colspan="8" rowspan="1" height="28">
                         <?php
-                        // Imprimir UNA sola fecha de referencia: la fecha del último formulario `newpatient`
-                        $max_newpatient_form_id = -1;
+                        // Imprimir una sola fecha de referencia basada en la fecha del encounter (newpatient más reciente).
+                        $max_newpatient_timestamp = null;
                         $max_newpatient_date = null;
 
                         foreach ($ar as $key => $val) {
@@ -173,27 +174,31 @@ foreach ($ar as $key => $val) {
                                 continue;
                             }
 
-                            // Quedarnos con el mayor form_id de newpatient
-                            if ($form_id > $max_newpatient_form_id) {
-                                $max_newpatient_form_id = $form_id;
+                            if (!is_numeric($val)) {
+                                continue;
+                            }
 
-                                $plan_sql = "SELECT `date` FROM `forms` WHERE `form_id` = ? AND `formdir` = 'newpatient' LIMIT 1";
-                                $plan = sqlQuery($plan_sql, array($form_id));
-
-                                if (!empty($plan['date'])) {
-                                    $max_newpatient_date = $plan['date'];
+                            $encounterDate = parseReportDateValue(fetchDateByEncounter((int)$val));
+                            if ($encounterDate) {
+                                $currentTimestamp = $encounterDate->getTimestamp();
+                                if ($max_newpatient_timestamp === null || $currentTimestamp > $max_newpatient_timestamp) {
+                                    $max_newpatient_timestamp = $currentTimestamp;
+                                    $max_newpatient_date = $encounterDate->format('Y-m-d H:i:s');
                                 }
                             }
                         }
 
                         if ($max_newpatient_date) {
-                            echo date('d/m/Y', strtotime($max_newpatient_date));
+                            echo formatReportDateValue($max_newpatient_date, 'd/m/Y');
                         }
+                        $ageReferenceDate = $max_newpatient_date
+                            ? formatReportDateValue($max_newpatient_date, 'Y/m/d')
+                            : formatClinicalDate(null, $form_encounter, 'Y/m/d');
                         ?>
                     </td>
                     <td class="blanco" colspan="5" rowspan="1"></td>
                     <td class="blanco" colspan="5" rowspan="1" align="center">
-                        <?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime($plan['date']))); ?>
+                        <?php echo getPatientAgeFromDate($titleres['DOB_TS'], $ageReferenceDate); ?>
                     </td>
                     <td class="amarillo" colspan="2" rowspan="1">
                         <?php if ($titleres['sex'] == "Male") {
@@ -273,9 +278,15 @@ foreach ($ar as $key => $val) {
             </table>
 
             <?php
-            $first_encounter = end($ar);
+            $first_encounter = null;
+            foreach ($ar as $encounter_key => $encounter_val) {
+                if (parseReportKey($encounter_key) && is_numeric($encounter_val)) {
+                    $first_encounter = (int)$encounter_val;
+                    break;
+                }
+            }
             $reason_sql = "SELECT * FROM form_encounter WHERE encounter = ?";
-            $reason = sqlQuery($reason_sql, array($first_encounter));
+            $reason = $first_encounter ? sqlQuery($reason_sql, array($first_encounter)) : array('reason' => '');
             ?>
 
             <table>
@@ -412,12 +423,14 @@ foreach ($ar as $key => $val) {
 </table>
 
 <?php
-krsort($ar);
-foreach ($ar as $key => $val) {
+foreach ($ar_desc as $key => $val) {
     $form_encounter = $val;
-    preg_match('/^(.*)_(\d+)$/', $key, $res);
-    $form_id = $res[2];
-    if ($res[1] == 'eye_mag') {
+    $parsed = parseReportKey($key);
+    if (!$parsed) {
+        continue;
+    }
+    $form_id = $parsed['form_id'];
+    if ($parsed['formdir'] == 'eye_mag') {
         ?>
         <table>
             <TR>
@@ -480,7 +493,7 @@ foreach ($ar as $key => $val) {
 ?>
 <?php
 //5 PLAN DE TRATAMIENTO RECOMENDADO
-foreach ($ar as $key => $val) {
+foreach ($ar_desc as $key => $val) {
 // Aqui los hallazgos relevantes de la contrarreferencia
 // in the format: <formdirname_formid>=<encounterID>
     if ($key == 'pdf') {
@@ -489,10 +502,13 @@ foreach ($ar as $key => $val) {
     if ($key == 'include_demographics') {
         continue;
     }
+    $parsed = parseReportKey($key);
+    if (!$parsed) {
+        continue;
+    }
     $form_encounter = $val;
-    preg_match('/^(.*)_(\d+)$/', $key, $res);
-    $form_id = $res[2];
-    if ($res[1] == 'treatment_plan') {
+    $form_id = $parsed['form_id'];
+    if ($parsed['formdir'] == 'treatment_plan') {
         ?>
         <table>
             <TR>
@@ -522,7 +538,7 @@ foreach ($ar as $key => $val) {
 
 <?php
 //5 FIRMA Y SELLO DEL MEDICO
-foreach ($ar as $key => $val) {
+foreach ($ar_desc as $key => $val) {
 // Aqui los hallazgos relevantes de la contrarreferencia
 // in the format: <formdirname_formid>=<encounterID>
     if ($key == 'pdf') {
@@ -531,10 +547,13 @@ foreach ($ar as $key => $val) {
     if ($key == 'include_demographics') {
         continue;
     }
+    $parsed = parseReportKey($key);
+    if (!$parsed) {
+        continue;
+    }
     $form_encounter = $val;
-    preg_match('/^(.*)_(\d+)$/', $key, $res);
-    $form_id = $res[2];
-    if ($res[1] == 'eye_mag') {
+    $form_id = $parsed['form_id'];
+    if ($parsed['formdir'] == 'eye_mag') {
         $providerID_sql = "SELECT * FROM form_encounter WHERE encounter = ?";
         $providerID = sqlQuery($providerID_sql, array($form_encounter));
         ?>

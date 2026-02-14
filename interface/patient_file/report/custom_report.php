@@ -20,6 +20,7 @@ require_once("$srcdir/acl.inc");
 require_once("$srcdir/lists.inc");
 require_once("$srcdir/report.inc");
 require_once("$srcdir/encounter.inc");
+require_once("$srcdir/iess.inc.php");
 require_once(dirname(__file__) . "/../../../custom/code_types.inc.php");
 require_once $GLOBALS['srcdir'] . '/ESign/Api.php';
 require_once($GLOBALS["include_root"] . "/orders/single_order_results.inc.php");
@@ -265,6 +266,7 @@ function postToGet($arin)
     } else {
         $ar = $_POST;
     }
+    $ar = sortReportSelectionsByEncounterDate($ar, true);
 
 
     if ($printable) {
@@ -366,9 +368,12 @@ function postToGet($arin)
                             }
 
                             if (($auth_notes_a || $auth_notes || $auth_coding_a || $auth_coding || $auth_med || $auth_relaxed)) {
-                                preg_match('/^(.*)_(\d+)$/', $key_search, $res_search);
-                                $form_id_arr[] = add_escape_custom($res_search[2]);
-                                $form_dir_arr[] = add_escape_custom($res_search[1]);
+                                $parsedSearch = parseReportKey($key_search);
+                                if (!$parsedSearch) {
+                                    continue;
+                                }
+                                $form_id_arr[] = add_escape_custom($parsedSearch['form_id']);
+                                $form_dir_arr[] = add_escape_custom($parsedSearch['formdir']);
                             }
                         }
 
@@ -400,7 +405,7 @@ function postToGet($arin)
     // include ALL form's report.php files
     $inclookupres = sqlStatement("select distinct formdir from forms where pid = ? AND deleted=0", array($pid));
     while ($result = sqlFetchArray($inclookupres)) {
-        // include_once("{$GLOBALS['incdir']}/forms/" . $result{"formdir"} . "/report.php");
+        // include_once("{$GLOBALS['incdir']}/forms/" . $result['formdir'] . "/report.php");
         $formdir = $result['formdir'];
         if (substr($formdir, 0, 3) == 'LBF') {
             include_once($GLOBALS['incdir'] . "/forms/LBF/report.php");
@@ -606,7 +611,7 @@ function postToGet($arin)
                 // echo $sql;
                 $result = sqlStatement($sql, array($pid));
                 while ($row = sqlFetchArray($result)) {
-                    echo text($row{'batchcom_data'}) . ", By: " . text($row{'user_name'}) . "<br>Text:<br> " . text($row{'msg_txt'}) . "<br>\n";
+                    echo text($row['batchcom_data']) . ", By: " . text($row['user_name']) . "<br>Text:<br> " . text($row['msg_text']) . "<br>\n";
                 }
 
                 echo "</div>\n";
@@ -924,9 +929,7 @@ function postToGet($arin)
             // Imprimir el contenido de contra_template.php
             $pdf->WriteHTML($contra_content);
 
-            // Ordenar y recorrer el array $ar
-
-            asort($ar);
+            // Recorrer el array $ar ordenado por fecha del encounter (ascendente)
             foreach ($ar as $key => $value) {
                 $form_encounter = $value;
 

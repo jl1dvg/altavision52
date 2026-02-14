@@ -68,7 +68,7 @@ if (!function_exists('getMedicalProblems')) {
         $diagnoses = [];
 
         while ($row = sqlFetchArray($result)) {
-            $diagnoses[] = $row['diagnosis'];
+            $diagnoses[] = $ row['diagnosis'];
         }
 
         return $diagnoses;
@@ -136,11 +136,13 @@ if (!function_exists('renderPatientInfoTable')) {
     }
 }
 
-preg_match('/^(.*)_(\d+)$/', $key, $res);
-print_r($key);
-
-$formdir = $res[1];
-$form_id = $res[2];
+$reportContext = normalizeReportContext();
+$pid = $reportContext['pid'] ?? ($pid ?? null);
+$form_encounter = $reportContext['encounter'] ?? ($form_encounter ?? null);
+$encounter = $form_encounter;
+$formdir = $reportContext['formdir'] ?? '';
+$form_id = $reportContext['form_id'] ?? null;
+syncReportContextToRequest($reportContext);
 
 $reason = getReason($form_encounter, $pid);
 

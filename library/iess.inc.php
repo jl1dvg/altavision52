@@ -112,31 +112,341 @@ function getImageHTML($id)
     return $html;
 }
 
-function getProtocolDate($formId, $encounter)
+function parseReportKey($key)
 {
-    // Realizar la consulta a la base de datos
-    $fechaPROTOCOLO = sqlQuery("SELECT * FROM forms WHERE form_id = ? AND encounter = ?", array($formId, $encounter));
-
-    // Verificar si se encontró la fecha del protocolo
-    if ($fechaPROTOCOLO) {
-        // Obtener la fecha y convertirla a un objeto DateTime
-        $datedprotocolo = new DateTime($fechaPROTOCOLO['date']);
-
-        // Obtener los componentes de la fecha
-        $dateddia = $datedprotocolo->format('d');
-        $datedmes = $datedprotocolo->format('m');
-        $datedano = $datedprotocolo->format('Y');
-
-        // Retornar los componentes de la fecha en un array
-        return array(
-            'dia' => $dateddia,
-            'mes' => $datedmes,
-            'ano' => $datedano
-        );
+    if (empty($key) || !preg_match('/^(.*)_(\d+)$/', $key, $matches)) {
+        return null;
     }
 
-    // En caso de que no se encuentre la fecha, retornar null o un valor por defecto según convenga
+    return array(
+        'formdir' => $matches[1],
+        'form_id' => (int)$matches[2]
+    );
+}
+
+function normalizeReportContext($input = null)
+{
+    if (!is_array($input)) {
+        $input = $_REQUEST;
+    }
+
+    $context = array(
+        'pid' => null,
+        'encounter' => null,
+        'form_id' => null,
+        'formdir' => null
+    );
+
+    $pidCandidates = array(
+        $input['pid'] ?? null,
+        $input['ptid'] ?? null,
+        $input['patientid'] ?? null,
+        $_GET['pid'] ?? null,
+        $_GET['ptid'] ?? null,
+        $_GET['patientid'] ?? null,
+        $GLOBALS['pid'] ?? null
+    );
+    foreach ($pidCandidates as $candidate) {
+        if ($candidate !== null && $candidate !== '') {
+            $context['pid'] = $candidate;
+            break;
+        }
+    }
+
+    $encounterCandidates = array(
+        $input['encounter'] ?? null,
+        $input['encid'] ?? null,
+        $input['visitid'] ?? null,
+        $_GET['encounter'] ?? null,
+        $_GET['encid'] ?? null,
+        $_GET['visitid'] ?? null,
+        $GLOBALS['form_encounter'] ?? null,
+        $GLOBALS['encounter'] ?? null
+    );
+    foreach ($encounterCandidates as $candidate) {
+        if ($candidate !== null && $candidate !== '') {
+            $context['encounter'] = $candidate;
+            break;
+        }
+    }
+
+    $formIdCandidates = array(
+        $input['form_id'] ?? null,
+        $input['formid'] ?? null,
+        $_GET['form_id'] ?? null,
+        $_GET['formid'] ?? null
+    );
+    foreach ($formIdCandidates as $candidate) {
+        if ($candidate !== null && $candidate !== '') {
+            $context['form_id'] = $candidate;
+            break;
+        }
+    }
+
+    if (!empty($input['formdir'])) {
+        $context['formdir'] = $input['formdir'];
+    } elseif (!empty($input['formname'])) {
+        $context['formdir'] = $input['formname'];
+    } elseif (!empty($_GET['formdir'])) {
+        $context['formdir'] = $_GET['formdir'];
+    } elseif (!empty($_GET['formname'])) {
+        $context['formdir'] = $_GET['formname'];
+    }
+
+    $keyCandidates = array(
+        $input['key'] ?? null,
+        $_GET['key'] ?? null,
+        $GLOBALS['key'] ?? null
+    );
+    foreach ($keyCandidates as $candidate) {
+        $parsedKey = parseReportKey($candidate);
+        if ($parsedKey) {
+            if (empty($context['form_id'])) {
+                $context['form_id'] = $parsedKey['form_id'];
+            }
+            if (empty($context['formdir'])) {
+                $context['formdir'] = $parsedKey['formdir'];
+            }
+            break;
+        }
+    }
+
+    foreach (array('pid', 'encounter', 'form_id') as $field) {
+        if ($context[$field] !== null && $context[$field] !== '' && is_numeric($context[$field])) {
+            $context[$field] = (int)$context[$field];
+        } elseif ($context[$field] === '') {
+            $context[$field] = null;
+        }
+    }
+
+    return $context;
+}
+
+function syncReportContextToRequest($context)
+{
+    if (!is_array($context)) {
+        return;
+    }
+
+    if (!empty($context['pid'])) {
+        foreach (array('pid', 'ptid', 'patientid') as $key) {
+            if (empty($_REQUEST[$key])) {
+                $_REQUEST[$key] = $context['pid'];
+            }
+            if (empty($_GET[$key])) {
+                $_GET[$key] = $context['pid'];
+            }
+        }
+    }
+
+    if (!empty($context['encounter'])) {
+        foreach (array('encounter', 'encid', 'visitid') as $key) {
+            if (empty($_REQUEST[$key])) {
+                $_REQUEST[$key] = $context['encounter'];
+            }
+            if (empty($_GET[$key])) {
+                $_GET[$key] = $context['encounter'];
+            }
+        }
+    }
+
+    if (!empty($context['form_id'])) {
+        foreach (array('form_id', 'formid') as $key) {
+            if (empty($_REQUEST[$key])) {
+                $_REQUEST[$key] = $context['form_id'];
+            }
+            if (empty($_GET[$key])) {
+                $_GET[$key] = $context['form_id'];
+            }
+        }
+    }
+
+    if (!empty($context['formdir'])) {
+        foreach (array('formdir', 'formname') as $key) {
+            if (empty($_REQUEST[$key])) {
+                $_REQUEST[$key] = $context['formdir'];
+            }
+            if (empty($_GET[$key])) {
+                $_GET[$key] = $context['formdir'];
+            }
+        }
+    }
+}
+
+function parseReportDateValue($dateValue)
+{
+    if ($dateValue instanceof DateTimeImmutable) {
+        return $dateValue;
+    }
+
+    if ($dateValue instanceof DateTime) {
+        return DateTimeImmutable::createFromMutable($dateValue);
+    }
+
+    if ($dateValue === null || $dateValue === '') {
+        return null;
+    }
+
+    try {
+        return new DateTimeImmutable((string)$dateValue);
+    } catch (Exception $exception) {
+        return null;
+    }
+}
+
+function getSpanishMonthName($monthNumber)
+{
+    static $months = array(
+        1 => 'enero',
+        2 => 'febrero',
+        3 => 'marzo',
+        4 => 'abril',
+        5 => 'mayo',
+        6 => 'junio',
+        7 => 'julio',
+        8 => 'agosto',
+        9 => 'septiembre',
+        10 => 'octubre',
+        11 => 'noviembre',
+        12 => 'diciembre'
+    );
+
+    $monthNumber = (int)$monthNumber;
+    return $months[$monthNumber] ?? '';
+}
+
+function getClinicalDateTime($formId, $encounter)
+{
+    if (!empty($formId) && !empty($encounter)) {
+        $formDate = sqlQuery("SELECT `date` FROM forms WHERE form_id = ? AND encounter = ? LIMIT 1", array($formId, $encounter));
+        if (!empty($formDate['date'])) {
+            $dateTime = parseReportDateValue($formDate['date']);
+            if ($dateTime) {
+                return $dateTime;
+            }
+        }
+    }
+
+    if (!empty($encounter)) {
+        $encounterDate = fetchDateByEncounter($encounter);
+        $dateTime = parseReportDateValue($encounterDate);
+        if ($dateTime) {
+            return $dateTime;
+        }
+    }
+
     return null;
+}
+
+function formatClinicalDate($formId, $encounter, $format = 'd/m/Y', $fallback = '')
+{
+    $dateTime = getClinicalDateTime($formId, $encounter);
+    return $dateTime ? $dateTime->format($format) : $fallback;
+}
+
+function formatReportDateValue($dateValue, $format = 'd/m/Y', $fallback = '')
+{
+    $dateTime = parseReportDateValue($dateValue);
+    return $dateTime ? $dateTime->format($format) : $fallback;
+}
+
+function getClinicalDateParts($formId, $encounter, $monthStyle = 'numeric')
+{
+    $dateTime = getClinicalDateTime($formId, $encounter);
+    if (!$dateTime) {
+        return null;
+    }
+
+    $month = ($monthStyle === 'es')
+        ? getSpanishMonthName($dateTime->format('n'))
+        : $dateTime->format('m');
+
+    return array(
+        'dia' => $dateTime->format('d'),
+        'mes' => $month,
+        'ano' => $dateTime->format('Y'),
+        'date' => $dateTime->format('Y-m-d H:i:s')
+    );
+}
+
+function sortReportSelectionsByEncounterDate(array $selections, $ascending = true)
+{
+    $nonFormSelections = array();
+    $formSelections = array();
+    $index = 0;
+
+    foreach ($selections as $key => $value) {
+        $parsed = parseReportKey($key);
+        if (!$parsed || !is_numeric($value)) {
+            $nonFormSelections[$key] = $value;
+            continue;
+        }
+
+        $encounter = (int)$value;
+        $dateTime = parseReportDateValue(fetchDateByEncounter($encounter));
+        $timestamp = $dateTime ? $dateTime->getTimestamp() : null;
+
+        $formSelections[] = array(
+            'key' => $key,
+            'value' => $value,
+            'encounter' => $encounter,
+            'form_id' => (int)$parsed['form_id'],
+            'timestamp' => $timestamp,
+            'index' => $index
+        );
+        $index++;
+    }
+
+    usort($formSelections, function ($a, $b) use ($ascending) {
+        $at = $a['timestamp'];
+        $bt = $b['timestamp'];
+
+        if ($at === null && $bt !== null) {
+            return $ascending ? 1 : -1;
+        }
+        if ($at !== null && $bt === null) {
+            return $ascending ? -1 : 1;
+        }
+
+        if ($at !== $bt) {
+            if ($ascending) {
+                return ($at < $bt) ? -1 : 1;
+            }
+            return ($at > $bt) ? -1 : 1;
+        }
+
+        if ($a['encounter'] !== $b['encounter']) {
+            if ($ascending) {
+                return ($a['encounter'] < $b['encounter']) ? -1 : 1;
+            }
+            return ($a['encounter'] > $b['encounter']) ? -1 : 1;
+        }
+
+        if ($a['form_id'] !== $b['form_id']) {
+            if ($ascending) {
+                return ($a['form_id'] < $b['form_id']) ? -1 : 1;
+            }
+            return ($a['form_id'] > $b['form_id']) ? -1 : 1;
+        }
+
+        if ($a['index'] === $b['index']) {
+            return 0;
+        }
+
+        return ($a['index'] < $b['index']) ? -1 : 1;
+    });
+
+    $sorted = $nonFormSelections;
+    foreach ($formSelections as $item) {
+        $sorted[$item['key']] = $item['value'];
+    }
+
+    return $sorted;
+}
+
+function getProtocolDate($formId, $encounter)
+{
+    return getClinicalDateParts($formId, $encounter, 'numeric');
 }
 
 function ImageStudyName($pid, $encounter, $formid, $formdir)

@@ -1,82 +1,14 @@
 <!DOCTYPE HTML>
 <?php
-require_once("../../globals.php");
-require_once("$srcdir/forms.inc");
-require_once("$srcdir/acl.inc");
-require_once("$srcdir/options.inc.php");
-require_once("$srcdir/iess.inc.php");
-require_once("$srcdir/patient.inc");
-require_once("$srcdir/encounter.inc");
-require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
-include_once($GLOBALS["srcdir"] . "/api.inc");
-require_once(dirname(__FILE__) . "/../../../library/lists.inc");
+require_once("common_vars.php");
 
-use OpenEMR\Services\FacilityService;
-
-$facilityService = new FacilityService();
-
-if ($_REQUEST['ptid']) {
-    $pid = $_REQUEST['ptid'];
-}
-
-if ($_REQUEST['encid']) {
-    $encounter = $_REQUEST['encid'];
-}
-
-if ($_REQUEST['formid']) {
-    $form_id = $_REQUEST['formid'];
-}
-
-if ($_REQUEST['formname']) {
-    $form_name = $_REQUEST['formname'];
-}
-
-// Valores por defecto cuando se incluye desde custom_report (PDF_CONTRA).
-if (empty($pid) && isset($GLOBALS['pid'])) {
-    $pid = $GLOBALS['pid'];
-}
-if (empty($encounter) && isset($GLOBALS['form_encounter'])) {
-    $encounter = $GLOBALS['form_encounter'];
-}
-if (empty($form_id) && isset($GLOBALS['key'])) {
-    preg_match('/^(.*)_(\d+)$/', $GLOBALS['key'], $kres);
-    if (!empty($kres[2])) {
-        $form_id = $kres[2];
-    }
-}
-// Popular $_GET/$_REQUEST para funciones que los leen.
-if (empty($_GET['formid']) && !empty($form_id)) {
-    $_GET['formid'] = $form_id;
-}
-if (empty($_GET['visitid']) && !empty($encounter)) {
-    $_GET['visitid'] = $encounter;
-}
-if (empty($_GET['ptid']) && !empty($pid)) {
-    $_GET['ptid'] = $pid;
-}
-
-//Datos del PACIENTE
-$titleres = getPatientData($pid, "pubpid,fname,mname,lname, lname2, sex, pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
-
-$providerID = getProviderIdOfEncounter($encounter);
-$providerNAME = getProviderNameConcat($providerID);
-$resultado = getProtocolDate($_GET['formid'], $_GET['visitid']);
-
-if ($resultado) {
-    $dateddia = $resultado['dia'];
-    $datedmes = $resultado['mes'];
-    $datedano = $resultado['ano'];
-
-    // Realizar cualquier otra acción con los componentes de la fecha
-} else {
-    // La fecha del protocolo no se encontró, manejar este caso según corresponda
-}
 
 use Mpdf\Mpdf;
 
 // Font size in points for table cell data.
 $FONTSIZE = 9;
-$formid = $_GET['formid'];
+$formid = !empty($form_id) ? (int)$form_id : (!empty($_GET['formid']) ? (int)$_GET['formid'] : 0);
+$form_id = $formid ?: $form_id;
 
 // Html2pdf fails to generate checked checkboxes properly, so write plain HTML
 // if we are doing a visit-specific form to be completed.
@@ -221,7 +153,7 @@ if ($shouldRender) {
                 echo ", " . substr($prot_dxpre2, 6);
             }
 
-            if ($prot_dxpost3 !== null) {
+            if ($prot_dxpre3 !== null) {
                 echo ", " . substr($prot_dxpre3, 6);
             }
             ?>
@@ -6750,7 +6682,7 @@ if ($shouldRender) {
 $html = ob_get_clean();
 if ($PDF_OUTPUT && !$embed) {
     $pdf->writeHTML($html);
-    $pdf->Output('consentimiento_od' . '.pdf', 'I'); // D = Download, I = Inline
+    $pdf->Output('transanestesico' . '.pdf', 'I'); // D = Download, I = Inline
 } elseif ($embed) {
     echo $html; // En modo embed, el PDF principal ya está abierto
 }
