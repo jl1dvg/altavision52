@@ -1327,7 +1327,7 @@ if ($pass_sens_squad &&
 
         if (substr($formdir, 0, 7) == 'eye_mag') {
             // A link for a nice printout of the Encuentro
-            echo "<button class='btn btn-secondary btn-sm' id='certificados'>" .
+            echo "<button class='btn btn-secondary btn-sm certificados-trigger'>" .
                 xlt('Certificados') . "</button>";
         }
 
@@ -1355,6 +1355,7 @@ if ($pass_sens_squad &&
             echo "<a href='#' class='css_button_small' onclick='openMultiplePages(); return false;' title='" . xl('Abrir múltiples páginas') . "'><span>" . xlt('Abrir múltiples páginas') . "</span></a>";
         }
 
+        $popupIconPath = $GLOBALS['web_root'] . '/public/images/file3.png';
         ?>
         <div id="popup-overlay" class="popup-overlay">
             <div class="popup-content">
@@ -1362,32 +1363,32 @@ if ($pass_sens_squad &&
 
                 <div class="popup-link">
                     <a href="ruta/consentimientos.pdf">Consentimientos</a>
-                    <button><img src="icono-consentimientos.png" alt="Consentimientos"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Consentimientos"></button>
                 </div>
 
                 <div class="popup-link">
                     <a href="ruta/no_invasivos.pdf">No Invasivos</a>
-                    <button><img src="icono-no-invasivos.png" alt="No Invasivos"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="No Invasivos"></button>
                 </div>
 
                 <div class="popup-link">
                     <a href="ruta/formulario_012.pdf">Formulario 012</a>
-                    <button><img src="icono-formulario-012.png" alt="Formulario 012"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Formulario 012"></button>
                 </div>
 
                 <div class="popup-link">
                     <a href="ruta/informe_medico.pdf">Informe Medico</a>
-                    <button><img src="icono-informe-medico.png" alt="Informe Medico"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Informe Medico"></button>
                 </div>
 
                 <div class="popup-link">
                     <a href="ruta/certificados.pdf">Certificados</a>
-                    <button><img src="icono-certificados.png" alt="Certificados"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Certificados"></button>
                 </div>
 
                 <div class="popup-link">
                     <a href="#">Todos</a>
-                    <button><img src="icono-todos.png" alt="Todos"></button>
+                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Todos"></button>
                 </div>
 
                 <div id="popup-close">
@@ -1525,28 +1526,35 @@ if (!$pass_sens_squad) {
         // Get the modal
         var modal = document.getElementById("exampleModalCenter");
 
-        // Get the button that opens the modal
-        var btn = document.getElementById("certificados");
+        // Get buttons that open the modal
+        var certButtons = document.querySelectorAll(".certificados-trigger");
 
         // Get the <span> element that closes the modal
-        var span = document.getElementsByClassName("close")[0];
+        var span = document.querySelector("#exampleModalCenter .close");
 
-        // When the user clicks the button, open the modal
-        btn.onclick = function () {
-            modal.style.display = "block";
-        }
+        certButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                if (modal) {
+                    modal.style.display = "block";
+                }
+            });
+        });
 
-        // When the user clicks on <span> (x), close the modal
-        span.onclick = function () {
-            modal.style.display = "none";
+        // When the user clicks on close button, close the modal
+        if (span) {
+            span.addEventListener("click", function () {
+                if (modal) {
+                    modal.style.display = "none";
+                }
+            });
         }
 
         // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function (event) {
-            if (event.target == modal) {
+        window.addEventListener("click", function (event) {
+            if (modal && event.target == modal) {
                 modal.style.display = "none";
             }
-        }
+        });
 
         function toggleChevron(e) {
             let i = e.target.closest('.form-holder').querySelector('i');

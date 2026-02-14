@@ -547,38 +547,6 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                 <div class="clearfix"></div>
                             </div>
                         <?php } ?>
-                        <div class="form-group">
-                            <label for='provider_id' class="control-label col-sm-2 oe-text-to-right"><?php echo xlt('Encounter Provider'); ?> :</label>
-                            <div class="col-sm-8">
-                                <select name='provider_id' id='provider_id' class='form-control col-sm-9' onChange="newUserSelected()">
-                                    <?php
-                                    if ($viewmode) {
-                                        $provider_id = $result['provider_id'];
-                                    }
-                                    $userService = new UserService();
-                                    $users = $userService->getActiveUsers();
-                                    foreach ($users as $activeUser) {
-                                        $p_id = (int)$activeUser->getId();
-                                        // Check for the case where an encounter is created by non-auth user
-                                        // but has permissions to create/edit encounter.
-                                        $flag_it = "";
-                                        if ($activeUser->getAuthorized() !== true) {
-                                            if ($p_id === (int)$result['provider_id']) {
-                                                $flag_it = " (" . xlt("Non Provider") . ")";
-                                            } else {
-                                                continue;
-                                            }
-                                        }
-                                        echo "<option value='" . attr($p_id) . "'";
-                                        if ((int)$provider_id === $p_id) {
-                                            echo "selected";
-                                        }
-                                        echo ">" . text($activeUser->getLname()) . ' ' . text($activeUser->getFname()) . ' ' . text($activeUser->getMname()) . $flag_it . "</option>\n";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
                         <div class="clearfix"></div>
                         <div class="form-group">
                             <label for='facility_id'
