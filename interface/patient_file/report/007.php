@@ -68,7 +68,7 @@ if (!function_exists('getMedicalProblems')) {
         $diagnoses = [];
 
         while ($row = sqlFetchArray($result)) {
-            $diagnoses[] = $ row['diagnosis'];
+            $diagnoses[] = $row['diagnosis'];
         }
 
         return $diagnoses;

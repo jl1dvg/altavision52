@@ -1205,54 +1205,6 @@ if ($pass_sens_squad &&
                 "' onclick='top.restoreSession()'><span>" . xlt('Print') . "</span></a>";
         }
 
-        if (substr($formdir, 0, 12) == 'LBFprotocolo') {
-            // A link for a nice printout of the LBF
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/LBF/protocolo.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Protocolo Quirugico') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Protocolo') . "</span></a>";
-        }
-
-        if (substr($formdir, 0, 12) == 'LBFprotocolo') {
-            // A link for a nice printout of the LBF
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/LBF/transanestesico.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Trans-anestésico') .
-                "' onclick='top.restoreSession()'><span>" . xlt('Trans-anestésico') . "</span></a>";
-        }
-
-        //if (substr($formdir, 0, 7) == 'eye_mag') {
-        // A link for a nice printout of the treatment plan
-        //    echo "<a target='_blank' " .
-        //        "href='$rootdir/forms/eye_mag/consentimiento_od.php?" .
-        //        "formname=" . urlencode($formdir) .
-        //        "&formid=" . urlencode($iter['form_id']) .
-        //        "&visitid=" . urlencode($encounter) .
-        //        "&patientid=" . urlencode($pid) .
-        //        "' class='css_button_small' title='" . xl('Consentimiento OD') .
-        //        "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OD') . "</span></a>";
-        //}
-
-        //if (substr($formdir, 0, 7) == 'eye_mag') {
-        // A link for a nice printout of the treatment plan
-        //    echo "<a target='_blank' " .
-        //        "href='$rootdir/forms/eye_mag/consentimiento_oi.php?" .
-        //        "formname=" . urlencode($formdir) .
-        //        "&formid=" . urlencode($iter['form_id']) .
-        //        "&visitid=" . urlencode($encounter) .
-        //        "&patientid=" . urlencode($pid) .
-        //        "' class='css_button_small' title='" . xl('Consentimiento OI') .
-        //        "' onclick='top.restoreSession()'><span>" . xlt('Consentimiento OI') . "</span></a>";
-        //}
-
         if (substr($formdir, 0, 9) == 'care_plan') {
             // A link for a nice printout of the treatment plan
             echo "<a target='_blank' " .
@@ -1325,34 +1277,13 @@ if ($pass_sens_squad &&
                 "' onclick='top.restoreSession()'><span>" . xlt('Imprimir Informe') . "</span></a>";
         }
 
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the Encuentro
-            echo "<button class='btn btn-secondary btn-sm certificados-trigger'>" .
+        if (substr($formdir, 0, 7) == 'eye_mag' || substr($formdir, 0, 12) == 'LBFprotocolo') {
+            echo "<button type='button' class='css_button_small certificados-trigger' " .
+                "data-formname='" . attr($formdir) . "' " .
+                "data-formid='" . attr($iter['form_id']) . "' " .
+                "data-visitid='" . attr($encounter) . "' " .
+                "data-patientid='" . attr($pid) . "'>" .
                 xlt('Certificados') . "</button>";
-        }
-
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // JavaScript function to open multiple pages
-            echo "<script>
-            function openMultiplePages() {
-                window.open('$rootdir/forms/eye_mag/preanestesico.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "', '_blank');
-
-                window.open('$rootdir/forms/eye_mag/consentimiento_od.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "', '_blank');
-            }
-          </script>";
-
-            // A link to open multiple pages
-            echo "<a href='#' class='css_button_small' onclick='openMultiplePages(); return false;' title='" . xl('Abrir múltiples páginas') . "'><span>" . xlt('Abrir múltiples páginas') . "</span></a>";
         }
 
         $popupIconPath = $GLOBALS['web_root'] . '/public/images/file3.png';
@@ -1398,31 +1329,6 @@ if ($pass_sens_squad &&
         </div>
 
         <?php
-
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the Encuentro
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/Formulario_012.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Formulario de Imagenes 012') .
-                "' onclick='top.restoreSession()'><span>" . xlt('F012') . "</span></a>";
-        }
-
-        if (substr($formdir, 0, 7) == 'eye_mag') {
-            // A link for a nice printout of the Encuentro
-            echo "<a target='_blank' " .
-                "href='$rootdir/forms/eye_mag/007.php?" .
-                "formname=" . urlencode($formdir) .
-                "&formid=" . urlencode($iter['form_id']) .
-                "&visitid=" . urlencode($encounter) .
-                "&patientid=" . urlencode($pid) .
-                "' class='css_button_small' title='" . xl('Formulario 007') .
-                "' onclick='top.restoreSession()'><span>" . xlt('F007') . "</span></a>";
-        }
-
         if (substr($formdir, 0, 15) == 'treatment_plan') {
             // A link for a nice printout of the Encuentro
             echo "<a target='_blank' " .
@@ -1504,14 +1410,21 @@ if (!$pass_sens_squad) {
             </div>
             <div class="modal-body">
                 <p>Escoja el certificado que desea crear.</p>
+                <div class="form-group mb-2">
+                    <label for="descanso-dias" class="small mb-1"><?php echo xlt('Días de descanso'); ?></label>
+                    <input id="descanso-dias" type="number" min="1" max="120" value="15" class="form-control form-control-sm">
+                </div>
+                <div class="form-group mb-2">
+                    <label for="descanso-desde" class="small mb-1"><?php echo xlt('Fecha de inicio'); ?></label>
+                    <input id="descanso-desde" type="date" value="<?php echo attr(date('Y-m-d')); ?>" class="form-control form-control-sm">
+                </div>
+                <small id="descanso-hasta-preview" class="text-muted"></small>
             </div>
             <div class="modal-footer">
-                <a target="_blank"
-                   href="<?php echo $rootdir; ?>/forms/eye_mag/asistencia.php?formname=<?php echo attr_url($formdir); ?>&formid=<?php echo attr_url($iter['form_id']); ?>&visitid=<?php echo attr_url($encounter); ?>&patientid=<?php echo attr_url($pid); ?>"
+                <a id="cert-asistencia-link" target="_blank" href="#"
                    class="btn btn-outline-success light">Asistencia
                 </a>
-                <a target="_blank"
-                   href="<?php echo $rootdir; ?>/forms/eye_mag/asistencia.php?formname=<?php echo attr_url($formdir); ?>&formid=<?php echo attr_url($iter['form_id']); ?>&visitid=<?php echo attr_url($encounter); ?>&patientid=<?php echo attr_url($pid); ?>"
+                <a id="cert-descanso-link" target="_blank" href="#"
                    class="btn btn-outline-primary">Descanso</a>
             </div>
         </div>
@@ -1523,6 +1436,7 @@ if (!$pass_sens_squad) {
 <script>
     jQuery.noConflict();
     jQuery(document).ready(function ($) {
+        var rootdir = <?php echo json_encode($rootdir); ?>;
         // Get the modal
         var modal = document.getElementById("exampleModalCenter");
 
@@ -1531,14 +1445,121 @@ if (!$pass_sens_squad) {
 
         // Get the <span> element that closes the modal
         var span = document.querySelector("#exampleModalCenter .close");
+        var asistenciaLink = document.getElementById("cert-asistencia-link");
+        var descansoLink = document.getElementById("cert-descanso-link");
+        var descansoDias = document.getElementById("descanso-dias");
+        var descansoDesde = document.getElementById("descanso-desde");
+        var descansoHastaPreview = document.getElementById("descanso-hasta-preview");
+        var selectedForm = null;
+
+        function buildQuery(params) {
+            return Object.keys(params)
+                .map(function (key) {
+                    return encodeURIComponent(key) + "=" + encodeURIComponent(params[key] || "");
+                })
+                .join("&");
+        }
+
+        function addDays(baseDate, days) {
+            var result = new Date(baseDate.getTime());
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function formatDateISO(date) {
+            var month = String(date.getMonth() + 1).padStart(2, "0");
+            var day = String(date.getDate()).padStart(2, "0");
+            return date.getFullYear() + "-" + month + "-" + day;
+        }
+
+        function formatDateHuman(date) {
+            var month = String(date.getMonth() + 1).padStart(2, "0");
+            var day = String(date.getDate()).padStart(2, "0");
+            return day + "/" + month + "/" + date.getFullYear();
+        }
+
+        function updateDescansoPreview() {
+            if (!descansoHastaPreview || !descansoDesde || !descansoDias) {
+                return;
+            }
+            var days = parseInt(descansoDias.value, 10);
+            if (!days || days < 1) {
+                days = 1;
+            }
+            var start = new Date(descansoDesde.value + "T00:00:00");
+            if (isNaN(start.getTime())) {
+                start = new Date();
+                descansoDesde.value = formatDateISO(start);
+            }
+            var end = addDays(start, days - 1);
+            descansoHastaPreview.textContent = "Hasta: " + formatDateHuman(end);
+        }
+
+        function updateCertificateLinks() {
+            if (!selectedForm || !descansoDias || !descansoDesde) {
+                return;
+            }
+
+            var days = parseInt(descansoDias.value, 10);
+            if (!days || days < 1) {
+                days = 1;
+                descansoDias.value = "1";
+            } else if (days > 120) {
+                days = 120;
+                descansoDias.value = "120";
+            }
+
+            if (!descansoDesde.value) {
+                descansoDesde.value = formatDateISO(new Date());
+            }
+
+            var commonParams = {
+                formname: selectedForm.formname,
+                formid: selectedForm.formid,
+                visitid: selectedForm.visitid,
+                patientid: selectedForm.patientid
+            };
+
+            if (asistenciaLink) {
+                asistenciaLink.href = rootdir + "/forms/eye_mag/asistencia.php?" + buildQuery(commonParams);
+                asistenciaLink.style.display = selectedForm.formname.indexOf("eye_mag") === 0 ? "" : "none";
+            }
+
+            if (descansoLink) {
+                descansoLink.href = rootdir + "/forms/LBF/certificado_descanso.php?" + buildQuery({
+                    formname: commonParams.formname,
+                    formid: commonParams.formid,
+                    visitid: commonParams.visitid,
+                    patientid: commonParams.patientid,
+                    rest_days: days,
+                    rest_start: descansoDesde.value
+                });
+            }
+
+            updateDescansoPreview();
+        }
 
         certButtons.forEach(function (button) {
             button.addEventListener("click", function () {
+                selectedForm = {
+                    formname: button.getAttribute("data-formname") || "",
+                    formid: button.getAttribute("data-formid") || "",
+                    visitid: button.getAttribute("data-visitid") || "",
+                    patientid: button.getAttribute("data-patientid") || ""
+                };
+                updateCertificateLinks();
                 if (modal) {
                     modal.style.display = "block";
                 }
             });
         });
+
+        if (descansoDias) {
+            descansoDias.addEventListener("input", updateCertificateLinks);
+        }
+        if (descansoDesde) {
+            descansoDesde.addEventListener("change", updateCertificateLinks);
+        }
 
         // When the user clicks on close button, close the modal
         if (span) {

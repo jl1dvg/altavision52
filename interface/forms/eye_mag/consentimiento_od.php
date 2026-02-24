@@ -21,7 +21,7 @@ $cat_id = $_REQUEST['catid'] ?? null;
 
 if ($pid && $encounter && $proced_id) {
     $providerID = getProviderIdOfEncounter($encounter);
-    $providerNAME = getProviderName($providerID);
+    $providerNAME = getProviderNameConcat($providerID);
     $titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,sex,pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
 
     $codigos = obtenerCIE10issue($pid);
@@ -773,7 +773,7 @@ if ($cat_id == 15) {
                 <td colspan="10" class="blanco"><?php echo $titleres['mname']; ?></td>
                 <td colspan="3" class="blanco"><?php echo substr($titleres['sex'], 0, 1); ?></td>
                 <td colspan="6" class="blanco"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-                <td colspan="3" class="blanco"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></td>
+                <td colspan="3" class="blanco"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
                 <td colspan="2" class="blanco">&nbsp;</td>
                 <td colspan="2" class="blanco">&nbsp;</td>
                 <td colspan="2" class="blanco">&nbsp;</td>
@@ -1392,7 +1392,7 @@ if ($cat_id == 15) {
                     <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
                 </td>
                 <td colspan="7" class="blanco" style="height: 15px;"></td>
-                <td colspan="21" class="blanco" style="height: 15px;">María</td>
+                <td colspan="21" class="blanco" style="height: 15px;">María Patricia</td>
                 <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
                 <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
             </tr>
