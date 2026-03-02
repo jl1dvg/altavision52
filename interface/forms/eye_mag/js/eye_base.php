@@ -1394,7 +1394,7 @@ function build_IMPPLAN(items,nodisplay) {
                " <span contenteditable class='float-right' onclick='sel_diagnosis("+index+",\""+title2+"\");' title='"+value.codetext+"' id='CODE_"+index+"'>"+
                value.code + "</span>"+
                "<br /><textarea id='PLAN_"+index+"' name='PLAN_"+index+
-               "' style='width:100%;max-width:100%;height:auto;min-height:3em;overflow-y: hidden;padding-top: 1.1em; '>"+
+               "' style='width:100%;max-width:100%;height:auto;min-height:3em;overflow-y: hidden;padding-top: 1.1em; ' placeholder='<?php echo xla('Puedes escribir observaciones y plan para este diagnostico'); ?>'>"+
                value.plan +"</textarea><br /></li>";
                $('#IMPPLAN_zone').append('<div id="IMPPLAN_zone_'+index+'" class="IMPPLAN_class">'+
                                          '<i class="float-right fa fa-times" id="BUTTON_IMPPLAN_'+index+'"></i>'+
@@ -1580,7 +1580,6 @@ function dragto_IMPPLAN_zone(event, ui) {
     var the_code ='';
     var the_codedesc ='';
     var the_codetext ='';
-    var the_plan ='';
     if (obj.IMPPLAN_items ==null) obj.IMPPLAN_items = [];
     if (group =="Clinical") {
             //more than one field can contain this DX.
@@ -1589,7 +1588,6 @@ function dragto_IMPPLAN_zone(event, ui) {
             the_code += obj.Clinical[location][i]['code']+',';
             the_codedesc = obj.Clinical[location][i]['codedesc'];
             the_codetext = obj.Clinical[location][i]['codetext'];
-            the_plan += obj.Clinical[location][i]['codedesc'] + "\r";
         }
         if (i > 0) the_code = the_code.slice(0, -1);
         obj.IMPPLAN_items.push({
@@ -1597,7 +1595,7 @@ function dragto_IMPPLAN_zone(event, ui) {
                                codedesc:    the_codedesc,
                                codetext:    the_codetext,
                                codetype:    obj.Clinical[location][0]['codetype'],
-                               plan:        the_plan,
+                               plan:        '',
                                PMSFH_link:  obj.Clinical[location][0]['PMSFH_link'],
                                title:       obj.Clinical[location][0]['title']
                                });
@@ -1608,7 +1606,7 @@ function dragto_IMPPLAN_zone(event, ui) {
                                codedesc:    obj.PMSFH[group][location]['codedesc'],
                                codetext:    obj.PMSFH[group][location]['codetext'],
                                codetype:    obj.PMSFH[group][location]['codetype'],
-                               plan:        obj.PMSFH[group][location]['comments'],
+                               plan:        '',
                                PMSFH_link:  obj.PMSFH[group][location]['PMSFH_link'],
                                title:       obj.PMSFH[group][location]['title']
 
@@ -4173,7 +4171,6 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                       var the_code='';
                                                       var the_codedesc='';
                                                       var the_codetext='';
-                                                      var the_plan='';
                                                       for (i=0;i < obj.Clinical[issue[2]].length; i++) {
                                                         if (i == 0) {
                                                             the_code = obj.Clinical[issue[2]][i]['code'];
@@ -4182,7 +4179,6 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                         }
                                                         the_codedesc += obj.Clinical[issue[2]][i]['codedesc'] + "\r";
                                                         the_codetext += obj.Clinical[issue[2]][i]['codetext'] + "\r";
-                                                        the_plan += obj.Clinical[issue[2]][i]['codedesc'] + "\r";
                                                       }
                                                       obj.IMPPLAN_items.push({
                                                                              title:obj.Clinical[issue[2]][0]['title'],
@@ -4190,7 +4186,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                                              codetype: obj.Clinical[issue[2]][0]['codetype'],
                                                                              codedesc: the_codedesc,
                                                                              codetext: the_codetext,
-                                                                             plan: the_plan,
+                                                                             plan: '',
                                                                              PMSFH_link: obj.Clinical[issue[2]][0]['PMSFH_link']
                                                                              });
                                                   } else {
@@ -4207,7 +4203,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                                          codetype:      obj.PMSFH[issue[1]][issue[2]]['codetype'],
                                                                          codedesc:      obj.PMSFH[issue[1]][issue[2]]['codedesc'],
                                                                          codetext:      obj.PMSFH[issue[1]][issue[2]]['codetext'].replace(/(\r\n|\n|\r)/gm,""),
-                                                                         plan:          obj.PMSFH[issue[1]][issue[2]]['comments'],
+                                                                         plan:          '',
                                                                          PMSFH_link:    obj.PMSFH[issue[1]][issue[2]]['PMSFH_link']
                                                                          });
                                                   }

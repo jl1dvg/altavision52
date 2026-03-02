@@ -227,6 +227,7 @@ foreach (explode(',', $given) as $item) {
       document.getElementById('row_PLACEHOLDER'     ).style.display = 'none';
       document.getElementById('cancel_button'       ).style.display = 'none';
       document.getElementById('row_eye_med'         ).style.display = 'none';
+      document.getElementById('form_eye_subtype'    ).checked = false;
 
 
       if (index == 'PMH') {
@@ -250,6 +251,7 @@ foreach (explode(',', $given) as $item) {
           document.getElementById('row_enddate'       ).style.display = '';
           document.getElementById('row_comments'      ).style.display = '';
           document.getElementById('row_eye_med'       ).style.display = '';
+          document.getElementById('form_eye_subtype'  ).checked = false;
           //change Onset to started
           //change resolved to Completed
           document.getElementById('onset'             ).textContent = "<?php echo xlt('Start').':'; ?>";
@@ -1401,4 +1403,3 @@ foreach (explode(',', $given) as $item) {
       $('[title]').tooltip();
   </script>
 </html>
-

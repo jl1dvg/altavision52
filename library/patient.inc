@@ -520,7 +520,7 @@ function getResponsableName($providerID)
     $pi = getResponsableInfo($providerID, 'any');
     if (strlen($pi[0]["fname"]) > 0) {
         if (strlen($pi[0]["lname"]) > 0) {
-            $pi[0]["tname"] .= $pi[0]["suffix"] . " " . $pi[0]["fname"];
+            $pi[0]["tname"] .= $pi[0]["suffix"] . " " . $pi[0]["fname"] . " " . $pi[0]["mname"];
         }
 
         return $pi[0]['tname'] . " " . $pi[0]['lname'];
