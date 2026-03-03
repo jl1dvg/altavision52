@@ -117,6 +117,46 @@ while ($prow = sqlFetchArray($providerRes)) {
                 '_blank', 550, 400, true); // Force new window rather than iframe because of the dynamic generation of the content in print_referral.php
             return false;
         }
+
+        function exportReferralCsv() {
+            var table = document.getElementById('mymaintable');
+            if (!table) {
+                return false;
+            }
+
+            var rows = table.querySelectorAll('tr');
+            var csvRows = [];
+
+            rows.forEach(function (row) {
+                var cols = row.querySelectorAll('th, td');
+                var values = [];
+
+                cols.forEach(function (col) {
+                    var value = (col.innerText || col.textContent || '').replace(/\s+/g, ' ').trim();
+                    value = value.replace(/"/g, '""');
+                    values.push('"' + value + '"');
+                });
+
+                csvRows.push(values.join(','));
+            });
+
+            var csvContent = "\uFEFF" + csvRows.join('\n');
+            var blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+            var url = URL.createObjectURL(blob);
+            var fromDate = $('#form_from_date').val() || '';
+            var toDate = $('#form_to_date').val() || '';
+            var fileName = 'referrals_report_' + fromDate.replace(/\//g, '-') + '_to_' + toDate.replace(/\//g, '-') + '.csv';
+
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            return false;
+        }
     </script>
 
     <style type="text/css">
@@ -340,6 +380,9 @@ while ($prow = sqlFetchArray($providerRes)) {
                                             <?php if ($form_refresh) { ?>
                                                 <a href='#' class='btn btn-default btn-print' id='printbutton'>
                                                     <?php echo xlt('Print'); ?>
+                                                </a>
+                                                <a href='#' class='btn btn-default' onclick='return exportReferralCsv();'>
+                                                    <?php echo xlt('Export CSV'); ?>
                                                 </a>
                                             <?php } ?>
                                         </div>
