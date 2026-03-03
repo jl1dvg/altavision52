@@ -42,7 +42,62 @@ function isValidIsoDate($value)
     return checkdate((int)$parts[1], (int)$parts[2], (int)$parts[0]);
 }
 
+/**
+ * Very lightweight specialty classifier from referral reason text.
+ * Returns: catarata | retina | glaucoma | pterigion | mixto_retina_catarata | unknown
+ *
+ * @param string $reason
+ * @return string
+ */
+function classifyReferralSpecialty($reason)
+{
+    $text = trim((string)$reason);
+    if ($text === '') {
+        return 'unknown';
+    }
+
+    $text = mb_strtolower($text, 'UTF-8');
+
+    $isRetina = (strpos($text, 'retina') !== false) ||
+        (strpos($text, 'retinopat') !== false) ||
+        (strpos($text, 'vitrect') !== false) ||
+        (strpos($text, 'vítre') !== false) ||
+        (strpos($text, 'vitre') !== false) ||
+        (strpos($text, 'desprendimiento') !== false) ||
+        (strpos($text, 'hemorragia') !== false) ||
+        (strpos($text, 'macula') !== false) ||
+        (strpos($text, 'mácula') !== false);
+
+    $isCataract = (strpos($text, 'catarata') !== false) ||
+        (strpos($text, 'facoemuls') !== false) ||
+        (strpos($text, 'lente intraocular') !== false);
+
+    if ($isRetina && $isCataract) {
+        return 'mixto_retina_catarata';
+    }
+
+    if ($isRetina) {
+        return 'retina';
+    }
+
+    if ($isCataract) {
+        return 'catarata';
+    }
+
+    if ((strpos($text, 'glaucoma') !== false) || (strpos($text, 'pio') !== false)) {
+        return 'glaucoma';
+    }
+
+    if ((strpos($text, 'pterig') !== false) || (strpos($text, 'conjuntivoplast') !== false)) {
+        return 'pterigion';
+    }
+
+    return 'unknown';
+}
+
 $form_refresh = !empty($_POST['form_refresh']);
+$form_auto_assign = !empty($_POST['form_auto_assign']);
+$autoAssignMessage = '';
 $form_from_date = isset($_POST['form_from_date']) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-01-01');
 $form_to_date = isset($_POST['form_to_date']) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
 $form_facility = isset($_POST['form_facility']) ? trim((string)$_POST['form_facility']) : '';
@@ -155,6 +210,13 @@ while ($prow = sqlFetchArray($providerRes)) {
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
 
+            return false;
+        }
+
+        function autoAssignReferrals() {
+            $('#form_auto_assign').val('1');
+            $('#form_refresh').val('true');
+            $('#theform').submit();
             return false;
         }
     </script>
@@ -298,6 +360,7 @@ while ($prow = sqlFetchArray($providerRes)) {
 
         <div id="report_parameters">
             <input type='hidden' name='form_refresh' id='form_refresh' value=''/>
+            <input type='hidden' name='form_auto_assign' id='form_auto_assign' value=''/>
             <table>
                 <tr>
                     <td width='640px'>
@@ -384,6 +447,9 @@ while ($prow = sqlFetchArray($providerRes)) {
                                                 <a href='#' class='btn btn-default' onclick='return exportReferralCsv();'>
                                                     <?php echo xlt('Export CSV'); ?>
                                                 </a>
+                                                <a href='#' class='btn btn-default' onclick='return autoAssignReferrals();'>
+                                                    <?php echo xlt('Auto Assign Pending'); ?>
+                                                </a>
                                             <?php } ?>
                                         </div>
                                     </div>
@@ -411,9 +477,11 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "d3.field_value AS reply_date, " .
                 "d4.field_value AS body, " .
                 "d5.field_value AS refer_id, " .
+                "d9.field_value AS assigned_provider_id, " .
                 "ut.organization, uf.facility_id, p.pubpid, " .
                 "CONCAT(uf.fname,' ', uf.lname) AS referer_name, " .
                 "CONCAT(ut.fname,' ', ut.lname) AS referer_to, " .
+                "CONCAT(ua.fname,' ', ua.lname) AS assigned_provider_name, " .
                 "CONCAT(p.fname,' ', p.lname) AS patient_name " .
                 "FROM transactions AS t " .
                 "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
@@ -424,8 +492,10 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "LEFT JOIN lbt_data AS d5 ON d5.form_id = t.id AND d5.field_id = 'refer_id' " .
                 "LEFT JOIN lbt_data AS d7 ON d7.form_id = t.id AND d7.field_id = 'refer_to' " .
                 "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
+                "LEFT JOIN lbt_data AS d9 ON d9.form_id = t.id AND d9.field_id = 'assigned_provider' " .
                 "LEFT JOIN users AS ut ON ut.id = d7.field_value " .
                 "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
+                "LEFT JOIN users AS ua ON ua.id = d9.field_value " .
                 "WHERE t.title = 'LBTref' AND " .
                 "d1.field_value >= ? AND d1.field_value <= ? ";
 
@@ -478,6 +548,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 $row['appt_class'] = '';
                 $row['appt_label'] = '';
                 $row['next_appointment'] = '';
+                $row['specialty_key'] = classifyReferralSpecialty($row['body'] ?? '');
                 $allRows[] = $row;
 
                 if (!empty($row['pid'])) {
@@ -545,6 +616,77 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
             }
             unset($row);
+
+            if ($form_auto_assign) {
+                $providerPoolBySpecialty = array();
+                $providerLoadBySpecialty = array();
+
+                foreach ($allRows as $arow) {
+                    $sp = $arow['specialty_key'] ?? 'unknown';
+                    if ($sp === 'unknown') {
+                        continue;
+                    }
+
+                    $provId = trim((string)($arow['next_appt_provider_id'] ?? ''));
+                    $provName = trim((string)($arow['next_appt_provider'] ?? ''));
+                    if ($provId === '' || $provName === '') {
+                        continue;
+                    }
+
+                    if (!isset($providerPoolBySpecialty[$sp])) {
+                        $providerPoolBySpecialty[$sp] = array();
+                        $providerLoadBySpecialty[$sp] = array();
+                    }
+
+                    $providerPoolBySpecialty[$sp][$provId] = $provName;
+                    if (!isset($providerLoadBySpecialty[$sp][$provId])) {
+                        $providerLoadBySpecialty[$sp][$provId] = 0;
+                    }
+                    $providerLoadBySpecialty[$sp][$provId]++;
+                }
+
+                $autoAssignedCount = 0;
+                foreach ($allRows as &$arow) {
+                    if (!empty($arow['next_appt_date'])) {
+                        continue;
+                    }
+
+                    $existingAssignedProvider = trim((string)($arow['assigned_provider_id'] ?? ''));
+                    if ($existingAssignedProvider !== '') {
+                        continue;
+                    }
+
+                    $sp = $arow['specialty_key'] ?? 'unknown';
+                    if (!isset($providerPoolBySpecialty[$sp]) || empty($providerPoolBySpecialty[$sp])) {
+                        continue;
+                    }
+
+                    $candidateId = '';
+                    $candidateLoad = null;
+                    foreach ($providerPoolBySpecialty[$sp] as $pid => $pname) {
+                        $load = $providerLoadBySpecialty[$sp][$pid] ?? 0;
+                        if ($candidateId === '' || $load < $candidateLoad) {
+                            $candidateId = (string)$pid;
+                            $candidateLoad = $load;
+                        }
+                    }
+
+                    if ($candidateId === '') {
+                        continue;
+                    }
+
+                    sqlStatement("DELETE FROM lbt_data WHERE form_id = ? AND field_id = 'assigned_provider'", array($arow['id']));
+                    sqlStatement("INSERT INTO lbt_data (form_id, field_id, field_value) VALUES (?, 'assigned_provider', ?)", array($arow['id'], $candidateId));
+
+                    $arow['assigned_provider_id'] = $candidateId;
+                    $arow['assigned_provider_name'] = $providerPoolBySpecialty[$sp][$candidateId] ?? '';
+                    $providerLoadBySpecialty[$sp][$candidateId] = ($providerLoadBySpecialty[$sp][$candidateId] ?? 0) + 1;
+                    $autoAssignedCount++;
+                }
+                unset($arow);
+
+                $autoAssignMessage = xlt('Auto assignment completed.') . ' ' . xlt('Assigned referrals') . ': ' . $autoAssignedCount;
+            }
 
             foreach ($allRows as &$row) {
                 $hasAppointment = !empty($row['next_appt_date']);
@@ -658,6 +800,11 @@ while ($prow = sqlFetchArray($providerRes)) {
             ?>
 
             <div id="report_results">
+                <?php if (!empty($autoAssignMessage)) { ?>
+                    <div class="alert alert-success" style="margin-bottom:8px; padding:8px 10px;">
+                        <?php echo text($autoAssignMessage); ?>
+                    </div>
+                <?php } ?>
                 <div class="text-muted" style="margin-bottom:8px; font-size:12px;">
                     <?php echo xlt('Appointment status considers appointments from referral date and within referral validity range.'); ?>
                 </div>
@@ -774,6 +921,9 @@ while ($prow = sqlFetchArray($providerRes)) {
                                 <td>
                                     <?php
                                     $apptProvider = trim((string)($row['next_appt_provider'] ?? ''));
+                                    if ($apptProvider === '') {
+                                        $apptProvider = trim((string)($row['assigned_provider_name'] ?? ''));
+                                    }
                                     echo text($apptProvider !== '' ? $apptProvider : xlt('Unassigned'));
                                     ?>
                                 </td>
