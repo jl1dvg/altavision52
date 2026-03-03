@@ -149,12 +149,36 @@ while ($prow = sqlFetchArray($providerRes)) {
     <title><?php echo xlt('Referrals'); ?></title>
 
     <?php Header::setupHeader(['datetime-picker', 'report-helper']); ?>
+    <link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/datatables.net-bs/css/dataTables.bootstrap.min.css" type="text/css">
+    <script src="<?php echo $GLOBALS['assets_static_relative']; ?>/datatables.net/js/jquery.dataTables.js"></script>
+    <script src="<?php echo $GLOBALS['assets_static_relative']; ?>/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
 
     <script language="JavaScript">
         <?php require($GLOBALS['srcdir'] . "/restoreSession.php"); ?>
 
         $(function () {
-            oeFixedHeaderSetup(document.getElementById('mymaintable'));
+            var reportTable = $('#mymaintable');
+            if (reportTable.length && reportTable.find('tbody tr').length) {
+                reportTable.DataTable({
+                    pageLength: 25,
+                    order: [[1, 'desc']],
+                    autoWidth: false,
+                    scrollX: true,
+                    <?php // Bring in datatable translations ?>
+                    <?php $translationsDatatablesOverride = array('lengthMenu' => (xla('Display') . ' _MENU_ ' . xla('records per page')),
+                        'zeroRecords' => (xla('Nothing found - sorry')),
+                        'info' => (xla('Showing page') . ' _PAGE_ ' . xla('of') . ' _PAGES_'),
+                        'infoEmpty' => (xla('No records available')),
+                        'infoFiltered' => ('(' . xla('filtered from') . ' _MAX_ ' . xla('total records') . ')'),
+                        'infoPostFix' => (''),
+                        'url' => ('')
+                    ); ?>
+                    <?php require($GLOBALS['srcdir'] . '/js/xl/datatables-net.js.php'); ?>
+                });
+            } else if (document.getElementById('mymaintable')) {
+                oeFixedHeaderSetup(document.getElementById('mymaintable'));
+            }
+
             var win = top.printLogSetup ? top : opener.top;
             win.printLogSetup(document.getElementById('printbutton'));
 
