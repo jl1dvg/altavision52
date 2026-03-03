@@ -34,6 +34,7 @@ require_once("../../globals.php");
 require_once("$srcdir/api.inc");
 require_once("$srcdir/forms.inc");
 require_once("php/" . $form_name . "_functions.php");
+require_once("php/eye_mag_request_utils.php");
 require_once($srcdir . "/../controllers/C_Document.class.php");
 require_once($srcdir . "/documents.php");
 require_once("$srcdir/patient.inc");
@@ -48,18 +49,23 @@ use OpenEMR\Common\Logging\EventAuditLogger;
 
 $returnurl = 'encounter_top.php';
 
-if (isset($_REQUEST['id'])) {
-    $id = $_REQUEST['id'];
-}
+$id = eyeMagRequestInt('id');
+$pid = eyeMagRequestInt('pid');
+$encounter = eyeMagRequestString('encounter');
+$requestMode = eyeMagRequestString('mode');
+$requestAction = eyeMagRequestString('action');
+$requestUniqueID = eyeMagRequestString('uniqueID');
+$requestOwnership = eyeMagRequestString('ownership');
+$requestLockedBy = eyeMagRequestString('LOCKEDBY');
+$form_id = eyeMagRequestInt('form_id');
+$zone = eyeMagRequestString('zone');
+$AJAX_PREFS = eyeMagRequestBool('AJAX_PREFS');
 
 if (!$id) {
-    $id = $_REQUEST['pid'];
+    $id = $pid;
 }
 
-$encounter = $_REQUEST['encounter'];
-
-$AJAX_PREFS = $_REQUEST['AJAX_PREFS'];
-if ($encounter == "" && !$id && !$AJAX_PREFS && (($_REQUEST['mode'] != "retrieve") or ($_REQUEST['mode'] == "show_PDF"))) {
+if ($encounter == "" && !$id && !$AJAX_PREFS && (($requestMode != "retrieve") or ($requestMode == "show_PDF"))) {
     echo "Sorry Charlie..."; //should lead to a database of errors for explanation.
     exit;
 }
@@ -67,7 +73,7 @@ if ($encounter == "" && !$id && !$AJAX_PREFS && (($_REQUEST['mode'] != "retrieve
 /**
  * Save/update the preferences
  */
-if ($_REQUEST['AJAX_PREFS']) {
+if ($AJAX_PREFS) {
     $query = "REPLACE INTO " . $table_name . "_prefs (PEZONE,LOCATION,LOCATION_text,id,selection,ZONE_ORDER,GOVALUE,ordering)
                 VALUES
                 ('PREFS','VA','Vision',?,'RS','51',?,'1')";
@@ -248,8 +254,12 @@ if ($encounter == "") {
     $encounter = date("Ymd");
 }
 
-$form_id = $_REQUEST['form_id'];
-$zone = $_REQUEST['zone'];
+$canWriteIssues = acl_check('patients', 'med', '', array('write', 'addonly'));
+$isMutatingRequest = ($requestMode === 'new' || $requestMode === 'update' || $requestAction !== '' || eyeMagRequestBool('unlock') || eyeMagRequestBool('acquire_lock') || $AJAX_PREFS);
+if ($isMutatingRequest && !$canWriteIssues) {
+    echo "Code 400";
+    exit;
+}
 
 $providerID = findProvider($pid, $encounter);
 if ($providerID == '0') {
@@ -261,21 +271,36 @@ if ($providerID == '0') {
 // If the DB shows a uniqueID ie. an owner, and the save request uniqueID does not = the uniqueID in the DB,
 // ask if the new user wishes to take ownership?
 // If yes, any other's attempt to save fields/form are denied and the return code says you are not the owner...
-if ($_REQUEST['unlock'] === '1') {
+if ($requestLockedBy === '' && $requestUniqueID !== '') {
+    $requestLockedBy = $requestUniqueID;
+}
+
+if (eyeMagRequestBool('unlock')) {
     // we are releasing the form, by closing the page or clicking on ACTIVE FORM, so unlock it.
-    // if it's locked and they own it ($REQUEST[LOCKEDBY] == LOCKEDBY), they can unlock it
+    // if it's locked and this request does not own it, deny unlock
     $query = "SELECT LOCKED,LOCKEDBY,LOCKEDDATE from form_eye_locking WHERE ID=?";
     $lock = sqlQuery($query, array($form_id));
-    if (($lock['LOCKED'] > '')) { //&& ($_REQUEST['LOCKEDBY'] == $lock['LOCKEDBY'])) {
+    if (($lock['LOCKED'] > '')) {
+        $requestOwner = $requestUniqueID ?: $requestLockedBy;
+        if ($requestOwner === '' || $requestOwner !== (string) $lock['LOCKEDBY']) {
+            echo "Code 400";
+            exit;
+        }
+
         $query = "update form_eye_locking set LOCKED='',LOCKEDBY='' where id=?";
         sqlQuery($query, array($form_id));
     }
 
     exit;
-} elseif ($_REQUEST['acquire_lock'] === "1") {
+} elseif (eyeMagRequestBool('acquire_lock')) {
     //we are taking over the form's active state, others will go read-only
+    if ($requestUniqueID === '') {
+        echo "Code 400";
+        exit;
+    }
+
     $query = "UPDATE form_eye_locking set LOCKED='1',LOCKEDBY=? where id=?";//" and LOCKEDBY=?";
-    $result = sqlQuery($query, array($_REQUEST['uniqueID'], $form_id ));
+    $result = sqlQuery($query, array($requestUniqueID, $form_id));
     $query = "SELECT LOCKEDDATE from form_eye_locking WHERE ID=?";
     $lock = sqlQuery($query, array($form_id));
     echo $lock['LOCKEDDATE'];
@@ -284,38 +309,46 @@ if ($_REQUEST['unlock'] === '1') {
 } else {
     $query = "SELECT LOCKED,LOCKEDBY,LOCKEDDATE from form_eye_locking WHERE ID=?";
     $lock = sqlQuery($query, array($form_id));
-    if (($lock['LOCKED']) && ($_REQUEST['uniqueID'] != $lock['LOCKEDBY'])) {
+    if (($lock['LOCKED']) && ($requestUniqueID != $lock['LOCKEDBY'])) {
         // This session not the owner or it is not new so it is locked
         // Did the user send a demand to take ownership?
-        if ($lock['LOCKEDBY'] != $_REQUEST['ownership']) {
+        if ($lock['LOCKEDBY'] != $requestOwnership) {
             //tell them they are locked out by another user now
             echo "Code 400";
             // or return a JSON encoded string with current LOCK ID?
             // echo "Sorry Charlie, you get nothing since this is locked...  No save for you!";
             exit;
-        } elseif ($lock['LOCKEDBY'] == $_REQUEST['ownership']) {
+        } elseif ($lock['LOCKEDBY'] == $requestOwnership) {
             // then they are taking ownership - all others get locked...
             // new LOCKEDBY becomes our uniqueID LOCKEDBY
+            if ($requestUniqueID === '') {
+                echo "Code 400";
+                exit;
+            }
             $_REQUEST['LOCKED'] = '1';
-            $_REQUEST['LOCKEDBY'] = $_REQUEST['uniqueID'];
+            $requestLockedBy = $requestUniqueID;
             //update table
             $query = "update form_eye_locking set LOCKED=?,LOCKEDBY=? where id=?";
-            sqlQuery($query, array('1', $_REQUEST['LOCKEDBY'], $form_id));
+            sqlQuery($query, array('1', $requestLockedBy, $form_id));
             //go on to save what we want...
         }
     } elseif (!$lock['LOCKED']) { // it is not locked yet
         $_REQUEST['LOCKED'] = '1';
+        if ($requestLockedBy === '') {
+            $requestLockedBy = (string) rand();
+        }
         $query = "update form_eye_locking set LOCKED=?,LOCKEDBY=?,LOCKEDDATE=NOW() where id=?";
-        sqlQuery($query, array('1', $_REQUEST['LOCKEDBY'], $form_id));
+        sqlQuery($query, array('1', $requestLockedBy, $form_id));
         //go on to save what we want...
     }
 
-    if (!$_REQUEST['LOCKEDBY']) {
-        $_REQUEST['LOCKEDBY'] = rand();
+    if ($requestLockedBy === '') {
+        $requestLockedBy = (string) rand();
     }
+    $_REQUEST['LOCKEDBY'] = $requestLockedBy;
 }
 
-if ($_REQUEST["mode"] == "new") {
+if ($requestMode == "new") {
     $base_array = array();
     $newid = formSubmit('form_eye_base', '', $id, $userauthorized);
 
@@ -330,10 +363,10 @@ if ($_REQUEST["mode"] == "new") {
         $query = "INSERT INTO " . $table_name . " ('id','pid') VALUES (?,?)";
         $result = sqlStatement($query, array($new_id,$pid));
     }
-} elseif ($_REQUEST["mode"] == "update") {
+} elseif ($requestMode == "update") {
     // The user has write privileges to work with...
 
-    if ($_REQUEST['action'] == "store_PDF") {
+    if ($requestAction == "store_PDF") {
          /**
           * We want to store/overwrite the current PDF version of this encounter's f
           * Currently this is only called 'beforeunload', ie. when you finish the form
@@ -436,27 +469,54 @@ if ($_REQUEST["mode"] == "new") {
 
     // Store the IMPPLAN area.  This is separate from the rest of the form
     // It is in a separate table due to its one-to-many relationship with the form_id.
-    if ($_REQUEST['action'] == "store_IMPPLAN") {
-        $IMPPLAN = json_decode($_REQUEST['parameter'], true);
-        //remove what is there and replace it with this data.
-        $query = "DELETE from form_" . $form_folder . "_impplan where form_id=? and pid=?";
-        sqlQuery($query, array($form_id, $pid));
-
-        for ($i = 0; $i < count($IMPPLAN); $i++) {
-            $query = "INSERT IGNORE INTO form_" . $form_folder . "_impplan (form_id, pid, title, code, codetype, codedesc, codetext, plan, IMPPLAN_order, PMSFH_link) VALUES(?,?,?,?,?,?,?,?,?,?) ";
-            $response = sqlQuery($query, array($form_id, $pid, $IMPPLAN[$i]['title'], $IMPPLAN[$i]['code'], $IMPPLAN[$i]['codetype'], $IMPPLAN[$i]['codedesc'], $IMPPLAN[$i]['codetext'], $IMPPLAN[$i]['plan'], $i, $IMPPLAN[$i]['PMSFH_link']));
-            //if it is a duplicate then delete this from the array and return the array via json.
-            //or rebuild it from mysql
+    if ($requestAction == "store_IMPPLAN") {
+        $IMPPLAN = json_decode(eyeMagRequestString('parameter'), true);
+        if (!is_array($IMPPLAN)) {
+            echo json_encode(array());
+            exit;
         }
 
-        //Since we are potentially ignoring duplicates, build json IMPPLAN_items and return it to the user to rebuild IMP/Plan area
+        $IMPPLAN = eyeMagNormalizeImpPlanItems($IMPPLAN);
+        $saveOk = true;
+        sqlBeginTrans();
+
+        try {
+            // remove what is there and replace it atomically with this payload.
+            $query = "DELETE from form_" . $form_folder . "_impplan where form_id=? and pid=?";
+            sqlStatement($query, array($form_id, $pid));
+
+            $query = "INSERT INTO form_" . $form_folder . "_impplan (form_id, pid, title, code, codetype, codedesc, codetext, plan, IMPPLAN_order, PMSFH_link) VALUES(?,?,?,?,?,?,?,?,?,?)";
+            foreach ($IMPPLAN as $i => $row) {
+                sqlStatement($query, array(
+                    $form_id,
+                    $pid,
+                    $row['title'],
+                    $row['code'],
+                    $row['codetype'],
+                    $row['codedesc'],
+                    $row['codetext'],
+                    $row['plan'],
+                    $i,
+                    $row['PMSFH_link']
+                ));
+            }
+        } catch (\Throwable $exception) {
+            $saveOk = false;
+        }
+
+        if ($saveOk) {
+            sqlCommitTrans();
+        } else {
+            sqlRollbackTrans();
+        }
+
         $IMPPLAN_items = build_IMPPLAN_items($pid, $form_id);
         echo json_encode($IMPPLAN_items);
         exit;
     }
 
     //change PCP/referring doc
-    if ($_REQUEST['action'] == 'docs') {
+    if ($requestAction == 'docs') {
         $query = "update patient_data set ref_providerID=?,referrerID=? where pid =?";
         sqlQuery($query, array($_REQUEST['pcp'], $_REQUEST['rDOC'], $pid));
 
@@ -618,9 +678,29 @@ if ($_REQUEST["mode"] == "new") {
                 send_json_values($PMSFH);
                 exit;
             } else {
-                if ($_REQUEST['form_title'] == '') {
+                $formTitle = eyeMagRequestString('form_title');
+                if ($formTitle === '') {
                     return;
                 }
+                $formComments = eyeMagRequestString('form_comments');
+                $formDiagnosis = eyeMagRequestString('form_diagnosis');
+                $formOccur = eyeMagRequestString('form_occur');
+                $formClassification = eyeMagRequestString('form_classification');
+                if ($formClassification === '') {
+                    // Backward-compatibility for historical misspelled field key.
+                    $formClassification = eyeMagRequestString('form_clasification');
+                }
+                $formReinjuryId = eyeMagRequestString('form_reinjury_id');
+                $formReferredBy = eyeMagRequestString('form_referredby');
+                $formInjuryGrade = eyeMagRequestString('form_injury_grade');
+                $formInjuryPart = eyeMagRequestString('form_injury_part');
+                $formInjuryType = eyeMagRequestString('form_injury_type');
+                $formOutcome = eyeMagRequestString('form_outcome');
+                $formDestination = eyeMagRequestString('form_destination');
+                $formReaction = eyeMagRequestString('form_reaction');
+                $formBeginRaw = eyeMagRequestString('form_begin');
+                $formEndRaw = eyeMagRequestString('form_end');
+                $formReturnRaw = eyeMagRequestString('form_return');
 
                 $subtype = '';
                 if ($form_type == "POH") {
@@ -637,32 +717,33 @@ if ($_REQUEST["mode"] == "new") {
                     $subtype = "eye";
                 } elseif (($form_type == "Medication")||($form_type == "Eye Meds")) {
                     $form_type = "medication";
-                    if ($_REQUEST['form_eye_subtype']) {
+                    if (eyeMagRequestBool('form_eye_subtype')) {
                         $subtype = "eye";
                         //we always want a default begin date
                         //if it is empty, fill it with today
-                        if ($_REQUEST['form_begin'] == '') {
-                            $_REQUEST['form_begin'] = date("Y-m-d");
+                        if ($formBeginRaw === '') {
+                            $formBeginRaw = date("Y-m-d");
                         }
                     }
 
-                    if ($_REQUEST['form_begin'] == '') {
-                        $_REQUEST['form_begin'] = $visit_date;
+                    if ($formBeginRaw === '') {
+                        $formBeginRaw = $visit_date;
                     }
                 }
 
                 $i = 0;
-                $form_begin = DateToYYYYMMDD($_REQUEST['form_begin']);
-                $form_end   = DateToYYYYMMDD($_REQUEST['form_end']);
+                $form_begin = DateToYYYYMMDD($formBeginRaw) ?: null;
+                $form_end   = DateToYYYYMMDD($formEndRaw) ?: null;
+                $form_return = DateToYYYYMMDD($formReturnRaw) ?: null;
 
                 /**
                  *  When adding an issue, see if the issue is already here.
                  *  If so we need to update it.  If not we are adding it.
                  *  Check the PMSFH array first by title.
                  *  If not present in PMSFH, check the DB to be sure.
-                 */
+                */
                 foreach ($PMSFH[$form_type] as $item) {
-                    if ($item['title'] == $_REQUEST['form_title']) {
+                    if ($item['title'] == $formTitle) {
                         $issue = $item['issue'];
                     }
                 }
@@ -670,57 +751,77 @@ if ($_REQUEST["mode"] == "new") {
                 if (!$issue) {
                     if ($subtype == '') {
                         $query = "SELECT id,pid from lists where title=? and type=? and pid=?";
-                        $issue2 = sqlQuery($query, array($_REQUEST['form_title'], $form_type, $pid));
+                        $issue2 = sqlQuery($query, array($formTitle, $form_type, $pid));
                         $issue = $issue2['id'];
                     } else {
                         $query = "SELECT id,pid from lists where title=? and type=? and pid=? and subtype=?";
-                        $issue2 = sqlQuery($query, array($_REQUEST['form_title'], $form_type, $pid, $subtype));
+                        $issue2 = sqlQuery($query, array($formTitle, $form_type, $pid, $subtype));
                         $issue = $issue2['id'];
                     }
                 }
 
                 $issue = 0 + $issue;
-                if ($_REQUEST['form_reinjury_id'] == "") {
-                    $form_reinjury_id = "0";
+                if ($formReinjuryId === "") {
+                    $formReinjuryId = "0";
                 }
 
-                if ($_REQUEST['form_injury_grade'] == "") {
-                    $form_injury_grade = "0";
+                if ($formInjuryGrade === "") {
+                    $formInjuryGrade = "0";
                 }
 
-                if ($_REQUEST['form_outcome'] == '') {
-                    $_REQUEST['form_outcome'] = '0';
+                if ($formOutcome === '') {
+                    $formOutcome = '0';
                 }
 
                 if ($issue != '0') { //if this issue already exists we are updating it...
-                    $query = "UPDATE lists SET " .
-                        "type = '" . add_escape_custom($form_type) . "', " .
-                        "title = '" . add_escape_custom($_REQUEST['form_title']) . "', " .
-                        "comments = '" . add_escape_custom($_REQUEST['form_comments']) . "', " .
-                        "begdate = " . QuotedOrNull($form_begin) . ", " .
-                        "enddate = " . QuotedOrNull($form_end) . ", " .
-                        "returndate = " . QuotedOrNull($form_return) . ", " .
-                        "diagnosis = '" . add_escape_custom($_REQUEST['form_diagnosis']) . "', " .
-                        "occurrence = '" . add_escape_custom($_REQUEST['form_occur']) . "', " .
-                        "classification = '" . add_escape_custom($_REQUEST['form_classification']) . "', " .
-                        "reinjury_id = '" . add_escape_custom($_REQUEST['form_reinjury_id']) . "', " .
-                        "referredby = '" . add_escape_custom($_REQUEST['form_referredby']) . "', " .
-                        "injury_grade = '" . add_escape_custom($_REQUEST['form_injury_grade']) . "', " .
-                        "injury_part = '" . add_escape_custom($form_injury_part) . "', " .
-                        "injury_type = '" . add_escape_custom($form_injury_type) . "', " .
-                        "outcome = '" . add_escape_custom($_REQUEST['form_outcome']) . "', " .
-                        "destination = '" . add_escape_custom($_REQUEST['form_destination']) . "', " .
-                        "reaction ='" . add_escape_custom($_REQUEST['form_reaction']) . "', " .
-                        "erx_uploaded = '0', " .
-                        "modifydate = NOW(), " .
-                        "subtype = '" . $subtype . "' " .
-                        "WHERE id = '" . add_escape_custom($issue) . "'";
-                    sqlStatement($query);
-                    if ($text_type == "medication" && enddate != '') {
+                    $query = "UPDATE lists SET
+                        type = ?,
+                        title = ?,
+                        comments = ?,
+                        begdate = ?,
+                        enddate = ?,
+                        returndate = ?,
+                        diagnosis = ?,
+                        occurrence = ?,
+                        classification = ?,
+                        reinjury_id = ?,
+                        referredby = ?,
+                        injury_grade = ?,
+                        injury_part = ?,
+                        injury_type = ?,
+                        outcome = ?,
+                        destination = ?,
+                        reaction = ?,
+                        erx_uploaded = '0',
+                        modifydate = NOW(),
+                        subtype = ?
+                        WHERE id = ?";
+                    sqlStatement($query, array(
+                        $form_type,
+                        $formTitle,
+                        $formComments,
+                        $form_begin,
+                        $form_end,
+                        $form_return,
+                        $formDiagnosis,
+                        $formOccur,
+                        $formClassification,
+                        $formReinjuryId,
+                        $formReferredBy,
+                        $formInjuryGrade,
+                        $formInjuryPart,
+                        $formInjuryType,
+                        $formOutcome,
+                        $formDestination,
+                        $formReaction,
+                        $subtype,
+                        $issue
+                    ));
+                    if ($form_type === "medication" && !empty($form_end)) {
                         sqlStatement('UPDATE prescriptions SET '
                             . 'medication = 0 where patient_id = ? '
                             . " and upper(trim(drug)) = ? "
-                            . ' and medication = 1', array($pid, strtoupper($_REQUEST['form_title'])));
+                            . ' and medication = 1', array($pid, strtoupper($formTitle)));
                     }
                 } else {
                     $query = "INSERT INTO lists ( " .
@@ -729,13 +830,26 @@ if ($_REQUEST["mode"] == "new") {
                         "diagnosis, occurrence, classification, referredby, user, " .
                         "groupname, outcome, destination,reaction,subtype " .
                         ") VALUES ( " .
-                        "NOW(), ?,?,?,1,?," .
-                        QuotedOrNull($form_begin) . ", " . QuotedOrNull($form_end) . ", " . QuotedOrNull($form_return) . ", " .
-                        "?,?,?,?,?," .
-                        "?,?,?,?,?)";
-                    $issue = sqlInsert($query, array($pid, $form_type, $_REQUEST['form_title'], $_REQUEST['form_comments'],
-                        $_REQUEST['form_diagnosis'], $_REQUEST['form_occur'], $_REQUEST['form_clasification'], $_REQUEST['form_referredby'], $_SESSION['authUser'],
-                        $_SESSION['authProvider'], QuotedOrNull($_REQUEST['form_outcome']), $_REQUEST['form_destination'], $_REQUEST['form_reaction'], $subtype));
+                        "NOW(), ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $issue = sqlInsert($query, array(
+                        $pid,
+                        $form_type,
+                        $formTitle,
+                        $formComments,
+                        $form_begin,
+                        $form_end,
+                        $form_return,
+                        $formDiagnosis,
+                        $formOccur,
+                        $formClassification,
+                        $formReferredBy,
+                        $_SESSION['authUser'],
+                        $_SESSION['authProvider'],
+                        $formOutcome,
+                        $formDestination,
+                        $formReaction,
+                        $subtype
+                    ));
 
                     // For record/reporting purposes, place entry in lists_touch table.
                     setListTouch($pid, $form_type);
@@ -761,30 +875,44 @@ if ($_REQUEST["mode"] == "new") {
         }
     }
 
-    if ($_REQUEST['action'] == 'code_PMSFH') {
+    if ($requestAction == 'code_PMSFH') {
         $query = "UPDATE lists SET diagnosis = ? WHERE id = ?";
         sqlStatement($query, array($_POST['code'], $_POST['issue']));
         exit;
     }
 
-    if ($_REQUEST['action'] == 'code_visit') {
-        $CODING = json_decode($_REQUEST['parameter'], true);
-        $query = "delete from billing where encounter =?";
-        sqlStatement($query, array($encounter));
+    if ($requestAction == 'code_visit') {
+        $CODING = json_decode(eyeMagRequestString('parameter'), true);
+        if (!is_array($CODING)) {
+            echo "Code 400";
+            exit;
+        }
+
+        // Retire only Eye Mag generated billing rows for this encounter/patient.
+        $query = "UPDATE billing SET activity = 0 WHERE encounter = ? AND pid = ? AND billed = 0 AND activity = 1 AND notecodes = ?";
+        sqlStatement($query, array($encounter, $pid, 'eye_mag'));
+
+        $dups = array();
         foreach ($CODING as $item) { //need toremove duplicate codes
-            if ($dups[$item["code"]] == '1') {
+            $itemCode = trim((string) ($item["code"] ?? ''));
+            if ($itemCode === '') {
+                continue;
+            }
+            $dedupeKey = trim((string) ($item["codetype"] ?? '')) . "|" . eyeMagNormalizeCodeList($itemCode) . "|" . trim((string) ($item["modifier"] ?? '')) . "|" . trim((string) ($item["justify"] ?? ''));
+            if (isset($dups[$dedupeKey])) {
                 continue;
             }
 
-            $dups[$item["code"]] = "1";
+            $dups[$dedupeKey] = true;
+            $item["code"] = eyeMagNormalizeCodeList($itemCode);
             $sql = "SELECT codes.*, prices.pr_price FROM codes " .
-                "LEFT OUTER JOIN patient_data ON patient_data.pid = '$pid' " .
+                "LEFT OUTER JOIN patient_data ON patient_data.pid = ? " .
                 "LEFT OUTER JOIN prices ON prices.pr_id = codes.id AND " .
                 "prices.pr_selector = '' AND " .
                 "prices.pr_level = patient_data.pricelevel " .
                 "WHERE code =?" .
                 " LIMIT 1";
-            $result = sqlStatement($sql, array($item['code']));
+            $result = sqlStatement($sql, array($pid, $item['code']));
             while ($res = sqlFetchArray($result)) {
                 $item["codedesc"] = $res["code_text"];// eg. = "NP EYE intermediate exam"
                 if (!$item["modifier"]) {
@@ -794,14 +922,14 @@ if ($_REQUEST["mode"] == "new") {
                 $item["fee"] = $res["pr_price"];
             }
             $item["justify"] .= ":";
-            BillingUtilities::addBilling($encounter, $item["codetype"], $item["code"], $item["codedesc"], $pid, '1', $providerID, $item["modifier"], $item["units"], $item["fee"], $ndc_info, $item["justify"], $billed, '');
+            BillingUtilities::addBilling($encounter, $item["codetype"], $item["code"], $item["codedesc"], $pid, '1', $providerID, $item["modifier"], $item["units"], $item["fee"], $ndc_info, $item["justify"], $billed, 'eye_mag');
         }
         echo "OK";
         exit;
     }
 
 
-    if ($_REQUEST['action'] == 'new_pharmacy') {
+    if ($requestAction == 'new_pharmacy') {
         $query = "UPDATE patient_data set pharmacy_id=? where pid=?";
         sqlStatement($query, array($_POST['new_pharmacy'], $pid));
         echo "Pharmacy updated";
@@ -811,7 +939,7 @@ if ($_REQUEST["mode"] == "new") {
     //Update the visit status for this appointment (from inside the Coding Engine)
     //we also have to update the flow board...  They are not linked automatically.
     //Flow board counts items for each events so we need to insert new item and update total for the event, via pc_eid...
-    if ($_REQUEST['action'] == 'new_appt_status') {
+    if ($requestAction == 'new_appt_status') {
         if ($_POST['new_status']) {
             //make sure visit_date is in YYYY-MM-DD format
             $Vdated = new DateTime($_POST['visit_date']);
@@ -1052,10 +1180,11 @@ if ($_REQUEST["mode"] == "new") {
                 $fields[] = $_POST[$row['Field']]?:'';
                 $sql2 .= " ". add_escape_custom($row['Field']) ." = ?,";
             }
-            $sql = "update " . escape_table_name($table_name) . " set pid ='".add_escape_custom($_SESSION['pid'])."',".$sql2;
+            $sql = "update " . escape_table_name($table_name) . " set pid = ?," . $sql2;
 
             $sql = substr($sql, 0, -1);
             $sql .= " where id=?";
+            array_unshift($fields, (string) $_SESSION['pid']);
             $fields[] = $form_id;
             $success = sqlStatement($sql, $fields);
         }
@@ -1178,7 +1307,7 @@ if ($_REQUEST["mode"] == "new") {
 
     echo json_encode($send);
     exit;
-} elseif ($_REQUEST["mode"] == "retrieve") {
+} elseif ($requestMode == "retrieve") {
     if ($_REQUEST['PRIORS_query']) {
         if ($_REQUEST['zone'] == 'REFRACTIONS') {
             //TODO:  Fix this so it works!

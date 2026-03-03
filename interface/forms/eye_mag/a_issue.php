@@ -45,6 +45,8 @@ if (!$pid) {
 $form_id = $_REQUEST['form_id'];
 $form_type = $_REQUEST['form_type'];
 $uniqueID = $_REQUEST['uniqueID'];
+$thistype = $_REQUEST['thistype'] ?? '';
+$subtype = $_REQUEST['subtype'] ?? '';
 
 if ($issue && !acl_check('patients', 'med', '', 'write')) {
     die(xlt("Edit is not authorized!"));
@@ -78,6 +80,8 @@ if (!empty($irow['type'])) {
         ++$type_index;
     }
 }
+
+$initial_issue_type = !empty($irow['type']) ? $irow['type'] : 'POH';
 
 $given="ROSGENERAL,ROSHEENT,ROSCV,ROSPULM,ROSGI,ROSGU,ROSDERM,ROSNEURO,ROSPSYCH,ROSMUSCULO,ROSIMMUNO,ROSENDOCRINE,ROSCOMMENTS";
 $query="SELECT $given from form_eye_ros where id=? and pid=?";
@@ -1384,12 +1388,7 @@ foreach (explode(',', $given) as $item) {
     </div>
   </body>
   <script language='JavaScript'>
-      newtype('<?php if (!$form_index) {
-            echo "POH";
-               } else {
-                   echo $type_index;
-               } ?>');
-      newtype('Eye Meds');
+      newtype(<?php echo js_escape($initial_issue_type); ?>);
       $(function() {
           $('.datepicker').datetimepicker({
                                                 <?php $datetimepicker_timepicker = false; ?>

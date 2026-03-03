@@ -49,6 +49,83 @@ if (typeof Code_new_est === 'undefined') {
 }
 var TESTS_built='';
 var doc=[];
+var syncStatusTimer = null;
+var eyeMagUiReady = false;
+
+function updateActiveChartBadge(state) {
+    var isActive = (state === "on");
+    $("#active_flag")
+        .removeClass("eye-mag-state-active eye-mag-state-readonly")
+        .addClass(isActive ? "eye-mag-state-active" : "eye-mag-state-readonly")
+        .text(isActive ? "<?php echo xla('Active Chart'); ?>" : "<?php echo xla('READ-ONLY'); ?>");
+    $("#active_icon").html("<i class='fa " + (isActive ? "fa-toggle-on" : "fa-toggle-off") + "'></i>");
+}
+
+function setSyncStatus(state, customText) {
+    var syncNode = $("#eye_mag_sync_status");
+    if (!syncNode.length) {
+        return;
+    }
+    syncNode.removeClass("eye-mag-sync-idle eye-mag-sync-dirty eye-mag-sync-saving eye-mag-sync-saved eye-mag-sync-error eye-mag-sync-readonly");
+    var syncClass = "eye-mag-sync-idle";
+    var textLabel = customText || "<?php echo xla('No pending changes'); ?>";
+    if (state === "dirty") {
+        syncClass = "eye-mag-sync-dirty";
+        textLabel = customText || "<?php echo xla('Pending changes'); ?>";
+    } else if (state === "saving") {
+        syncClass = "eye-mag-sync-saving";
+        textLabel = customText || "<?php echo xla('Saving'); ?>";
+    } else if (state === "saved") {
+        syncClass = "eye-mag-sync-saved";
+        textLabel = customText || "<?php echo xla('Saved'); ?>";
+    } else if (state === "error") {
+        syncClass = "eye-mag-sync-error";
+        textLabel = customText || "<?php echo xla('Save error'); ?>";
+    } else if (state === "readonly") {
+        syncClass = "eye-mag-sync-readonly";
+        textLabel = customText || "<?php echo xla('Read-only mode'); ?>";
+    }
+    syncNode.addClass(syncClass).text(textLabel);
+}
+
+function queueSyncIdleStatus() {
+    window.clearTimeout(syncStatusTimer);
+    syncStatusTimer = window.setTimeout(function () {
+        if ($("#chart_status").val() === "on") {
+            setSyncStatus("idle");
+        }
+    }, 2200);
+}
+
+function markFormDirty() {
+    window.clearTimeout(syncStatusTimer);
+    if ($("#chart_status").val() === "on") {
+        setSyncStatus("dirty");
+    }
+}
+
+function isTrackedSaveRequest(settings) {
+    if (!settings || !settings.url) {
+        return false;
+    }
+    var requestUrl = settings.url.toString();
+    if (requestUrl.indexOf("save.php") === -1) {
+        return false;
+    }
+    if (requestUrl.indexOf("mode=retrieve") !== -1 || requestUrl.indexOf("copy=READONLY") !== -1) {
+        return false;
+    }
+    var requestData = "";
+    if (typeof settings.data === "string") {
+        requestData = settings.data;
+    } else if (settings.data && typeof settings.data === "object") {
+        requestData = $.param(settings.data);
+    }
+    if (requestData.indexOf("unlock=1") !== -1 || requestData.indexOf("action=unlock") !== -1 || requestData.indexOf("acquire_lock=1") !== -1) {
+        return false;
+    }
+    return true;
+}
 /*
  * Functions to add a quick pick selection to the correct fields on the form.
  */
@@ -143,8 +220,8 @@ function submit_form(action) {
 function code_400() {
         //User lost ownership.  Just watching now...
         //now we should get every variable and update the form, every 15 seconds...
-    $("#active_flag").html(" READ-ONLY ");
     toggle_active_flags("off");
+    setSyncStatus("readonly");
     alert("Another user has taken control of this form.\rEntering READ-ONLY mode.");
     update_READONLY();
     this_form_id = $("#form_id").val();
@@ -232,7 +309,7 @@ function check_lock(modify) {
                        );
     } else if (locked =='1' && locked_by >'' && (uniqueID != locked_by)) {
             //form is locked by someone else, less than an hour ago...
-        $("#active_flag").html(" READ-ONLY ");
+        updateActiveChartBadge("off");
         if (confirm('\tLOCKED by another user:\t\n\tSelect OK to take ownership or\t\n\tCANCEL to enter READ-ONLY mode.\t')) {
             top.restoreSession();
             $.ajax({
@@ -1301,8 +1378,11 @@ function rebuild_IMP(obj2) {
  * for each member of "items".
  * Duplicates are removed by server.
  */
+<?php require_once(__DIR__ . "/eye_impplan_helpers.php"); ?>
+
 function build_IMPPLAN(items,nodisplay) {
     var contents_here;
+    items = normalizeIMPPLANItems(items);
     if (typeof nodisplay == "undefined") {
       $('#IMPPLAN_zone').html("");
     }
@@ -1333,25 +1413,25 @@ function build_IMPPLAN(items,nodisplay) {
                 // PMSFH_link is only present when the Builder was used to make the entry.
 
                 // So if there is no PMSFH_link and it is not generated from a clinical field:
-                if ( ((typeof value.PMSFH_link !== "undefined") || (value.PMSFH_link !== null)) && (!value.PMSFH_link.match(/Clinical_(.*)/)) ) {
+                if (!value.PMSFH_link || (!value.PMSFH_link.match(/Clinical_(.*)/))) {
                     //The Title should have the description.
-                    var CodeArr =  value.code.split(",");
+                    var CodeArr = normalizeIMPPLANCodeList(value.code);
                     var TitleArr = value.codedesc.split("\r");//I don't see a second codedesc being adding in for this yet...
                     for (i=0;i < CodeArr.length;i++) {
                       if (CodeArr.length == (TitleArr.length-1)) { //there is a trailing \r but second codedesc should have "\r" also
                         $('#Coding_DX_Codes').append(count_dx +'. '+CodeArr[i]+': '+TitleArr[i]+'<br />');
 
-                        justify_btn = '<span class="modifier status_on" name="visit_justifier" id="visit_just_'+count_dx+'" value="" data-justcode="'+value.codetype+'|'+value.code+'" title="'+value.codedesc+'">'+count_dx+'</span>';
+                        justify_btn = '<span class="modifier status_on" name="visit_justifier" id="visit_just_'+count_dx+'" value="" data-justcode="'+value.codetype+'|'+CodeArr[i]+'" title="'+value.codedesc+'">'+count_dx+'</span>';
                         $('#visit_justification').append(justify_btn);
-                        visit_justifier.push(value.codetype+'|'+value.code[i]);
+                        visit_justifier.push(value.codetype+'|'+CodeArr[i]);
                       } else {
                         //just look it up via ajax or tell them to code it manually on the feesheet ;).
                         $('#Coding_DX_Codes').append(CodeArr[i]+': <?php echo xlt('Manually retrieve description on Fee Sheet'); ?> <br />');
 
-                        var justify_btn = '<span class="modifier status_on" id="visit_just_'+count_dx+'" name="visit_justifier" value="" data-justcode="'+value.codetype+'|'+value.code+'" title="'+value.codedesc+'">'+count_dx+'</span>';
+                        var justify_btn = '<span class="modifier status_on" id="visit_just_'+count_dx+'" name="visit_justifier" value="" data-justcode="'+value.codetype+'|'+CodeArr[i]+'" title="'+value.codedesc+'">'+count_dx+'</span>';
 
                         $('#visit_justification').append(justify_btn);
-                        visit_justifier.push(value.codetype+'|'+value.code);
+                        visit_justifier.push(value.codetype+'|'+CodeArr[i]);
                       }
                       count_dx++;
                     }
@@ -1359,7 +1439,7 @@ function build_IMPPLAN(items,nodisplay) {
                     // So there IS a PMSFH_link or it was generated from a clinical field:
 
                     //this works for Clinical-derived terms with more than one Dx Code (found in more than one location/field)
-                  if (value.PMSFH_link.match(/Clinical_(.*)/)) {
+                  if (value.PMSFH_link && value.PMSFH_link.match(/Clinical_(.*)/)) {
                     if (typeof obj.Clinical !== "undefined") {
                       var location = value.PMSFH_link.match(/Clinical_(.*)/)[1];
                       if (obj.Clinical[location]!=null ) {
@@ -1389,13 +1469,18 @@ function build_IMPPLAN(items,nodisplay) {
               return;
             }
                var title2 = value.title.replace(/(\')/g, '');
+               var planSuggestion = getPlanTemplateSuggestion(value.code, value.codedesc || value.title);
+               var planHintMarkup = '';
+               if (planSuggestion) {
+                   planHintMarkup = "<div class='plan-template-hint' id='PLAN_HINT_"+index+"' data-template='"+escapeIMPPLANHtml(planSuggestion)+"'><strong><?php echo xlt('Suggested plan'); ?>:</strong> " + escapeIMPPLANHtml(planSuggestion) + "</div>";
+               }
                contents_here = "<span class='bold' contenteditable title='<?php echo xla('Click to edit'); ?>' id='IMPRESSION_"+index+"'>" +
                value.title +"</span>"+
                " <span contenteditable class='float-right' onclick='sel_diagnosis("+index+",\""+title2+"\");' title='"+value.codetext+"' id='CODE_"+index+"'>"+
                value.code + "</span>"+
                "<br /><textarea id='PLAN_"+index+"' name='PLAN_"+index+
                "' style='width:100%;max-width:100%;height:auto;min-height:3em;overflow-y: hidden;padding-top: 1.1em; ' placeholder='<?php echo xla('Puedes escribir observaciones y plan para este diagnostico'); ?>'>"+
-               value.plan +"</textarea><br /></li>";
+               value.plan +"</textarea>" + planHintMarkup + "<br /></li>";
                $('#IMPPLAN_zone').append('<div id="IMPPLAN_zone_'+index+'" class="IMPPLAN_class">'+
                                          '<i class="float-right fa fa-times" id="BUTTON_IMPPLAN_'+index+'"></i>'+
                                          contents_here+'</div>');
@@ -1451,7 +1536,7 @@ function build_IMPPLAN(items,nodisplay) {
         $('[id^=CODE_]').on('blur', function() {
                               var item = this.id.match(/CODE_(.*)/)[1];
                               var new_code = this.innerText || this.innerHTML;
-                              obj.IMPPLAN_items[item].code =  new_code;
+                              obj.IMPPLAN_items[item].code = normalizeIMPPLANCodeList(new_code).join(", ");
                               //obj.IMPPLAN_items[item].codetext = '';
                               //obj.IMPPLAN_items[item].codedesc = '';
                               $(this).css('background-color','#F0F8FF');
@@ -1508,7 +1593,8 @@ function update_PMSFH_code(the_issue,new_code){
 function store_IMPPLAN(storage,nodisplay) {
     if (typeof storage !== "undefined") {
         var url = "../../forms/eye_mag/save.php?mode=update&store_IMPPLAN";
-        var formData =  JSON.stringify(storage);
+        var normalizedStorage = normalizeIMPPLANItems(storage);
+        var formData =  JSON.stringify(normalizedStorage);
         top.restoreSession();
         $.ajax({
                type         : 'POST',
@@ -1527,7 +1613,7 @@ function store_IMPPLAN(storage,nodisplay) {
                        code_400(); //the user does not have write privileges!
                        return;
                        }
-                       obj.IMPPLAN_items = result;
+                       obj.IMPPLAN_items = normalizeIMPPLANItems(result);
                     //   if (typeof nodisplay === "undefined") {
                           build_IMPPLAN(obj.IMPPLAN_items,nodisplay);
                       // }
@@ -1577,7 +1663,7 @@ function dragto_IMPPLAN_zone(event, ui) {
     var findme = ui.draggable.find("span").attr("id");
     var group = findme.match(/DX_(.*)_(.*)/)[1];
     var location = findme.match(/DX_(.*)_(.*)/)[2];
-    var the_code ='';
+    var the_codes = [];
     var the_codedesc ='';
     var the_codetext ='';
     if (obj.IMPPLAN_items ==null) obj.IMPPLAN_items = [];
@@ -1585,13 +1671,12 @@ function dragto_IMPPLAN_zone(event, ui) {
             //more than one field can contain this DX.
             //Group them into one IMPPLAN.
         for (i=0;i < obj.Clinical[location].length; i++) {
-            the_code += obj.Clinical[location][i]['code']+',';
+            the_codes.push(obj.Clinical[location][i]['code']);
             the_codedesc = obj.Clinical[location][i]['codedesc'];
             the_codetext = obj.Clinical[location][i]['codetext'];
         }
-        if (i > 0) the_code = the_code.slice(0, -1);
         obj.IMPPLAN_items.push({
-                               code:        the_code,
+                               code:        normalizeIMPPLANCodeList(the_codes).join(", "),
                                codedesc:    the_codedesc,
                                codetext:    the_codetext,
                                codetype:    obj.Clinical[location][0]['codetype'],
@@ -1749,16 +1834,16 @@ function toggle_active_flags(new_state) {
     if (($("#chart_status").val() == "off") || (new_state == "on")) {
             //  we are read-only and we want to go active.
         $("#chart_status").val("on");
-        $("#active_flag").html(" Active Chart ");
-        $("#active_icon").html("<i class='fa fa-toggle-on'></i>");
+        updateActiveChartBadge("on");
+        setSyncStatus("idle");
         $("#warning").addClass("nodisplay");
         $('input, select, textarea, a').removeAttr('disabled');
         $('input, textarea').removeAttr('readonly');
     } else {
             //else clicking this means we want to go from active to read-only
         $("#chart_status").val("off");
-        $("#active_flag").html(" READ-ONLY ");
-        $("#active_icon").html("<i class='fa fa-toggle-off'></i>");
+        updateActiveChartBadge("off");
+        setSyncStatus("readonly");
         $("#warning").removeClass("nodisplay");
             //we should tell the form fields to be disabled. should already be...
         $('input, select, textarea, a').attr('disabled', 'disabled');
@@ -4169,6 +4254,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                       if (!$('#inc_PE').is(':checked')) { return; }
 
                                                       var the_code='';
+                                                      var the_codes=[];
                                                       var the_codedesc='';
                                                       var the_codetext='';
                                                       for (i=0;i < obj.Clinical[issue[2]].length; i++) {
@@ -4179,10 +4265,11 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                         }
                                                         the_codedesc += obj.Clinical[issue[2]][i]['codedesc'] + "\r";
                                                         the_codetext += obj.Clinical[issue[2]][i]['codetext'] + "\r";
+                                                        the_codes.push(obj.Clinical[issue[2]][i]['code']);
                                                       }
                                                       obj.IMPPLAN_items.push({
                                                                              title:obj.Clinical[issue[2]][0]['title'],
-                                                                             code: the_code,
+                                                                             code: normalizeIMPPLANCodeList(the_codes.length ? the_codes : the_code).join(", "),
                                                                              codetype: obj.Clinical[issue[2]][0]['codetype'],
                                                                              codedesc: the_codedesc,
                                                                              codetext: the_codetext,
@@ -4401,6 +4488,48 @@ $("body").on("click","[name^='old_canvas']", function() {
 
                   build_IMPPLAN(obj.IMPPLAN_items);
 
+                  $(document).ajaxSend(function (_event, _xhr, settings) {
+                      if (!isTrackedSaveRequest(settings)) {
+                          return;
+                      }
+                      if ($("#chart_status").val() === "on") {
+                          setSyncStatus("saving");
+                      }
+                  });
+
+                  $(document).ajaxSuccess(function (_event, _xhr, settings, data) {
+                      if (!isTrackedSaveRequest(settings)) {
+                          return;
+                      }
+                      if (typeof data === "string" && $.trim(data) === "Code 400") {
+                          setSyncStatus("readonly");
+                          return;
+                      }
+                      if ($("#chart_status").val() === "on") {
+                          setSyncStatus("saved");
+                          queueSyncIdleStatus();
+                      }
+                  });
+
+                  $(document).ajaxError(function (_event, _xhr, settings) {
+                      if (!isTrackedSaveRequest(settings)) {
+                          return;
+                      }
+                      if ($("#chart_status").val() === "on") {
+                          setSyncStatus("error");
+                      }
+                  });
+
+                  $(document).on('input change', '#eye_mag input:not([type=hidden]), #eye_mag textarea, #eye_mag select', function () {
+                      if (!eyeMagUiReady) {
+                          return;
+                      }
+                      if ($(this).prop('disabled') || $(this).prop('readonly')) {
+                          return;
+                      }
+                      markFormDirty();
+                  });
+
                     $('[id^="BUTTON_TAB_"]').on('click', function () {
                         var item = this.id.match(/BUTTON_TAB_(.*)/)[1];
 
@@ -4411,6 +4540,9 @@ $("body").on("click","[name^='old_canvas']", function() {
                         update_PREFS();
                     });
                     show_by_setting();
+                  updateActiveChartBadge($('#chart_status').val() === "on" ? "on" : "off");
+                  setSyncStatus($('#chart_status').val() === "on" ? "idle" : "readonly");
+                  eyeMagUiReady = true;
                   $("input,textarea,text").focus(function(){
                                                  $(this).css("background-color","#ffff99");
                                                  });

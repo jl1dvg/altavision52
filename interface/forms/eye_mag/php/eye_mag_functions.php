@@ -14,6 +14,7 @@
 $form_folder = "eye_mag";
 require_once(dirname(__FILE__) . "/../../../../custom/code_types.inc.php");
 require_once(dirname(__FILE__) . "/../../../../library/options.inc.php");
+require_once(dirname(__FILE__) . "/eye_mag_impplan_functions.php");
 global $PMSFH;
 
 use OpenEMR\Services\FacilityService;
@@ -4027,37 +4028,6 @@ if ($number_rows == 22) { ?>
     }
 
     /**
-     *  This builds the IMPPLAN_items variable for a given pid and form_id.
-     * @param string $pid patient_id
-     * @param string $form_id field id in table form_eye_mag
-     * @return object IMPPLAN_items
-     */
-    function build_IMPPLAN_items($pid, $form_id)
-    {
-        global $form_folder;
-        $query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? ORDER BY IMPPLAN_order";
-        $newdata = array();
-        $fres = sqlStatement($query, array($form_id, $pid));
-        $i = 0;
-        while ($frow = sqlFetchArray($fres)) {
-            $IMPPLAN_items[$i]['form_id'] = $frow['form_id'];
-            $IMPPLAN_items[$i]['pid'] = $frow['pid'];
-            $IMPPLAN_items[$i]['id'] = $frow['id'];
-            $IMPPLAN_items[$i]['title'] = $frow['title'];
-            $IMPPLAN_items[$i]['code'] = $frow['code'];
-            $IMPPLAN_items[$i]['codetype'] = $frow['codetype'];
-            $IMPPLAN_items[$i]['codedesc'] = $frow['codedesc'];
-            $IMPPLAN_items[$i]['codetext'] = $frow['codetext'];
-            $IMPPLAN_items[$i]['plan'] = $frow['plan'];
-            $IMPPLAN_items[$i]['PMSFH_link'] = $frow['PMSFH_link'];
-            $IMPPLAN_items[$i]['IMPPLAN_order'] = $frow['IMPPLAN_order'];
-            $i++;
-        }
-
-        return $IMPPLAN_items;
-    }
-
-    /**
      *  This builds the CODING_items variable for a given pid and encounter.
      * @param string $pid patient_id
      * @param string $encounter field id in table form_encounters
@@ -4391,11 +4361,17 @@ if ($number_rows == 22) { ?>
                         <li><span style="margin-right:15px;color:black;"
                                   onclick="editScripts('/openemr/controller.php?prescription&list&id=<?php echo $pid; ?>');">eRx</button>
                         </span></li>
-                        <li><span id="active_flag" name="active_flag"
-                                  style="margin-right:15px;color:red;"> <?php echo xlt('Active Chart'); ?> </span>
-                            <span name="active_icon" id="active_icon" style="color:black;"><i
-                                    class='fa fa-toggle-on'></i></span></li>
-
+                        <li class="eye-mag-header-state">
+                            <span id="active_flag" name="active_flag" class="eye-mag-state-badge eye-mag-state-active">
+                                <?php echo xlt('Active Chart'); ?>
+                            </span>
+                            <span name="active_icon" id="active_icon" class="eye-mag-state-icon">
+                                <i class='fa fa-toggle-on'></i>
+                            </span>
+                            <span id="eye_mag_sync_status" class="eye-mag-sync-badge eye-mag-sync-idle">
+                                <?php echo xlt('No pending changes'); ?>
+                            </span>
+                        </li>
                     </ul>
 
                 </div><!-- /.navbar-collapse -->
