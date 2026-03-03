@@ -1,0 +1,51 @@
+name: EyeMag Guard
+
+on:
+  pull_request:
+    paths:
+      - "interface/forms/eye_mag/**"
+      - "ci/eye_mag/**"
+      - ".github/workflows/eye-mag-guard.yml"
+
+jobs:
+  eye-mag-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          tools: none
+          coverage: none
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Run EyeMag guard checks
+        run: bash ci/eye_mag/run_eye_mag_guard.sh
+
+  eye-mag-e2e:
+    runs-on: ubuntu-latest
+    needs: eye-mag-guard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run EyeMag E2E checks (conditional)
+        env:
+          EYE_MAG_E2E_ENABLED: ${{ secrets.EYE_MAG_E2E_ENABLED }}
+          EYE_MAG_BASE_URL: ${{ secrets.EYE_MAG_BASE_URL }}
+          EYE_MAG_USERNAME: ${{ secrets.EYE_MAG_USERNAME }}
+          EYE_MAG_PASSWORD: ${{ secrets.EYE_MAG_PASSWORD }}
+          EYE_MAG_PID: ${{ secrets.EYE_MAG_PID }}
+          EYE_MAG_ENCOUNTER: ${{ secrets.EYE_MAG_ENCOUNTER }}
+          EYE_MAG_FORM_ID: ${{ secrets.EYE_MAG_FORM_ID }}
+        run: bash ci/eye_mag/run_e2e.sh

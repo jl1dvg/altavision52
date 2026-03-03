@@ -1,0 +1,25 @@
+name: EyeMag Data Quality
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  eye-mag-data-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install mysql client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Run EyeMag data quality checks
+        env:
+          EYE_MAG_DB_HOST: ${{ secrets.EYE_MAG_DB_HOST }}
+          EYE_MAG_DB_PORT: ${{ secrets.EYE_MAG_DB_PORT }}
+          EYE_MAG_DB_USER: ${{ secrets.EYE_MAG_DB_USER }}
+          EYE_MAG_DB_PASS: ${{ secrets.EYE_MAG_DB_PASS }}
+          EYE_MAG_DB_NAME: ${{ secrets.EYE_MAG_DB_NAME }}
+        run: bash ci/eye_mag/run_data_quality.sh
