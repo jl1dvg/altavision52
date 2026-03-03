@@ -362,7 +362,7 @@ while ($prow = sqlFetchArray($providerRes)) {
             $assignedCount = 0;
             $pendingCount = 0;
 
-            $query = "SELECT t.id, t.pid, " .
+            $query = "SELECT t.id, t.pid, t.date AS created_date, " .
                 "d1.field_value AS refer_date, " .
                 "d2.field_value AS refer_end_date, " .
                 "d3.field_value AS reply_date, " .
@@ -371,48 +371,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "ut.organization, uf.facility_id, p.pubpid, " .
                 "CONCAT(uf.fname,' ', uf.lname) AS referer_name, " .
                 "CONCAT(ut.fname,' ', ut.lname) AS referer_to, " .
-                "CONCAT(p.fname,' ', p.lname) AS patient_name, " .
-                "(SELECT e.pc_eventDate " .
-                "   FROM openemr_postcalendar_events AS e " .
-                "  WHERE e.pc_pid = t.pid " .
-                "    AND e.pc_pid != '' " .
-                "    AND e.pc_eventDate >= ? " .
-                "    AND e.pc_eventDate >= d1.field_value " .
-                "    AND (d2.field_value IS NULL OR d2.field_value = '' OR e.pc_eventDate <= d2.field_value) " .
-                "    AND e.pc_apptstatus NOT IN ('x', CHAR(63), '%') " .
-                "  ORDER BY e.pc_eventDate ASC, e.pc_startTime ASC, e.pc_eid ASC " .
-                "  LIMIT 1) AS next_appt_date, " .
-                "(SELECT e.pc_apptstatus " .
-                "   FROM openemr_postcalendar_events AS e " .
-                "  WHERE e.pc_pid = t.pid " .
-                "    AND e.pc_pid != '' " .
-                "    AND e.pc_eventDate >= ? " .
-                "    AND e.pc_eventDate >= d1.field_value " .
-                "    AND (d2.field_value IS NULL OR d2.field_value = '' OR e.pc_eventDate <= d2.field_value) " .
-                "    AND e.pc_apptstatus NOT IN ('x', CHAR(63), '%') " .
-                "  ORDER BY e.pc_eventDate ASC, e.pc_startTime ASC, e.pc_eid ASC " .
-                "  LIMIT 1) AS next_appt_status, " .
-                "(SELECT e.pc_aid " .
-                "   FROM openemr_postcalendar_events AS e " .
-                "  WHERE e.pc_pid = t.pid " .
-                "    AND e.pc_pid != '' " .
-                "    AND e.pc_eventDate >= ? " .
-                "    AND e.pc_eventDate >= d1.field_value " .
-                "    AND (d2.field_value IS NULL OR d2.field_value = '' OR e.pc_eventDate <= d2.field_value) " .
-                "    AND e.pc_apptstatus NOT IN ('x', CHAR(63), '%') " .
-                "  ORDER BY e.pc_eventDate ASC, e.pc_startTime ASC, e.pc_eid ASC " .
-                "  LIMIT 1) AS next_appt_provider_id, " .
-                "(SELECT CONCAT(COALESCE(u2.fname, ''), ' ', COALESCE(u2.lname, '')) " .
-                "   FROM openemr_postcalendar_events AS e " .
-                "   LEFT JOIN users AS u2 ON u2.id = e.pc_aid " .
-                "  WHERE e.pc_pid = t.pid " .
-                "    AND e.pc_pid != '' " .
-                "    AND e.pc_eventDate >= ? " .
-                "    AND e.pc_eventDate >= d1.field_value " .
-                "    AND (d2.field_value IS NULL OR d2.field_value = '' OR e.pc_eventDate <= d2.field_value) " .
-                "    AND e.pc_apptstatus NOT IN ('x', CHAR(63), '%') " .
-                "  ORDER BY e.pc_eventDate ASC, e.pc_startTime ASC, e.pc_eid ASC " .
-                "  LIMIT 1) AS next_appt_provider " .
+                "CONCAT(p.fname,' ', p.lname) AS patient_name " .
                 "FROM transactions AS t " .
                 "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
                 "JOIN      lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
@@ -427,7 +386,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "WHERE t.title = 'LBTref' AND " .
                 "d1.field_value >= ? AND d1.field_value <= ? ";
 
-            $queryParams = array($today, $today, $today, $today, $form_from_date, $form_to_date);
+            $queryParams = array($form_from_date, $form_to_date);
 
             if ($form_facility !== '') {
                 if ($form_facility === '0') {
@@ -444,6 +403,8 @@ while ($prow = sqlFetchArray($providerRes)) {
 
             <?php
             $allRows = array();
+            $pidSet = array();
+            $minReferDate = '';
             while ($row = sqlFetchArray($res)) {
                 $referToDisplay = !empty($row['organization']) ? $row['organization'] : $row['referer_to'];
 
@@ -462,6 +423,87 @@ while ($prow = sqlFetchArray($providerRes)) {
                     $validityLabel = xlt('Active');
                 }
 
+                $row['refer_to_display'] = $referToDisplay;
+                $row['validity_key'] = $validityKey;
+                $row['validity_class'] = $validityClass;
+                $row['validity_label'] = $validityLabel;
+                $row['next_appt_date'] = '';
+                $row['next_appt_status'] = '';
+                $row['next_appt_provider_id'] = '';
+                $row['next_appt_provider'] = '';
+                $row['appt_key'] = '';
+                $row['appt_class'] = '';
+                $row['appt_label'] = '';
+                $row['next_appointment'] = '';
+                $allRows[] = $row;
+
+                if (!empty($row['pid'])) {
+                    $pidSet[(string)$row['pid']] = (string)$row['pid'];
+                }
+
+                if (!empty($row['refer_date']) && ($minReferDate === '' || $row['refer_date'] < $minReferDate)) {
+                    $minReferDate = $row['refer_date'];
+                }
+            }
+
+            $appointmentsByPid = array();
+            if (!empty($pidSet) && !empty($minReferDate)) {
+                $pidList = array_values($pidSet);
+                $pidPlaceholders = implode(',', array_fill(0, count($pidList), '?'));
+                $apptQuery = "SELECT e.pc_pid, e.pc_eventDate, e.pc_startTime, e.pc_eid, e.pc_apptstatus, e.pc_aid, " .
+                    "CONCAT(COALESCE(u.fname, ''), ' ', COALESCE(u.lname, '')) AS provider_name " .
+                    "FROM openemr_postcalendar_events AS e " .
+                    "LEFT JOIN users AS u ON u.id = e.pc_aid " .
+                    "WHERE e.pc_pid IN ($pidPlaceholders) " .
+                    "AND e.pc_eventDate >= ? " .
+                    "AND e.pc_apptstatus NOT IN ('x', CHAR(63), '%') " .
+                    "ORDER BY e.pc_pid, e.pc_eventDate ASC, e.pc_startTime ASC, e.pc_eid ASC";
+
+                $apptParams = $pidList;
+                $apptParams[] = $minReferDate;
+                $apptRes = sqlStatement($apptQuery, $apptParams);
+                while ($apptRow = sqlFetchArray($apptRes)) {
+                    $pidKey = (string)($apptRow['pc_pid'] ?? '');
+                    if ($pidKey === '') {
+                        continue;
+                    }
+
+                    if (!isset($appointmentsByPid[$pidKey])) {
+                        $appointmentsByPid[$pidKey] = array();
+                    }
+
+                    $appointmentsByPid[$pidKey][] = $apptRow;
+                }
+            }
+
+            foreach ($allRows as &$row) {
+                $pidKey = (string)($row['pid'] ?? '');
+                if ($pidKey === '' || empty($appointmentsByPid[$pidKey])) {
+                    continue;
+                }
+
+                $referDate = (string)($row['refer_date'] ?? '');
+                $referEndDate = trim((string)($row['refer_end_date'] ?? ''));
+                foreach ($appointmentsByPid[$pidKey] as $apptRow) {
+                    $eventDate = (string)($apptRow['pc_eventDate'] ?? '');
+                    if ($eventDate === '' || (!empty($referDate) && $eventDate < $referDate)) {
+                        continue;
+                    }
+
+                    if ($referEndDate !== '' && $eventDate > $referEndDate) {
+                        continue;
+                    }
+
+                    $row['next_appt_date'] = $eventDate;
+                    $row['next_appt_status'] = (string)($apptRow['pc_apptstatus'] ?? '');
+                    $row['next_appt_provider_id'] = trim((string)($apptRow['pc_aid'] ?? ''));
+                    $row['next_appt_provider'] = trim((string)($apptRow['provider_name'] ?? ''));
+                    break;
+                }
+            }
+            unset($row);
+
+            foreach ($allRows as &$row) {
                 $hasAppointment = !empty($row['next_appt_date']);
                 if ($hasAppointment) {
                     $apptKey = 'assigned';
@@ -484,16 +526,12 @@ while ($prow = sqlFetchArray($providerRes)) {
                     }
                 }
 
-                $row['refer_to_display'] = $referToDisplay;
-                $row['validity_key'] = $validityKey;
-                $row['validity_class'] = $validityClass;
-                $row['validity_label'] = $validityLabel;
                 $row['appt_key'] = $apptKey;
                 $row['appt_class'] = $apptClass;
                 $row['appt_label'] = $apptLabel;
                 $row['next_appointment'] = $nextAppointment;
-                $allRows[] = $row;
             }
+            unset($row);
 
             $rows = array();
             $providerStats = array();
@@ -578,7 +616,7 @@ while ($prow = sqlFetchArray($providerRes)) {
 
             <div id="report_results">
                 <div class="text-muted" style="margin-bottom:8px; font-size:12px;">
-                    <?php echo xlt('Appointment status considers future appointments from today and within referral validity range.'); ?>
+                    <?php echo xlt('Appointment status considers appointments from referral date and within referral validity range.'); ?>
                 </div>
                 <div class="referral-summary">
                     <div class="summary-card">
@@ -636,6 +674,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                     <tr>
                         <th><?php echo xlt('Refer To'); ?></th>
                         <th><?php echo xlt('Refer Date'); ?></th>
+                        <th><?php echo xlt('System Entry Date'); ?></th>
                         <th><?php echo xlt('Reply Date'); ?></th>
                         <th><?php echo xlt('Patient'); ?></th>
                         <th><?php echo xlt('ID'); ?></th>
@@ -651,7 +690,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                     <tbody>
                     <?php if (empty($rows)) { ?>
                         <tr>
-                            <td colspan="12"
+                            <td colspan="13"
                                 class="text-center text-muted"><?php echo xlt('No referrals found for this criteria.'); ?></td>
                         </tr>
                     <?php } else { ?>
@@ -662,6 +701,12 @@ while ($prow = sqlFetchArray($providerRes)) {
                                     <a href='#' onclick="return show_referral(<?php echo js_escape($row['id']); ?>)">
                                         <?php echo text(oeFormatShortDate($row['refer_date'])); ?>&nbsp;
                                     </a>
+                                </td>
+                                <td>
+                                    <?php
+                                    $createdDate = empty($row['created_date']) ? '' : substr($row['created_date'], 0, 10);
+                                    echo text($createdDate ? oeFormatShortDate($createdDate) : '');
+                                    ?>
                                 </td>
                                 <td><?php echo text(oeFormatShortDate($row['reply_date'])); ?></td>
                                 <td><?php echo text($row['patient_name']); ?></td>

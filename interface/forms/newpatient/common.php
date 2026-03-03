@@ -52,10 +52,50 @@ function sensitivity_compare($a, $b)
     return ($a[2] < $b[2]) ? -1 : 1;
 }
 
+function getReferral($pid, $field_id)
+{
+    $referralQuery = sqlStatement("SELECT lbt_data.field_value
+        FROM transactions
+        JOIN lbt_data ON transactions.id = lbt_data.form_id
+        WHERE transactions.pid = ? AND lbt_data.field_id = ?
+            AND TRIM(COALESCE(lbt_data.field_value, '')) != ''
+        ORDER BY transactions.date DESC
+        LIMIT 1", array($pid, $field_id));
+
+    if ($referralQuery) {
+        $row = sqlFetchArray($referralQuery);
+        if (!empty($row['field_value'])) {
+            return $row['field_value'];
+        }
+    }
+
+    return '';
+}
+
+function getReferralOptions($pid, $field_id)
+{
+    $options = array();
+    $referralQuery = sqlStatement("SELECT lbt_data.field_value, MAX(transactions.date) AS last_date
+        FROM transactions
+        JOIN lbt_data ON transactions.id = lbt_data.form_id
+        WHERE transactions.pid = ? AND lbt_data.field_id = ?
+            AND TRIM(COALESCE(lbt_data.field_value, '')) != ''
+        GROUP BY lbt_data.field_value
+        ORDER BY last_date DESC", array($pid, $field_id));
+
+    while ($row = sqlFetchArray($referralQuery)) {
+        $options[] = $row['field_value'];
+    }
+
+    return $options;
+}
+
 // get issues
 $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
     "pid = ? AND enddate IS NULL " .
     "ORDER BY type, begdate", array($pid));
+$cdoDerivacionOptions = getReferralOptions($pid, 'cdo_derivacion');
+$cdoDerivacionSelected = getReferral($pid, 'cdo_derivacion');
 ?>
 <!DOCTYPE html>
 <html>
@@ -499,26 +539,9 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                 :</label>
                             <div class="col-sm-3" id="referral_end_date">
                                 <?php
-                                function getReferral($pid, $field_id)
-                                {
-                                    $referralQuery = sqlStatement("SELECT lbt_data.field_id, lbt_data.field_value
-                                   FROM transactions
-                                   JOIN lbt_data ON transactions.id = lbt_data.form_id
-                                   WHERE pid = ? AND field_id = ?
-                                   ORDER BY transactions.date DESC
-                                   LIMIT 1", array($pid, $field_id));
-
-                                    if ($referralQuery) {
-                                        $row = sqlFetchArray($referralQuery);
-                                        $fieldValue = $row['field_value'];
-                                        return $fieldValue;
-                                    }
-
-                                    return "No se encontraron resultados";
-                                }
-
-                                echo getReferral($pid, "refer_date") . " - " . getReferral($pid, "refer_end_date");
-
+                                $referDate = getReferral($pid, "refer_date");
+                                $referEndDate = getReferral($pid, "refer_end_date");
+                                echo text(($referDate ?: "No se encontraron resultados") . " - " . ($referEndDate ?: "No se encontraron resultados"));
                                 ?>
                             </div>
                             <label
@@ -526,10 +549,32 @@ $ires = sqlStatement("SELECT id, type, title, begdate FROM lists WHERE " .
                                 :</label>
                             <div class="col-sm-3">
                                 <?php
-                                echo getReferral($pid, "refer_id");
+                                echo text(getReferral($pid, "refer_id") ?: "No se encontraron resultados");
                                 ?>
                             </div>
                         </div>
+                        <?php if (!empty($cdoDerivacionOptions)) { ?>
+                            <div class="form-group">
+                                <label for="cdo_derivacion"
+                                       class="control-label col-sm-2 oe-text-to-right"><?php echo xlt('CDO derivación'); ?>
+                                    :</label>
+                                <div class="col-sm-3">
+                                    <select name='cdo_derivacion' id='cdo_derivacion' class='form-control col-sm-12'>
+                                        <?php
+                                        foreach ($cdoDerivacionOptions as $cdoDerivacionOption) {
+                                            $optionStr = '<option value="%option_value%" %selected%>%option_title%</option>';
+                                            $optionStr = str_replace("%option_value%", attr($cdoDerivacionOption), $optionStr);
+                                            $optionStr = str_replace("%option_title%", text($cdoDerivacionOption), $optionStr);
+                                            $selected = ($cdoDerivacionSelected === $cdoDerivacionOption) ? " selected" : "";
+                                            $optionStr = str_replace("%selected%", $selected, $optionStr);
+                                            echo $optionStr;
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        <?php } ?>
                         <?php if ($GLOBALS['enable_group_therapy']) { ?>
                             <div class="form-group" id="therapy_group_name" style="display: none">
                                 <label for="form_group"
