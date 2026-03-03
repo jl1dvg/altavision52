@@ -899,29 +899,36 @@ while ($prow = sqlFetchArray($providerRes)) {
                     </div>
                 </div>
                 <div class="provider-stats-wrap">
-                    <div class="stats-title"><?php echo xlt('Assigned Referrals By Provider'); ?></div>
-                    <?php if (empty($providerStatsRows)) { ?>
-                        <div class="text-muted" style="font-size:12px;"><?php echo xlt('No assigned referrals in current filters.'); ?></div>
-                    <?php } else { ?>
-                        <table class='table table-bordered table-striped'>
-                            <thead>
-                            <tr>
-                                <th><?php echo xlt('Provider'); ?></th>
-                                <th><?php echo xlt('Assigned Referrals'); ?></th>
-                                <th><?php echo xlt('Unique Patients'); ?></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach ($providerStatsRows as $psrow) { ?>
+                    <div class="d-flex align-items-center" style="gap:8px; margin-bottom:6px;">
+                        <div class="stats-title" style="margin:0;"><?php echo xlt('Assigned Referrals By Provider'); ?></div>
+                        <a href="#providerStatsCollapse" class="btn btn-sm btn-default" data-toggle="collapse" aria-expanded="false" aria-controls="providerStatsCollapse">
+                            <?php echo xlt('Show/Hide'); ?>
+                        </a>
+                    </div>
+                    <div id="providerStatsCollapse" class="collapse">
+                        <?php if (empty($providerStatsRows)) { ?>
+                            <div class="text-muted" style="font-size:12px;"><?php echo xlt('No assigned referrals in current filters.'); ?></div>
+                        <?php } else { ?>
+                            <table class='table table-bordered table-striped'>
+                                <thead>
                                 <tr>
-                                    <td><?php echo text($psrow['provider_name']); ?></td>
-                                    <td><?php echo text($psrow['assigned_referrals']); ?></td>
-                                    <td><?php echo text($psrow['unique_patients']); ?></td>
+                                    <th><?php echo xlt('Provider'); ?></th>
+                                    <th><?php echo xlt('Assigned Referrals'); ?></th>
+                                    <th><?php echo xlt('Unique Patients'); ?></th>
                                 </tr>
-                            <?php } ?>
-                            </tbody>
-                        </table>
-                    <?php } ?>
+                                </thead>
+                                <tbody>
+                                <?php foreach ($providerStatsRows as $psrow) { ?>
+                                    <tr>
+                                        <td><?php echo text($psrow['provider_name']); ?></td>
+                                        <td><?php echo text($psrow['assigned_referrals']); ?></td>
+                                        <td><?php echo text($psrow['unique_patients']); ?></td>
+                                    </tr>
+                                <?php } ?>
+                                </tbody>
+                            </table>
+                        <?php } ?>
+                    </div>
                 </div>
                 <table width='98%' id='mymaintable' class='table table-bordered table-striped'>
                     <thead>
