@@ -97,6 +97,7 @@ function classifyReferralSpecialty($reason)
 
 $form_refresh = !empty($_POST['form_refresh']);
 $form_auto_assign = !empty($_POST['form_auto_assign']);
+$form_revert_auto_assign = !empty($_POST['form_revert_auto_assign']);
 $autoAssignMessage = '';
 $form_from_date = isset($_POST['form_from_date']) ? DateToYYYYMMDD($_POST['form_from_date']) : date('Y-01-01');
 $form_to_date = isset($_POST['form_to_date']) ? DateToYYYYMMDD($_POST['form_to_date']) : date('Y-m-d');
@@ -215,6 +216,19 @@ while ($prow = sqlFetchArray($providerRes)) {
 
         function autoAssignReferrals() {
             $('#form_auto_assign').val('1');
+            $('#form_revert_auto_assign').val('');
+            $('#form_refresh').val('true');
+            $('#theform').submit();
+            return false;
+        }
+
+        function revertAutoAssignReferrals() {
+            if (!confirm(<?php echo xlj('This will remove assigned provider for pending referrals in current filters. Continue?'); ?>)) {
+                return false;
+            }
+
+            $('#form_revert_auto_assign').val('1');
+            $('#form_auto_assign').val('');
             $('#form_refresh').val('true');
             $('#theform').submit();
             return false;
@@ -361,6 +375,7 @@ while ($prow = sqlFetchArray($providerRes)) {
         <div id="report_parameters">
             <input type='hidden' name='form_refresh' id='form_refresh' value=''/>
             <input type='hidden' name='form_auto_assign' id='form_auto_assign' value=''/>
+            <input type='hidden' name='form_revert_auto_assign' id='form_revert_auto_assign' value=''/>
             <table>
                 <tr>
                     <td width='640px'>
@@ -449,6 +464,9 @@ while ($prow = sqlFetchArray($providerRes)) {
                                                 </a>
                                                 <a href='#' class='btn btn-default' onclick='return autoAssignReferrals();'>
                                                     <?php echo xlt('Auto Assign Pending'); ?>
+                                                </a>
+                                                <a href='#' class='btn btn-danger' onclick='return revertAutoAssignReferrals();'>
+                                                    <?php echo xlt('Revert Auto Assign'); ?>
                                                 </a>
                                             <?php } ?>
                                         </div>
@@ -616,6 +634,28 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
             }
             unset($row);
+
+            if ($form_revert_auto_assign) {
+                $revertedCount = 0;
+                foreach ($allRows as &$arow) {
+                    if (!empty($arow['next_appt_date'])) {
+                        continue;
+                    }
+
+                    $existingAssignedProvider = trim((string)($arow['assigned_provider_id'] ?? ''));
+                    if ($existingAssignedProvider === '') {
+                        continue;
+                    }
+
+                    sqlStatement("DELETE FROM lbt_data WHERE form_id = ? AND field_id = 'assigned_provider'", array($arow['id']));
+                    $arow['assigned_provider_id'] = '';
+                    $arow['assigned_provider_name'] = '';
+                    $revertedCount++;
+                }
+                unset($arow);
+
+                $autoAssignMessage = xlt('Revert completed.') . ' ' . xlt('Pending referrals cleared') . ': ' . $revertedCount;
+            }
 
             if ($form_auto_assign) {
                 $providerPoolBySpecialty = array();
