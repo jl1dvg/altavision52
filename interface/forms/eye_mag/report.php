@@ -987,7 +987,21 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
         if ($cols != 'Fax') {
             ?><!-- start of the refraction boxes -->
             <?php
-            if ($ODVA||$OSVA||$ARODSPH||$AROSSPH||$MRODSPH||$MROSSPH||$CRODSPH||$CROSSPH||$CTLODSPH||$CTLOSSPH) { ?>
+            $LMODSPH = isset($LMODSPH) ? $LMODSPH : '';
+            $LMODCYL = isset($LMODCYL) ? $LMODCYL : '';
+            $LMODAXIS = isset($LMODAXIS) ? $LMODAXIS : '';
+            $LMODVA = isset($LMODVA) ? $LMODVA : '';
+            $LMODADD = isset($LMODADD) ? $LMODADD : '';
+            $LMNEARODVA = isset($LMNEARODVA) ? $LMNEARODVA : '';
+            $LMODPRISM = isset($LMODPRISM) ? $LMODPRISM : '';
+            $LMOSSPH = isset($LMOSSPH) ? $LMOSSPH : '';
+            $LMOSCYL = isset($LMOSCYL) ? $LMOSCYL : '';
+            $LMOSAXIS = isset($LMOSAXIS) ? $LMOSAXIS : '';
+            $LMOSVA = isset($LMOSVA) ? $LMOSVA : '';
+            $LMOSADD = isset($LMOSADD) ? $LMOSADD : '';
+            $LMNEAROSVA = isset($LMNEAROSVA) ? $LMNEAROSVA : '';
+            $LMOSPRISM = isset($LMOSPRISM) ? $LMOSPRISM : '';
+            if ($ODVA||$OSVA||$ARODSPH||$AROSSPH||$LMODSPH||$LMOSSPH||$MRODSPH||$MROSSPH||$CRODSPH||$CROSSPH||$CTLODSPH||$CTLOSSPH) { ?>
                 <br/>
                 <table class="refraction_tables">
                 <tr>
@@ -1084,13 +1098,30 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
                     <?php
                 }
 
-                if (${"CRCOMMENTS"}) {
-                    ?>
+                if ($LMODSPH || $LMOSSPH) { ?>
                     <tr>
-                        <td></td>
-                        <td></td>
-                        <td>Comments:</td>
-                        <td colspan="7"><?php echo text(${"CRCOMMENTS"}); ?></td>
+                        <td style="font-weight:600;font-size:0.7em;text-align:right;"><?php echo xlt('Lensometry'); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo xlt('OD{{right eye}}'); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODSPH) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODCYL) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODAXIS) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODPRISM) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODVA) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMODADD) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMNEARODVA) ?: "-"); ?></td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td style="font-weight:400;font-size:10px;text-align:right;"><?php echo xlt('OS{{left eye}}'); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSSPH) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSCYL) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSAXIS) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSPRISM) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSVA) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;">-</td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMOSADD) ?: "-"); ?></td>
+                        <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text($LMNEAROSVA) ?: "-"); ?></td>
                     </tr>
                     <?php
                 }

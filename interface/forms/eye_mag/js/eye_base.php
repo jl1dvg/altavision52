@@ -51,6 +51,7 @@ var TESTS_built='';
 var doc=[];
 var syncStatusTimer = null;
 var eyeMagUiReady = false;
+var eyeMagAutoPrefillStarted = false;
 
 function updateActiveChartBadge(state) {
     var isActive = (state === "on");
@@ -104,6 +105,192 @@ function markFormDirty() {
     }
 }
 
+function hasClinicalValue(value) {
+    if (value === null || typeof value === "undefined") {
+        return false;
+    }
+    if ($.isArray(value)) {
+        return value.length > 0;
+    }
+    var normalized = $.trim(String(value));
+    return normalized !== "" && normalized !== "0";
+}
+
+function currentExamHasClinicalData() {
+    var sampleFieldIds = [
+        "RUL", "LUL", "ODCONJ", "OSCONJ", "ODDISC", "OSDISC",
+        "ACT", "EXT_COMMENTS", "ANTSEG_COMMENTS", "RETINA_COMMENTS", "NEURO_COMMENTS"
+    ];
+    for (var i = 0; i < sampleFieldIds.length; i++) {
+        var sampleField = $("#" + sampleFieldIds[i]);
+        if (sampleField.length && hasClinicalValue(sampleField.val())) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function examSectionsNeedDefaults() {
+    var sampleFieldIds = [
+        "RUL", "LUL", "RADNEXA", "LADNEXA",
+        "ODCONJ", "OSCONJ", "ODCORNEA", "OSCORNEA", "ODAC", "OSAC", "ODLENS", "OSLENS", "ODIRIS", "OSIRIS",
+        "ODDISC", "OSDISC", "ODMACULA", "OSMACULA", "ODPERIPH", "OSPERIPH"
+    ];
+    for (var i = 0; i < sampleFieldIds.length; i++) {
+        var sampleField = $("#" + sampleFieldIds[i]);
+        if (sampleField.length && hasClinicalValue(sampleField.val())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function findPriorForAutoPrefill() {
+    var priorSelect = $("#PRIOR_ALL");
+    if (!priorSelect.length) {
+        return "";
+    }
+    var currentFormId = $.trim(String($("#form_id").val() || ""));
+    var candidateId = "";
+    priorSelect.find("option").each(function () {
+        var optionValue = $.trim(String($(this).val() || ""));
+        if (!optionValue || optionValue === currentFormId) {
+            return;
+        }
+        candidateId = optionValue;
+        return false;
+    });
+    return candidateId;
+}
+
+function copyResultHasClinicalData(zone, result) {
+    if (!result || typeof result !== "object") {
+        return false;
+    }
+    if (zone === "IMPPLAN") {
+        return $.isArray(result.IMPPLAN) && result.IMPPLAN.length > 0;
+    }
+    var foundData = false;
+    $.each(result, function (key, value) {
+        if (key === "json") {
+            return;
+        }
+        if (hasClinicalValue(value)) {
+            foundData = true;
+            return false;
+        }
+    });
+    return foundData;
+}
+
+function apply_exam_defaults(requireConfirm, replaceOnlyEmpty) {
+    if (typeof replaceOnlyEmpty === "undefined") {
+        replaceOnlyEmpty = false;
+    }
+    if (requireConfirm && !confirm('<?php echo xla("Replace all exam findings with Default values?  Are you sure?"); ?>')) {
+        return false;
+    }
+    <?php
+    // This query is specific to the provider.
+    $query  = "select seq from list_options where option_id=?";
+    $result = sqlStatement($query, array("Eye_defaults_$providerID"));
+
+    $list = sqlFetchArray($result);
+    $SEQ = $list['seq'] ?? '';
+    if (!$SEQ) {
+      // If there is no list for this provider, we create it here.
+      // This list is part of the idea to create a way to add Eye_Defaults_$providerID specific to the
+      // subspecialty of the doctor. ie. Eye_defaults_for_GENERAL (the only one that exists today)
+      // or Eye_defaults_for_CORNEA, RETINA, NEURO, PLASTICS, REFRACTIVE, PEDS, UVEITIS
+      // Let's see if the public likes the form itself before developing these subspecialty lists...
+
+        //Copy the Eye_Defaults_for_GENERAL to Eye_defaults_$providerID
+        $sql = "SELECT * from list_options where list_id = 'Eye_Defaults_for_GENERAL'";
+        $start = sqlStatement($sql);
+        $add_fields = array();
+        $parameters = '';
+        while ($val = sqlFetchArray($start)) {
+            $parameters .= "(?, ?, ?, ?, ?, ?),";
+            array_push($add_fields, "Eye_defaults_" . $providerID, $val['option_id'], $val['title'], $val['notes'], '1', $val['seq']);
+        }
+        $parameters = rtrim($parameters, ",");
+        $query = "SELECT max(seq) as maxseq FROM list_options WHERE list_id= 'lists'";
+        $pres = sqlStatement($query);
+        $maxseq = sqlFetchArray($pres);
+
+        $seq = $maxseq['maxseq'];
+        $query = "INSERT INTO `list_options`
+            (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`) VALUES
+            ('lists', ?, ?, ?, '1', '0', '', '', '')";
+        $providerNAME = getProviderName($providerID);
+
+        sqlStatement($query, array("Eye_defaults_$providerID","Eye Exam Defaults $providerNAME ",$seq));
+        $query = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`,`notes`,`activity`,`seq`) VALUES " . $parameters;
+        sqlStatement($query, $add_fields);
+    }
+
+    $query = "select * from list_options where list_id =? and activity='1' order by seq";
+
+    $DEFAULT_data = sqlStatement($query, array("Eye_defaults_$providerID"));
+    while ($row = sqlFetchArray($DEFAULT_data)) {
+    //$row['notes'] is the clinical zone (EXT,ANTSEG,RETINA,NEURO)
+    //$row['option_id'] is the field name
+    //$row['title'] is the default value to use for this provider
+        ${$row['notes']}[$row['option_id']] = $row['title']; //This builds each clinical section into its own array (used below)
+        echo 'if (!replaceOnlyEmpty || !hasClinicalValue($("#' . $row['option_id'] . '").val())) {
+            $("#' . $row['option_id'] . '").val("' . $row['title'] . '").css("background-color","beige");
+        }
+    ';
+    }
+    function startsWith($str, $needle)
+    {
+        return substr($str, 0, strlen($needle)) === $needle;
+    }
+    ?>
+    submit_form("eye_mag");
+    return true;
+}
+
+function auto_fill_from_prior_or_defaults() {
+    if (eyeMagAutoPrefillStarted) {
+        return;
+    }
+    eyeMagAutoPrefillStarted = true;
+    if ($("#chart_status").val() !== "on") {
+        return;
+    }
+    if (!examSectionsNeedDefaults()) {
+        return;
+    }
+    var priorId = findPriorForAutoPrefill();
+    if (!priorId) {
+        apply_exam_defaults(false, true);
+        return;
+    }
+    var onCopyComplete = function (_event, zone, copiedFrom, hasData) {
+        if (zone !== "ALL" || String(copiedFrom) !== String(priorId)) {
+            return;
+        }
+        $(document).off("eye_mag:copy_complete", onCopyComplete);
+        if (examSectionsNeedDefaults()) {
+            apply_exam_defaults(false, true);
+        }
+    };
+    $(document).on("eye_mag:copy_complete", onCopyComplete);
+    $("#COPY_SECTION").val("ALL-" + priorId).trigger("change");
+}
+
+function schedule_auto_defaults_fallback() {
+    window.setTimeout(function () {
+        if ($("#chart_status").val() !== "on") {
+            return;
+        }
+        if (examSectionsNeedDefaults()) {
+            apply_exam_defaults(false, true);
+        }
+    }, 1200);
+}
+
 function isTrackedSaveRequest(settings) {
     if (!settings || !settings.url) {
         return false;
@@ -142,6 +329,16 @@ function fill_QP_2fields(PEZONE, ODOSOU, LOCATION_text, selection, fill_action, 
         fill_QP_field(PEZONE, "L", LOCATION_text, selection, fill_action, Code_to_process,saved_prefix);
     }
 }
+
+function compose_qp_selection(selection, prefix) {
+    var selectionText = $.trim(String(selection || ""));
+    var prefixText = $.trim(String(prefix || ""));
+    if (!prefixText) {
+        return selectionText;
+    }
+    return selectionText + " " + prefixText;
+}
+
 function fill_QP_field(PEZONE, ODOSOU, LOCATION_text, selection, fill_action, Code_to_process,saved_prefix) {
     if (ODOSOU > '') {
         var FIELDID =  ODOSOU  + LOCATION_text;
@@ -157,22 +354,21 @@ function fill_QP_field(PEZONE, ODOSOU, LOCATION_text, selection, fill_action, Co
     }
 
     var Fvalue = document.getElementById(FIELDID).value;
-    if (prefix > '' && prefix !='off') {prefix = prefix + " ";}
     if (prefix =='off') { prefix=''; }
+    var qpSelection = compose_qp_selection(selection, prefix);
     if (fill_action =="REPLACE") {
-        $("#" +FIELDID).val(prefix +selection);
+        $("#" +FIELDID).val(qpSelection);
         $("#" +FIELDID).css("background-color","#F0F8FF");
     } else if (fill_action =="APPEND") {
-        $("#" +FIELDID).val(Fvalue+selection).css("background-color","#F0F8FF");
+        $("#" +FIELDID).val(Fvalue+qpSelection).css("background-color","#F0F8FF");
     } else {
         if (($("#" +FIELDID).css("background-color")=="rgb(245, 245, 220)") || (Fvalue ==''))  {
                 //rgb(245, 245, 220) is beige - the field is untouched
-            $("#" +FIELDID).val(prefix+selection).css("background-color","#F0F8FF");
+            $("#" +FIELDID).val(qpSelection).css("background-color","#F0F8FF");
         } else if (Fvalue.match(/x$/)) {
-            $("#" +FIELDID).val(Fvalue+selection).css("background-color","#F0F8FF");
+            $("#" +FIELDID).val(Fvalue+qpSelection).css("background-color","#F0F8FF");
         } else {
-            if (Fvalue >'') prefix = ", "+prefix;
-            $("#" +FIELDID).val(Fvalue + prefix +selection).css("background-color","#F0F8FF");
+            $("#" +FIELDID).val(Fvalue + ", " + qpSelection).css("background-color","#F0F8FF");
         }
     }
     submit_form(FIELDID);
@@ -3481,65 +3677,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                              $("#Visions_B").toggleClass('nodisplay');
                                              });
                   $("#EXAM_defaults").on("click", function() {
-                                            if (!confirm('<?php echo xla("Replace all exam findings with Default values?  Are you sure?"); ?>')) {
-                                                return;
-                                            }
-                                            <?php
-                                            // This query is specific to the provider.
-                                            $query  = "select seq from list_options where option_id=?";
-                                            $result = sqlStatement($query, array("Eye_defaults_$providerID"));
-
-                                            $list = sqlFetchArray($result);
-                                            $SEQ = $list['seq'] ?? '';
-                                            if (!$SEQ) {
-                                              // If there is no list for this provider, we create it here.
-                                              // This list is part of the idea to create a way to add Eye_Defaults_$providerID specific to the
-                                              // subspecialty of the doctor. ie. Eye_defaults_for_GENERAL (the only one that exists today)
-                                              // or Eye_defaults_for_CORNEA, RETINA, NEURO, PLASTICS, REFRACTIVE, PEDS, UVEITIS
-                                              // Let's see if the public likes the form itself before developing these subspecialty lists...
-
-                                                //Copy the Eye_Defaults_for_GENERAL to Eye_defaults_$providerID
-                                                $sql = "SELECT * from list_options where list_id = 'Eye_Defaults_for_GENERAL'";
-                                                $start = sqlStatement($sql);
-                                                $add_fields = array();
-                                                $parameters = '';
-                                                while ($val = sqlFetchArray($start)) {
-                                                    $parameters .= "(?, ?, ?, ?, ?, ?),";
-                                                    array_push($add_fields, "Eye_defaults_" . $providerID, $val['option_id'], $val['title'], $val['notes'], '1', $val['seq']);
-                                                }
-                                                $parameters = rtrim($parameters, ",");
-                                                $query = "SELECT max(seq) as maxseq FROM list_options WHERE list_id= 'lists'";
-                                                $pres = sqlStatement($query);
-                                                $maxseq = sqlFetchArray($pres);
-
-                                                $seq = $maxseq['maxseq'];
-                                                $query = "INSERT INTO `list_options`
-                                                    (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`) VALUES
-                                                    ('lists', ?, ?, ?, '1', '0', '', '', '')";
-                                                $providerNAME = getProviderName($providerID);
-
-                                                sqlStatement($query, array("Eye_defaults_$providerID","Eye Exam Defaults $providerNAME ",$seq));
-                                                $query = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`,`notes`,`activity`,`seq`) VALUES " . $parameters;
-                                                sqlStatement($query, $add_fields);
-                                            }
-
-                                            $query = "select * from list_options where list_id =? and activity='1' order by seq";
-
-                                            $DEFAULT_data = sqlStatement($query, array("Eye_defaults_$providerID"));
-                                            while ($row = sqlFetchArray($DEFAULT_data)) {
-                                            //$row['notes'] is the clinical zone (EXT,ANTSEG,RETINA,NEURO)
-                                            //$row['option_id'] is the field name
-                                            //$row['title'] is the default value to use for this provider
-                                                ${$row['notes']}[$row['option_id']] = $row['title']; //This builds each clinical section into its own array (used below)
-                                                echo '$("#' . $row['option_id'] . '").val("' . $row['title'] . '").css("background-color","beige");
-                                            ';
-                                            }
-                                            function startsWith($str, $needle)
-                                            {
-                                                return substr($str, 0, strlen($needle)) === $needle;
-                                            }
-                                            ?>
-                                            submit_form("eye_mag");
+                                            apply_exam_defaults(true);
                                             });
                   $("#EXT_defaults_R").on("click", function() {
                         <?php
@@ -3715,26 +3853,26 @@ $("body").on("click","[name^='old_canvas']", function() {
                                              });
 
                     $("#clear_EXT_R").on('click', function() {
-                        $('.right.EXT').val('');
+                        $('#EXT_text_list textarea.EXT.right').val('');
                         submit_form("eye_mag");
                     });
                     $("#clear_EXT_L").on('click', function() {
-                        $('.left.EXT').val('');
+                        $('#EXT_text_list textarea.EXT:not(.right)').val('');
                         submit_form("eye_mag");
                     });
                     $("#clear_ANTSEG_OD").on('click', function() {
-                        $('.right.ANTSEG').val('');
+                        $('#ANTSEG_text_list textarea.ANTSEG.right').val('');
                         submit_form("eye_mag");});
                     $("#clear_ANTSEG_OS").on('click', function() {
-                        $('.left.ANTSEG').val('');
+                        $('#ANTSEG_text_list textarea.ANTSEG:not(.right)').val('');
                         submit_form("eye_mag");
                     });
                     $("#clear_RETINA_OD").on('click', function() {
-                        $('.right.RETINA').val('');
+                        $('#RETINA_text_list textarea.RETINA.right').val('');
                         submit_form("eye_mag");
                     });
                     $("#clear_RETINA_OS").on('click', function() {
-                        $('.left.RETINA').val('');
+                        $('#RETINA_text_list textarea.RETINA:not(.right)').val('');
                         submit_form("eye_mag");
                     });
 
@@ -4084,6 +4222,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                    url      :  "../../forms/eye_mag/save.php",
                                                    data   : data,
                                                    success  : function(result) {
+                                                   var copyHasData = copyResultHasClinicalData(zone, result);
                                                    //we have to process impplan differently
                                                    if (zone =='IMPPLAN') {
                                                    //we get a json result.IMPPLAN back from the prior visit
@@ -4135,6 +4274,7 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                          });
                                                    if (zone != "READONLY") { submit_form("eye_mag"); }
                                                    }
+                                                   $(document).trigger("eye_mag:copy_complete", [zone, copy_from, copyHasData, result]);
                                                    }});
                                             });
                   $("[id^='BUTTON_DRAW_']").on("click", function() {
@@ -4540,6 +4680,8 @@ $("body").on("click","[name^='old_canvas']", function() {
                         update_PREFS();
                     });
                     show_by_setting();
+                  auto_fill_from_prior_or_defaults();
+                  schedule_auto_defaults_fallback();
                   updateActiveChartBadge($('#chart_status').val() === "on" ? "on" : "off");
                   setSyncStatus($('#chart_status').val() === "on" ? "idle" : "readonly");
                   eyeMagUiReady = true;

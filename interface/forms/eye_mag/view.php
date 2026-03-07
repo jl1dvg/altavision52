@@ -44,6 +44,14 @@ while ($prefs = sqlFetchArray($result)) {
     $LOCATION = $prefs['LOCATION'];
     $$LOCATION = text($prefs['GOVALUE']);
 }
+// Keep key refraction panels open by default on every EyeMag encounter.
+$RXHX = '1';
+$W = '1';
+$MR = '1';
+$CR = '1';
+$CTL = '1';
+$ADDITIONAL = '1';
+$VAX = '1';
 // These settings are sticky user preferences linked to a given page.
 // Could do ALL preferences this way instead of the modified extract above...
 // mdsupport - user_settings prefix
@@ -97,6 +105,10 @@ $query10 = "select  *,form_encounter.date as encounter_date
 $encounter_data = sqlQuery($query10, array($id));
 @extract($encounter_data);
 $id = $form_id;
+
+$queryLatestEyeMag = "SELECT form_id FROM forms WHERE pid=? AND formdir='eye_mag' AND deleted != '1' ORDER BY id DESC LIMIT 1";
+$latestEyeMagForm = sqlQuery($queryLatestEyeMag, array($pid));
+$is_latest_eye_mag = (!empty($latestEyeMagForm['form_id']) && ((string)$latestEyeMagForm['form_id'] === (string)$form_id)) ? '1' : '0';
 
 list($ODIOPTARGET, $OSIOPTARGET) = getIOPTARGETS($pid, $id, $provider_id);
 
@@ -330,6 +342,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                     <input type="hidden" name="LOCKED" id="LOCKED" value="<?php echo attr($LOCKED); ?>">
                     <input type="hidden" name="uniqueID" id="uniqueID" value="<?php echo attr($uniqueID); ?>">
                     <input type="hidden" name="chart_status" id="chart_status" value="on">
+                    <input type="hidden" name="is_latest_eye_mag" id="is_latest_eye_mag"
+                           value="<?php echo attr($is_latest_eye_mag); ?>">
                     <input type="hidden" name="finalize" id="finalize" value="0">
                     <input type='hidden' name='setting_tabs_left' id='setting_tabs_left'
                            value='<?php echo attr($setting_tabs_left); ?>'>
@@ -1780,7 +1794,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         </tr>
                                         <tr>
                                             <td colspan="6">
-                                                <textarea id="COMMENTS_1" name="COMMENTS_W"
+                                                <textarea id="COMMENTS_1" name="COMMENTS_1"
                                                           tabindex="111"><?php echo text($COMMENTS_1); ?></textarea>
                                             </td>
                                             <td colspan="8">
@@ -1950,12 +1964,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                 <span
                                     title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
                                     class="closeButton fa  fa-close" id="Close_CR" name="Close_CR"></span>
-                                <table id="autorefraction">
-                                    <th colspan="9"><?php echo xlt('Auto Refraction'); ?></th>
+                                <table id="lensometry">
+                                    <th colspan="9"><?php echo xlt('Lensometry'); ?></th>
                                     <tr>
                                         <td><i class="fa fa-gamepad" name="reverseme"
                                                title="<?php echo xla('Convert between plus and minus cylinder'); ?>"
-                                               aria-hidden="true" id="AR"></i></td>
+                                               aria-hidden="true" id="LM"></i></td>
                                         <td><?php echo xlt('Sph{{Sphere}}'); ?></td>
                                         <td><?php echo xlt('Cyl{{Cylinder}}'); ?></td>
                                         <td><?php echo xlt('Axis{{Axis of a glasses prescription}}'); ?></td>
@@ -1966,18 +1980,69 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     </tr>
                                     <tr>
                                         <td><b><?php echo xlt('OD{{right eye}}'); ?>:</b></td>
+                                        <td><input type="text" id="LMODSPH" name="LMODSPH"
+                                                   value="<?php echo attr($LMODSPH ?? ''); ?>" tabindex="10280"></td>
+                                        <td><input type="text" id="LMODCYL" name="LMODCYL"
+                                                   value="<?php echo attr($LMODCYL ?? ''); ?>" tabindex="10281"></td>
+                                        <td><input type="text" id="LMODAXIS" name="LMODAXIS"
+                                                   value="<?php echo attr($LMODAXIS ?? ''); ?>" tabindex="10282"></td>
+                                        <td><input type="text" id="LMODVA" name="LMODVA"
+                                                   value="<?php echo attr($LMODVA ?? ''); ?>" tabindex="10283"></td>
+                                        <td><input type="text" id="LMODADD" name="LMODADD"
+                                                   value="<?php echo attr($LMODADD ?? ''); ?>" tabindex="10284"></td>
+                                        <td><input class="jaeger" type="text" id="LMNEARODVA" name="LMNEARODVA"
+                                                   value="<?php echo attr($LMNEARODVA ?? ''); ?>" tabindex="10285"></td>
+                                        <td><input type="text" id="LMODPRISM" name="LMODPRISM"
+                                                   value="<?php echo attr($LMODPRISM ?? ''); ?>" tabindex="10286"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><b><?php echo xlt('OS{{left eye}}'); ?>:</b></td>
+                                        <td><input type="text" id="LMOSSPH" name="LMOSSPH"
+                                                   value="<?php echo attr($LMOSSPH ?? ''); ?>" tabindex="10287"></td>
+                                        <td><input type="text" id="LMOSCYL" name="LMOSCYL"
+                                                   value="<?php echo attr($LMOSCYL ?? ''); ?>" tabindex="10288"></td>
+                                        <td><input type="text" id="LMOSAXIS" name="LMOSAXIS"
+                                                   value="<?php echo attr($LMOSAXIS ?? ''); ?>" tabindex="10289"></td>
+                                        <td><input type="text" id="LMOSVA" name="LMOSVA"
+                                                   value="<?php echo attr($LMOSVA ?? ''); ?>" tabindex="10290"></td>
+                                        <td><input type="text" id="LMOSADD" name="LMOSADD"
+                                                   value="<?php echo attr($LMOSADD ?? ''); ?>" tabindex="10291"></td>
+                                        <td><input class="jaeger" type="text" id="LMNEAROSVA" name="LMNEAROSVA"
+                                                   value="<?php echo attr($LMNEAROSVA ?? ''); ?>" tabindex="10292"></td>
+                                        <td><input type="text" id="LMOSPRISM" name="LMOSPRISM"
+                                                   value="<?php echo attr($LMOSPRISM ?? ''); ?>" tabindex="10293"></td>
+                                    </tr>
+                                </table>
+
+                                <table id="autorefraction">
+                                    <th colspan="9"><?php echo xlt('Auto Refraction'); ?></th>
+                                    <tr>
+                                        <td><i class="fa fa-gamepad" name="reverseme"
+                                               title="<?php echo xla('Convert between plus and minus cylinder'); ?>"
+                                               aria-hidden="true" id="AR"></i></td>
+                                        <td><?php echo xlt('Sph{{Sphere}}'); ?></td>
+                                        <td><?php echo xlt('Cyl{{Cylinder}}'); ?></td>
+                                        <td><?php echo xlt('Axis{{Axis of a glasses prescription}}'); ?></td>
+                                        <td><?php echo xlt('K1{{Keratometry 1}}'); ?></td>
+                                        <td><?php echo xlt('K2{{Keratometry 2}}'); ?></td>
+                                        <td><?php echo xlt('Axis{{Keratometry Axis}}'); ?></td>
+                                        <td><?php echo xlt('Prism'); ?></td>
+                                    </tr>
+                                    <tr>
+                                        <td><b><?php echo xlt('OD{{right eye}}'); ?>:</b></td>
                                         <td><input type="text" id="ARODSPH" name="ARODSPH"
                                                    value="<?php echo attr($ARODSPH); ?>" tabindex="10220"></td>
                                         <td><input type="text" id="ARODCYL" name="ARODCYL"
                                                    value="<?php echo attr($ARODCYL); ?>" tabindex="10221"></td>
                                         <td><input type="text" id="ARODAXIS" name="ARODAXIS"
                                                    value="<?php echo attr($ARODAXIS); ?>" tabindex="10222"></td>
-                                        <td><input type="text" id="ARODVA" name="ARODVA"
-                                                   value="<?php echo attr($ARODVA); ?>" tabindex="10228"></td>
-                                        <td><input type="text" id="ARODADD" name="ARODADD"
-                                                   value="<?php echo attr($ARODADD); ?>" tabindex="10226"></td>
-                                        <td><input class="jaeger" type="text" id="ARNEARODVA" name="ARNEARODVA"
-                                                   value="<?php echo attr($ARNEARODVA); ?>"></td>
+                                        <td><input type="text" id="ODK1" name="ODK1" value="<?php echo attr($ODK1); ?>"
+                                                   tabindex="10228"></td>
+                                        <td><input type="text" id="ODK2" name="ODK2" value="<?php echo attr($ODK2); ?>"
+                                                   tabindex="10226">
+                                        </td>
+                                        <td><input type="text" id="ODK2AXIS" name="ODK2AXIS"
+                                                   value="<?php echo attr($ODK2AXIS); ?>"></td>
                                         <td><input type="text" id="ARODPRISM" name="ARODPRISM"
                                                    value="<?php echo attr($ARODPRISM); ?>"></td>
                                     </tr>
@@ -1989,26 +2054,17 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    value="<?php echo attr($AROSCYL); ?>" tabindex="10224"></td>
                                         <td><input type="text" id="AROSAXIS" name="AROSAXIS"
                                                    value="<?php echo attr($AROSAXIS); ?>" tabindex="10225"></td>
-                                        <td><input type="text" id="AROSVA" name="AROSVA"
-                                                   value="<?php echo attr($AROSVA); ?>" tabindex="10229"></td>
-                                        <td><input type="text" id="AROSADD" name="AROSADD"
-                                                   value="<?php echo attr($AROSADD); ?>" tabindex="10227"></td>
-                                        <td><input class="jaeger" type="text" id="ARNEAROSVA" name="ARNEAROSVA"
-                                                   value="<?php echo attr($ARNEAROSVA); ?>"></td>
+                                        <td><input type="text" id="OSK1" name="OSK1" value="<?php echo attr($OSK1); ?>"
+                                                   tabindex="10229"></td>
+                                        <td><input type="text" id="OSK2" name="OSK2" value="<?php echo attr($OSK2); ?>"
+                                                   tabindex="10227"></td>
+                                        <td><input type="text" id="OSK2AXIS" name="OSK2AXIS"
+                                                   value="<?php echo attr($OSK2AXIS); ?>"></td>
                                         <td><input type="text" id="AROSPRISM" name="AROSPRISM"
                                                    value="<?php echo attr($AROSPRISM); ?>"></td>
                                     </tr>
-                                    <tr>
-                                        <th colspan="9" class="bold pad10">
-                                            <br/><?php echo xlt('Refraction Comments'); ?>:
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="9"><textarea id="CRCOMMENTS"
-                                                                  name="CRCOMMENTS"><?php echo attr($CRCOMMENTS); ?></textarea>
-                                        </td>
-                                    </tr>
                                 </table>
+
                             </div>
 
                             <?php ($CTL == 1) ? ($display_CTL = "") : ($display_CTL = "nodisplay"); ?>
@@ -2683,13 +2739,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     <i class="fa fa-angle-double-down copier" id="EXT_defaults_R"
                                                        title="<?php echo xla('Enter defaults for Right side'); ?>"></i>
                                                     <?php echo xlt('Right'); ?>
-                                                    <i class="float-right fa fa-arrow-right copier" id="EXT_R_L"
-                                                       title="<?php echo xla('Copy Right to Left'); ?>"></i>
                                                 </th>
                                                 <th></th>
                                                 <th>
-                                                    <i class="float-left fa fa-arrow-left copier" id="EXT_L_R"
-                                                       title="<?php echo xla('Copy Left to Right'); ?>"></i>
                                                     <i class="fa fa-angle-double-down copier" id="EXT_defaults_L"
                                                        title="<?php echo xla('Enter defaults values for Left side'); ?>"></i>
                                                     <?php echo xlt('Left'); ?>
@@ -2705,6 +2757,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     <div class="ident"><?php echo xlt('Brow'); ?></div>
                                                     <div class="kb kb_left"><?php echo xlt('RB{{right brow}}'); ?></div>
                                                     <div class="kb kb_right"><?php echo xlt('LB{{left brow}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_LBROW_RBROW"
+                                                           title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_RBROW_LBROW"
+                                                           title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="LBROW" id="LBROW"
                                                               class="EXT"><?php echo text($LBROW); ?></textarea>
@@ -2720,6 +2778,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RUL{{right upper eyelid}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LUL{{left upper eyelid}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_LUL_RUL"
+                                                           title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_RUL_LUL"
+                                                           title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="LUL" id="LUL"
                                                               class="EXT"><?php echo text($LUL); ?></textarea></td>
@@ -2734,6 +2798,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RLL{{right lower eyelid}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LLL{{left lower eyelid}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_LLL_RLL"
+                                                           title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_RLL_LLL"
+                                                           title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="LLL" id="LLL"
                                                               class="EXT"><?php echo text($LLL); ?></textarea></td>
@@ -2748,6 +2818,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RMC{{right medial canthus}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LMC{{left medial chathus}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_LMCT_RMCT"
+                                                           title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_RMCT_LMCT"
+                                                           title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="LMCT" id="LMCT"
                                                               class="EXT"><?php echo text($LMCT); ?></textarea></td>
@@ -2762,6 +2838,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RAD{{right adnexa}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LAD{{left adnexa}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_LADNEXA_RADNEXA"
+                                                           title="<?php echo xla('Copy Right to Left'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_RADNEXA_LADNEXA"
+                                                           title="<?php echo xla('Copy Left to Right'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="LADNEXA" id="LADNEXA"
                                                               class=" EXT"><?php echo text($LADNEXA); ?></textarea></td>
@@ -2806,6 +2888,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                               onclick="$('#EXT_prefix').val('+2').trigger('change');"> <?php echo xlt('+2'); ?> </span>
                                         <span class="eye_button" id="EXT_prefix_3" name="EXT_prefix_3"
                                               onclick="$('#EXT_prefix').val('+3').trigger('change');"> <?php echo xlt('+3'); ?> </span>
+                                        <span class="eye_button" id="EXT_prefix_4" name="EXT_prefix_4"
+                                              onclick="$('#EXT_prefix').val('+4').trigger('change');"> <?php echo xlt('+4'); ?> </span>
                                         <?php echo $selector = priors_select("EXT", $id, $id, $pid); ?>
                                     </div>
                                     <div name="QP_11">
@@ -3041,13 +3125,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     <i class="fa fa-angle-double-down copier" id="ANTSEG_defaults_OD"
                                                        title="<?php echo xla('Enter default values for OD{{right eye}}'); ?>"></i>
                                                     <?php echo xlt('OD{{right eye}}'); ?>
-                                                    <i class="float-right fa fa-arrow-right copier" id="ANTSEG_OD_OS"
-                                                       title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
                                                 </th>
                                                 <th></th>
                                                 <th>
-                                                    <i class="float-left fa fa-arrow-left copier" id="ANTSEG_OS_OD"
-                                                       title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
                                                     <i class="fa fa-angle-double-down copier" id="ANTSEG_defaults_OS"
                                                        title="<?php echo xla('Enter defaults values for OS{{left eye}}'); ?>"></i>
                                                     <?php echo xlt('OS{{left eye}}'); ?>
@@ -3067,6 +3147,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RC{{right conjunctiva}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LC{{left conjunctiva}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_OSCONJ_ODCONJ"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_ODCONJ_OSCONJ"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 <td><textarea name="OSCONJ" id="OSCONJ"
                                                               class="ANTSEG"><?php echo text($OSCONJ); ?></textarea>
@@ -3082,6 +3168,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RK{{right cornea}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LK{{left cornea}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_OSCORNEA_ODCORNEA"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_ODCORNEA_OSCORNEA"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSCORNEA" id="OSCORNEA"
@@ -3099,6 +3191,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         class="kb kb_left"><?php echo xlt('RAC{{right anterior chamber}}'); ?></div>
                                                     <div
                                                         class="kb kb_right"><?php echo xlt('LAC{{left anterior chamber}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_OSAC_ODAC"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_ODAC_OSAC"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSAC" id="OSAC"
@@ -3112,6 +3210,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     <div class="ident"><?php echo xlt('Lens'); ?></div>
                                                     <div class="kb kb_left"><?php echo xlt('RL{{right lens}}'); ?></div>
                                                     <div class="kb kb_right"><?php echo xlt('LL{{left lens}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_OSLENS_ODLENS"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_ODLENS_OSLENS"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSLENS" id="OSLENS"
@@ -3126,6 +3230,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     <div class="ident"><?php echo xlt('Iris'); ?></div>
                                                     <div class="kb kb_left"><?php echo xlt('RI{{right iris}}'); ?></div>
                                                     <div class="kb kb_right"><?php echo xlt('LI{{left iris}}'); ?></div>
+                                                    <div class="cpf_row_arrows">
+                                                        <i class="fa fa-arrow-right copier" id="cpf_OSIRIS_ODIRIS"
+                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                        <i class="fa fa-arrow-left copier" id="cpf_ODIRIS_OSIRIS"
+                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                    </div>
                                                 </td>
                                                 </td>
                                                 <td><textarea name="OSIRIS" id="OSIRIS"
@@ -3169,6 +3279,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                               onclick="$('#ANTSEG_prefix').val('+2').trigger('change');"> <?php echo xlt('+2'); ?> </span>
                                         <span class="eye_button" id="ANTSEG_prefix_3" name="ANTSEG_prefix_3"
                                               onclick="$('#ANTSEG_prefix').val('+3').trigger('change');"> <?php echo xlt('+3'); ?> </span>
+                                        <span class="eye_button" id="ANTSEG_prefix_4" name="ANTSEG_prefix_4"
+                                              onclick="$('#ANTSEG_prefix').val('+4').trigger('change');"> <?php echo xlt('+4'); ?> </span>
                                         <?php echo $selector = priors_select("ANTSEG", $id, $id, $pid); ?>
                                     </div>
                                     <div name="QP_11">
@@ -3323,14 +3435,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                            id="RETINA_defaults_OD"
                                                            title="<?php echo xla('Enter default values for OD{{right eye}}'); ?>"></i>
                                                         <?php echo xlt('OD{{right eye}}'); ?>
-                                                        <i class="float-right fa fa-arrow-right copier"
-                                                           id="RETINA_OD_OS"
-                                                           title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
                                                     </th>
                                                     <th></th>
                                                     <th>
-                                                        <i class="float-left fa fa-arrow-left copier" id="RETINA_OS_OD"
-                                                           title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
                                                         <i class="fa fa-angle-double-down copier"
                                                            id="RETINA_defaults_OS"
                                                            title="<?php echo xla('Enter defaults values for OS{{left eye}}'); ?>"></i>
@@ -3350,6 +3457,12 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             class="kb kb_left"><?php echo xlt('RD{{right disc}}'); ?></div>
                                                         <div
                                                             class="kb kb_right"><?php echo xlt('LD{{left disc}}'); ?></div>
+                                                        <div class="cpf_row_arrows">
+                                                            <i class="fa fa-arrow-right copier" id="cpf_OSDISC_ODDISC"
+                                                               title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                            <i class="fa fa-arrow-left copier" id="cpf_ODDISC_OSDISC"
+                                                               title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        </div>
                                                     </td>
                                                     <td><textarea name="OSDISC" id="OSDISC"
                                                                   class="RETINA"><?php echo text($OSDISC); ?></textarea>
@@ -3365,6 +3478,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             class="kb kb_left"><?php echo xlt('RMAC{{right macula}}'); ?></div>
                                                         <div
                                                             class="kb kb_right"><?php echo xlt('LMAC{{left macula}}'); ?></div>
+                                                        <div class="cpf_row_arrows">
+                                                            <i class="fa fa-arrow-right copier"
+                                                               id="cpf_OSMACULA_ODMACULA"
+                                                               title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                            <i class="fa fa-arrow-left copier"
+                                                               id="cpf_ODMACULA_OSMACULA"
+                                                               title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        </div>
                                                     </td>
                                                     <td><textarea name="OSMACULA" id="OSMACULA"
                                                                   class="RETINA"><?php echo text($OSMACULA); ?></textarea>
@@ -3380,6 +3501,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             class="kb kb_left"><?php echo xlt('RV{{right vessels}}'); ?></div>
                                                         <div
                                                             class="kb kb_right"><?php echo xlt('LV{{left vessels}}'); ?></div>
+                                                        <div class="cpf_row_arrows">
+                                                            <i class="fa fa-arrow-right copier"
+                                                               id="cpf_OSVESSELS_ODVESSELS"
+                                                               title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                            <i class="fa fa-arrow-left copier"
+                                                               id="cpf_ODVESSELS_OSVESSELS"
+                                                               title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        </div>
                                                     </td>
                                                     <td><textarea name="OSVESSELS" id="OSVESSELS"
                                                                   class="RETINA"><?php echo text($OSVESSELS); ?></textarea>
@@ -3395,6 +3524,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             class="kb kb_left"><?php echo xlt('RVIT{{right vitreous}}'); ?></div>
                                                         <div
                                                             class="kb kb_right"><?php echo xlt('LVIT{{left vitreous}}'); ?></div>
+                                                        <div class="cpf_row_arrows">
+                                                            <i class="fa fa-arrow-right copier"
+                                                               id="cpf_OSVITREOUS_ODVITREOUS"
+                                                               title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                            <i class="fa fa-arrow-left copier"
+                                                               id="cpf_ODVITREOUS_OSVITREOUS"
+                                                               title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        </div>
                                                     </td>
                                                     <td><textarea name="OSVITREOUS" id="OSVITREOUS"
                                                                   class="RETINA"><?php echo text($OSVITREOUS); ?></textarea>
@@ -3411,6 +3548,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             class="kb kb_left"><?php echo xlt('RP{{right peripheral retina}}'); ?></div>
                                                         <div
                                                             class="kb kb_right"><?php echo xlt('LP{{left peripheral retina}}'); ?></div>
+                                                        <div class="cpf_row_arrows">
+                                                            <i class="fa fa-arrow-right copier"
+                                                               id="cpf_OSPERIPH_ODPERIPH"
+                                                               title="<?php echo xla('Copy OD{{right eye}} values to') . " " . xla('OS{{left eye}}'); ?>"></i>
+                                                            <i class="fa fa-arrow-left copier"
+                                                               id="cpf_ODPERIPH_OSPERIPH"
+                                                               title="<?php echo xla('Copy OS{{left eye}} values to') . " " . xla('OD{{right eye}}'); ?>"></i>
+                                                        </div>
                                                     </td>
                                                     <td><textarea name="OSPERIPH" id="OSPERIPH"
                                                                   class="RETINA"><?php echo text($OSPERIPH); ?></textarea>
@@ -3453,6 +3598,8 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                               onclick="$('#RETINA_prefix').val('+2').trigger('change');"> <?php echo xlt('+2'); ?> </span>
                                         <span class="eye_button" id="RETINA_prefix_3" name="RETINA_prefix_3"
                                               onclick="$('#RETINA_prefix').val('+3').trigger('change');"> <?php echo xlt('+3'); ?> </span>
+                                        <span class="eye_button" id="RETINA_prefix_4" name="RETINA_prefix_4"
+                                              onclick="$('#RETINA_prefix').val('+4').trigger('change');"> <?php echo xlt('+4'); ?> </span>
                                         <?php echo $selector = priors_select("RETINA", $id, $id, $pid); ?>
                                     </div>
                                     <div name="QP_11">
@@ -6209,7 +6356,7 @@ if ($display != "fullscreen") {
 <script type="text/javascript"
         src="<?php echo $GLOBALS['assets_static_relative'] ?>/manual-added-packages/shortcut.js-2-01-B/shortcut.js"></script>
 <script type="text/javascript"
-        src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/<?php echo $form_folder; ?>/js/eye_base.php?enc=<?php echo attr($encounter); ?>&providerID=<?php echo attr($provider_id); ?>"></script>
+        src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/<?php echo $form_folder; ?>/js/eye_base.php?enc=<?php echo attr($encounter); ?>&providerID=<?php echo attr($provider_id); ?>&v=<?php echo attr((string)filemtime(__DIR__ . '/js/eye_base.php')); ?>"></script>
 <script type="text/javascript"
         src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/<?php echo $form_folder; ?>/js/canvasdraw.js"></script>
 <div id="right-panel" name="right-panel" class="panel_side">

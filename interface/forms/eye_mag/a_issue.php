@@ -225,9 +225,15 @@ foreach (explode(',', $given) as $item) {
       document.getElementById('row_comments'        ).style.display = 'none';
       document.getElementById('row_outcome'         ).style.display = 'none';
       document.getElementById('row_destination'     ).style.display = 'none';
-      document.getElementById('row_social'          ).style.display = 'none';
+      var rowSocial = document.getElementById('row_social');
+      if (rowSocial) {
+        rowSocial.style.display = 'none';
+      }
       document.getElementById('row_FH'              ).style.display = 'none';
-      document.getElementById('row_ROS'             ).style.display = 'none';
+      var rowROS = document.getElementById('row_ROS');
+      if (rowROS) {
+        rowROS.style.display = 'none';
+      }
       document.getElementById('row_PLACEHOLDER'     ).style.display = 'none';
       document.getElementById('cancel_button'       ).style.display = 'none';
       document.getElementById('row_eye_med'         ).style.display = 'none';
@@ -301,14 +307,10 @@ foreach (explode(',', $given) as $item) {
         document.getElementById('row_title'         ).style.display = 'none';
         document.getElementById('row_FH'            ).style.display = '';
 
-      } else if (index == 'SOCH') {
+      } else if ((index == 'SOCH') || (index == 'ROS')) {
+        // Social and ROS editors are disabled for this EyeMag workflow.
         document.getElementById('row_title'         ).style.display = 'none';
-        document.getElementById('row_social'        ).style.display = '';
-        document.getElementById('cancel_button'       ).style.display = '';
-
-      } else if (index == 'ROS') {
-        document.getElementById('row_title'         ).style.display = 'none';
-        document.getElementById('row_ROS'           ).style.display = '';
+        document.getElementById('row_PLACEHOLDER'   ).style.display = '';
 
       } else {
         document.getElementById('title_diagnosis'   ).textContent ="<?php echo xlt('Eye Dx{{eye diagnosis}}').":"; ?>";
@@ -708,7 +710,8 @@ foreach (explode(',', $given) as $item) {
             }
 
           //put them in the desired display order
-            echo $HELLO['POH'].$HELLO['POS'].$HELLO['Eye Meds'].$HELLO['PMH'].$HELLO['Medication'].$HELLO['Surgery'].$HELLO['Allergy'].$HELLO['FH'].$HELLO['SOCH'].$HELLO['ROS'];
+            // SOCH and ROS issue editors are intentionally hidden.
+            echo $HELLO['POH'].$HELLO['POS'].$HELLO['Eye Meds'].$HELLO['PMH'].$HELLO['Medication'].$HELLO['Surgery'].$HELLO['Allergy'].$HELLO['FH'];
             ?>
         </div>
       <div class="borderShadow" style="text-align:left;">
@@ -840,7 +843,8 @@ foreach (explode(',', $given) as $item) {
             </td>
           </tr>
         </table>
-        <table id="row_social" width="100%">
+        <!-- Disabled in EyeMag workflow: Social History editor -->
+        <table id="row_social" width="100%" style="display:none;">
                 <?php
                 $given ="*";
                 $dateStart=$_POST['dateState'];
@@ -1259,7 +1263,8 @@ foreach (explode(',', $given) as $item) {
               <input type="text" name="usertext18" id="usertext18" onclick='clear_option(this)' value="<?php echo attr($result1['usertext18']); ?>"></td>
           </tr>
         </table>
-        <table id="row_ROS" name="row_ROS" class="ROS_class">
+        <!-- Disabled in EyeMag workflow: ROS editor -->
+        <table id="row_ROS" name="row_ROS" class="ROS_class" style="display:none;">
           <tr>
             <td></td>
             <td>

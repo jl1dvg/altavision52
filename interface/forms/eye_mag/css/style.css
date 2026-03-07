@@ -1093,6 +1093,18 @@ var
     text-align: center;
 }
 
+.cpf_row_arrows {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.2rem;
+    width: 100%;
+}
+
+.cpf_row_arrows .copier {
+    font-size: 0.95em;
+}
+
 .kb_left {
     bottom: 0;
     color: var(--danger);
