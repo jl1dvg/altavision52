@@ -2545,6 +2545,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                             ?>&nbsp;
                 </span>
                     </div>
+                    <div id="eye_mag_progress" class="eye-mag-progress card">
+                        <div class="eye-mag-progress-title"><i class="fa fa-tasks"></i> <?php echo xlt('Progress'); ?></div>
+                        <div id="eye_mag_progress_chips" class="eye-mag-progress-chips"></div>
+                        <div id="eye_mag_pending" class="eye-mag-pending nodisplay">
+                            <b><?php echo xlt('Pendientes'); ?>:</b>
+                            <ul id="eye_mag_pending_list"></ul>
+                        </div>
+                    </div>
                     <!-- end of the exam selection row -->
 
                     <!-- start of the Shorthand Entry Box -->

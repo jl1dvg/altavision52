@@ -313,6 +313,66 @@ function isTrackedSaveRequest(settings) {
     }
     return true;
 }
+
+function refreshSectionProgress() {
+    var map = [
+        { key: 'HPI', label: '<?php echo xla('HPI'); ?>', box: '#HPI_1', anchor: 'HPI_left' },
+        { key: 'PMH', label: '<?php echo xla('PMH'); ?>', box: '#PMH_1', anchor: 'PMH_left' },
+        { key: 'EXT', label: '<?php echo xla('Ext'); ?>', box: '#EXT_1', anchor: 'EXT_left' },
+        { key: 'ANTSEG', label: '<?php echo xla('AntSeg'); ?>', box: '#ANTSEG_1', anchor: 'ANTSEG_left' },
+        { key: 'RETINA', label: '<?php echo xla('Retina'); ?>', box: '#RETINA_1', anchor: 'RETINA_left' },
+        { key: 'NEURO', label: '<?php echo xla('Neuro'); ?>', box: '#NEURO_1', anchor: 'NEURO_left' },
+        { key: 'IMPPLAN', label: '<?php echo xla('Imp/Plan'); ?>', box: '#IMPPLAN_1', anchor: 'IMPPLAN_left' }
+    ];
+
+    var chips = [];
+    var pending = [];
+
+    $.each(map, function (_, section) {
+        if (!$(section.box).length) {
+            return;
+        }
+        var fields = $(section.box).find('input[type="text"], textarea, select').filter(':enabled');
+        var total = fields.length;
+        var filled = 0;
+        fields.each(function () {
+            var value = $.trim($(this).val());
+            if (value !== '' && value !== '0') {
+                filled++;
+            }
+        });
+
+        var ratio = (total > 0) ? (filled / total) : 0;
+        var state = 'empty';
+        var stateLabel = '<?php echo xla('Vacío'); ?>';
+        if (ratio >= 0.45) {
+            state = 'done';
+            stateLabel = '<?php echo xla('Completo'); ?>';
+        } else if (ratio >= 0.1) {
+            state = 'progress';
+            stateLabel = '<?php echo xla('En progreso'); ?>';
+        }
+
+        chips.push('<button type="button" class="eye-mag-chip eye-mag-chip-' + state + '" data-anchor="' + section.anchor + '">' +
+            '<span class="eye-mag-chip-label">' + section.label + '</span>' +
+            '<span class="eye-mag-chip-state">' + stateLabel + '</span>' +
+            '</button>');
+
+        if (state !== 'done') {
+            pending.push('<li><a href="#" data-anchor="' + section.anchor + '">' + section.label + '</a></li>');
+        }
+    });
+
+    $('#eye_mag_progress_chips').html(chips.join(''));
+
+    if (pending.length) {
+        $('#eye_mag_pending').removeClass('nodisplay');
+        $('#eye_mag_pending_list').html(pending.join(''));
+    } else {
+        $('#eye_mag_pending').addClass('nodisplay');
+        $('#eye_mag_pending_list').html('');
+    }
+}
 /*
  * Functions to add a quick pick selection to the correct fields on the form.
  */
@@ -895,6 +955,7 @@ function populate_form(result) {
     build_IMPPLAN(obj.IMPPLAN_items);
     build_Chronics(obj);
     build_DX_list(obj); //build the list of DXs to show in the Impression/Plan Builder
+    refreshSectionProgress();
 }
 /*
  *  Function to auto-fill CHRONIC fields
@@ -2501,6 +2562,21 @@ $(function () {
                   var allPanels = $('.building_blocks > dd').hide();
                   var allPanels2 = $('.building_blocks2 > dd').hide();
                   refresh_page();
+                  refreshSectionProgress();
+
+                  var progressRefreshTimer = null;
+                  $('form#eye_mag').on('input change', 'input[type="text"], textarea, select', function () {
+                      window.clearTimeout(progressRefreshTimer);
+                      progressRefreshTimer = window.setTimeout(refreshSectionProgress, 220);
+                  });
+
+                  $('body').on('click', '#eye_mag_progress_chips [data-anchor], #eye_mag_pending_list [data-anchor]', function (e) {
+                      e.preventDefault();
+                      var anchor = $(this).data('anchor');
+                      if (anchor) {
+                          scrollTo(anchor);
+                      }
+                  });
 
                 // AUTO- CODING FEATURES
                   check_CPT_92060();
