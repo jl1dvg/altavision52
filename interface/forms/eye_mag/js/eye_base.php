@@ -386,7 +386,7 @@ function refreshSectionProgress() {
     var iopOD = $.trim($('#ODIOPAP').val() || $('#ODIOPTPN').val() || '');
     var iopOS = $.trim($('#OSIOPAP').val() || $('#OSIOPTPN').val() || '');
     if (iopOD === '' || iopOS === '') {
-        critical.push('<li><a href="#" data-anchor="LayerTension"><?php echo xla('IOP incompleto (OD/OS)'); ?></a></li>');
+        critical.push('<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-anchor="LayerTension"><?php echo xla('IOP incompleto (OD/OS)'); ?></a></li>');
     }
 
     var hasPlan = false;
@@ -397,12 +397,12 @@ function refreshSectionProgress() {
         }
     });
     if (!hasPlan) {
-        critical.push('<li><a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Falta plan clínico en IMP/PLAN'); ?></a></li>');
+        critical.push('<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Falta plan clínico en IMP/PLAN'); ?></a></li>');
     }
 
     var hasCoding = $.trim($('#Coding_DX_Codes').text()) !== '';
     if (!hasCoding) {
-        critical.push('<li><a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Sin códigos diagnósticos visibles'); ?></a></li>');
+        critical.push('<li><span class="eye-mag-priority eye-mag-priority-medium"><?php echo xla('Media'); ?></span> <a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Sin códigos diagnósticos visibles'); ?></a></li>');
     }
 
     if (critical.length) {
@@ -411,6 +411,21 @@ function refreshSectionProgress() {
     } else {
         $('#eye_mag_critical').addClass('nodisplay');
         $('#eye_mag_critical_list').html('');
+    }
+
+    var readyBadge = $('#eye_mag_ready_badge');
+    var readyText = $('#eye_mag_ready_text');
+    readyBadge.removeClass('eye-mag-ready-red eye-mag-ready-yellow eye-mag-ready-green');
+
+    if (!critical.length && !pending.length && progressPct >= 75) {
+        readyBadge.addClass('eye-mag-ready-green').text('<?php echo xla('Listo para cerrar'); ?>');
+        readyText.text('<?php echo xla('Se completaron críticos y pendientes principales del encuentro.'); ?>');
+    } else if (!critical.length && progressPct >= 50) {
+        readyBadge.addClass('eye-mag-ready-yellow').text('<?php echo xla('Casi listo'); ?>');
+        readyText.text('<?php echo xla('Revise pendientes restantes antes del cierre.'); ?>');
+    } else {
+        readyBadge.addClass('eye-mag-ready-red').text('<?php echo xla('No listo para cerrar'); ?>');
+        readyText.text('<?php echo xla('Hay críticos o bajo avance general en el encuentro.'); ?>');
     }
 }
 

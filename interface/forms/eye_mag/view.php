@@ -2560,6 +2560,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                             <b><?php echo xlt('Campos críticos faltantes'); ?>:</b>
                             <ul id="eye_mag_critical_list"></ul>
                         </div>
+                        <div id="eye_mag_ready" class="eye-mag-ready">
+                            <span id="eye_mag_ready_badge" class="eye-mag-ready-badge eye-mag-ready-red"><?php echo xlt('No listo para cerrar'); ?></span>
+                            <span id="eye_mag_ready_text"><?php echo xlt('Complete pendientes y críticos para marcar el encuentro como listo.'); ?></span>
+                        </div>
                     </div>
                     <!-- end of the exam selection row -->
 
