@@ -2547,10 +2547,18 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                     </div>
                     <div id="eye_mag_progress" class="eye-mag-progress card">
                         <div class="eye-mag-progress-title"><i class="fa fa-tasks"></i> <?php echo xlt('Progress'); ?></div>
+                        <div class="eye-mag-progress-bar-wrap">
+                            <div id="eye_mag_progress_bar" class="eye-mag-progress-bar"></div>
+                        </div>
+                        <div id="eye_mag_progress_pct" class="eye-mag-progress-pct">0%</div>
                         <div id="eye_mag_progress_chips" class="eye-mag-progress-chips"></div>
                         <div id="eye_mag_pending" class="eye-mag-pending nodisplay">
                             <b><?php echo xlt('Pendientes'); ?>:</b>
                             <ul id="eye_mag_pending_list"></ul>
+                        </div>
+                        <div id="eye_mag_critical" class="eye-mag-critical nodisplay">
+                            <b><?php echo xlt('Campos críticos faltantes'); ?>:</b>
+                            <ul id="eye_mag_critical_list"></ul>
                         </div>
                     </div>
                     <!-- end of the exam selection row -->

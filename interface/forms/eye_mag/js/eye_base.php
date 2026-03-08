@@ -327,6 +327,8 @@ function refreshSectionProgress() {
 
     var chips = [];
     var pending = [];
+    var totalFields = 0;
+    var filledFields = 0;
 
     $.each(map, function (_, section) {
         if (!$(section.box).length) {
@@ -341,6 +343,9 @@ function refreshSectionProgress() {
                 filled++;
             }
         });
+
+        totalFields += total;
+        filledFields += filled;
 
         var ratio = (total > 0) ? (filled / total) : 0;
         var state = 'empty';
@@ -365,12 +370,71 @@ function refreshSectionProgress() {
 
     $('#eye_mag_progress_chips').html(chips.join(''));
 
+    var progressPct = (totalFields > 0) ? Math.round((filledFields / totalFields) * 100) : 0;
+    $('#eye_mag_progress_bar').css('width', progressPct + '%');
+    $('#eye_mag_progress_pct').text(progressPct + '%');
+
     if (pending.length) {
         $('#eye_mag_pending').removeClass('nodisplay');
         $('#eye_mag_pending_list').html(pending.join(''));
     } else {
         $('#eye_mag_pending').addClass('nodisplay');
         $('#eye_mag_pending_list').html('');
+    }
+
+    var critical = [];
+    var iopOD = $.trim($('#ODIOPAP').val() || $('#ODIOPTPN').val() || '');
+    var iopOS = $.trim($('#OSIOPAP').val() || $('#OSIOPTPN').val() || '');
+    if (iopOD === '' || iopOS === '') {
+        critical.push('<li><a href="#" data-anchor="LayerTension"><?php echo xla('IOP incompleto (OD/OS)'); ?></a></li>');
+    }
+
+    var hasPlan = false;
+    $('[id^="PLAN_"]').each(function () {
+        if ($.trim($(this).val()) !== '') {
+            hasPlan = true;
+            return false;
+        }
+    });
+    if (!hasPlan) {
+        critical.push('<li><a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Falta plan clínico en IMP/PLAN'); ?></a></li>');
+    }
+
+    var hasCoding = $.trim($('#Coding_DX_Codes').text()) !== '';
+    if (!hasCoding) {
+        critical.push('<li><a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Sin códigos diagnósticos visibles'); ?></a></li>');
+    }
+
+    if (critical.length) {
+        $('#eye_mag_critical').removeClass('nodisplay');
+        $('#eye_mag_critical_list').html(critical.join(''));
+    } else {
+        $('#eye_mag_critical').addClass('nodisplay');
+        $('#eye_mag_critical_list').html('');
+    }
+}
+
+function highlightActiveSection() {
+    var anchors = ['HPI_left', 'PMH_left', 'EXT_left', 'ANTSEG_left', 'RETINA_left', 'NEURO_left', 'IMPPLAN_left'];
+    var bestAnchor = '';
+    var bestDistance = 999999;
+    var viewportPoint = $(window).scrollTop() + 160;
+
+    $.each(anchors, function (_, anchor) {
+        var node = $('#' + anchor);
+        if (!node.length || node.hasClass('nodisplay')) {
+            return;
+        }
+        var distance = Math.abs(node.offset().top - viewportPoint);
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestAnchor = anchor;
+        }
+    });
+
+    $('#eye_mag_progress_chips .eye-mag-chip').removeClass('eye-mag-chip-active');
+    if (bestAnchor !== '') {
+        $('#eye_mag_progress_chips .eye-mag-chip[data-anchor="' + bestAnchor + '"]').addClass('eye-mag-chip-active');
     }
 }
 /*
@@ -956,6 +1020,7 @@ function populate_form(result) {
     build_Chronics(obj);
     build_DX_list(obj); //build the list of DXs to show in the Impression/Plan Builder
     refreshSectionProgress();
+    highlightActiveSection();
 }
 /*
  *  Function to auto-fill CHRONIC fields
@@ -2563,19 +2628,29 @@ $(function () {
                   var allPanels2 = $('.building_blocks2 > dd').hide();
                   refresh_page();
                   refreshSectionProgress();
+                  highlightActiveSection();
 
                   var progressRefreshTimer = null;
                   $('form#eye_mag').on('input change', 'input[type="text"], textarea, select', function () {
                       window.clearTimeout(progressRefreshTimer);
-                      progressRefreshTimer = window.setTimeout(refreshSectionProgress, 220);
+                      progressRefreshTimer = window.setTimeout(function () {
+                          refreshSectionProgress();
+                          highlightActiveSection();
+                      }, 220);
                   });
 
-                  $('body').on('click', '#eye_mag_progress_chips [data-anchor], #eye_mag_pending_list [data-anchor]', function (e) {
+                  $('body').on('click', '#eye_mag_progress_chips [data-anchor], #eye_mag_pending_list [data-anchor], #eye_mag_critical_list [data-anchor]', function (e) {
                       e.preventDefault();
                       var anchor = $(this).data('anchor');
                       if (anchor) {
                           scrollTo(anchor);
+                          window.setTimeout(highlightActiveSection, 240);
                       }
+                  });
+
+                  $(window).on('scroll resize', function () {
+                      window.clearTimeout(progressRefreshTimer);
+                      progressRefreshTimer = window.setTimeout(highlightActiveSection, 80);
                   });
 
                 // AUTO- CODING FEATURES
