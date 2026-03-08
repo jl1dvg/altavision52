@@ -3298,6 +3298,38 @@ body.eye-mag-ui .eye-mag-ready-green {
     color: #1f6c43;
 }
 
+body.eye-mag-ui .eye-mag-flow {
+    align-items: center;
+    border-top: 1px dashed #d8e5f5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+body.eye-mag-ui .eye-mag-flow-hint {
+    color: #2b4f78;
+    font-size: 12px;
+}
+
+body.eye-mag-ui .eye-mag-flow-on {
+    background: #f3f9ff;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+body.eye-mag-ui .eye-mag-guided-focus {
+    animation: eye-mag-guided-pulse 1.1s ease;
+    box-shadow: 0 0 0 3px rgba(82, 142, 210, 0.18);
+}
+
+@keyframes eye-mag-guided-pulse {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(-1px); }
+    100% { transform: translateY(0); }
+}
+
 body.eye-mag-ui .eye-mag-header-state {
     align-items: center;
     display: flex;

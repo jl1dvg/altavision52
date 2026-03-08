@@ -2564,6 +2564,11 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                             <span id="eye_mag_ready_badge" class="eye-mag-ready-badge eye-mag-ready-red"><?php echo xlt('No listo para cerrar'); ?></span>
                             <span id="eye_mag_ready_text"><?php echo xlt('Complete pendientes y críticos para marcar el encuentro como listo.'); ?></span>
                         </div>
+                        <div id="eye_mag_flow" class="eye-mag-flow">
+                            <button type="button" id="eye_mag_flow_toggle" class="btn btn-sm btn-default"><i class="fa fa-magic"></i> <?php echo xlt('Flujo guiado'); ?></button>
+                            <span id="eye_mag_flow_hint" class="eye-mag-flow-hint"><?php echo xlt('Siguiente paso recomendado'); ?>: <b id="eye_mag_flow_target"><?php echo xlt('HPI'); ?></b></span>
+                            <button type="button" id="eye_mag_flow_next" class="btn btn-sm btn-primary"><?php echo xlt('Ir al siguiente'); ?></button>
+                        </div>
                     </div>
                     <!-- end of the exam selection row -->
 

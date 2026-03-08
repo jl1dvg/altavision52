@@ -52,6 +52,8 @@ var doc=[];
 var syncStatusTimer = null;
 var eyeMagUiReady = false;
 var eyeMagAutoPrefillStarted = false;
+var eyeMagFlowEnabled = false;
+var eyeMagLastSections = [];
 
 function updateActiveChartBadge(state) {
     var isActive = (state === "on");
@@ -329,6 +331,7 @@ function refreshSectionProgress() {
     var pending = [];
     var totalFields = 0;
     var filledFields = 0;
+    var sectionStatus = [];
 
     $.each(map, function (_, section) {
         if (!$(section.box).length) {
@@ -357,6 +360,14 @@ function refreshSectionProgress() {
             state = 'progress';
             stateLabel = '<?php echo xla('En progreso'); ?>';
         }
+
+        sectionStatus.push({
+            key: section.key,
+            label: section.label,
+            anchor: section.anchor,
+            ratio: ratio,
+            state: state
+        });
 
         chips.push('<button type="button" class="eye-mag-chip eye-mag-chip-' + state + '" data-anchor="' + section.anchor + '">' +
             '<span class="eye-mag-chip-label">' + section.label + '</span>' +
@@ -427,6 +438,49 @@ function refreshSectionProgress() {
         readyBadge.addClass('eye-mag-ready-red').text('<?php echo xla('No listo para cerrar'); ?>');
         readyText.text('<?php echo xla('Hay críticos o bajo avance general en el encuentro.'); ?>');
     }
+
+    eyeMagLastSections = sectionStatus;
+    updateGuidedFlow();
+}
+
+function updateGuidedFlow() {
+    if (!eyeMagLastSections.length) {
+        return;
+    }
+    var nextSection = eyeMagLastSections[0];
+    $.each(eyeMagLastSections, function (_, s) {
+        if (s.state !== 'done') {
+            nextSection = s;
+            return false;
+        }
+    });
+
+    $('#eye_mag_flow_target').text(nextSection.label);
+    $('#eye_mag_flow_next').data('anchor', nextSection.anchor);
+
+    if (eyeMagFlowEnabled) {
+        $('#eye_mag_flow').addClass('eye-mag-flow-on');
+    } else {
+        $('#eye_mag_flow').removeClass('eye-mag-flow-on');
+    }
+}
+
+function gotoNextGuidedStep() {
+    var anchor = $('#eye_mag_flow_next').data('anchor');
+    if (!anchor) {
+        return;
+    }
+    scrollTo(anchor);
+    window.setTimeout(function () {
+        var panel = $('#' + anchor).closest('div[id$="_1"]');
+        if (panel.length) {
+            panel.addClass('eye-mag-guided-focus');
+            window.setTimeout(function () {
+                panel.removeClass('eye-mag-guided-focus');
+            }, 1200);
+        }
+        highlightActiveSection();
+    }, 220);
 }
 
 function highlightActiveSection() {
@@ -2666,6 +2720,16 @@ $(function () {
                   $(window).on('scroll resize', function () {
                       window.clearTimeout(progressRefreshTimer);
                       progressRefreshTimer = window.setTimeout(highlightActiveSection, 80);
+                  });
+
+                  $('#eye_mag_flow_toggle').on('click', function () {
+                      eyeMagFlowEnabled = !eyeMagFlowEnabled;
+                      $(this).toggleClass('btn-primary', eyeMagFlowEnabled).toggleClass('btn-default', !eyeMagFlowEnabled);
+                      updateGuidedFlow();
+                  });
+
+                  $('#eye_mag_flow_next').on('click', function () {
+                      gotoNextGuidedStep();
                   });
 
                 // AUTO- CODING FEATURES
