@@ -404,7 +404,7 @@ if (!$_REQUEST['flb_table']) {
                                         if (in_array((string)$apptstat['option_id'], $selected_apptstatus, true)) {
                                             echo " selected='true' ";
                                         }
-                                        echo ">" . xlt($apptstat['title']) . "</option>";
+                                        echo ">" . text(xl_list_label($apptstat['title'])) . "</option>";
                                     }
                                     ?>
                                 </select>

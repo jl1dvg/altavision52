@@ -163,7 +163,7 @@ $row = sqlQuery("select fname, lname " .
                     <option value="<?php echo attr($status_option['id']); ?>"
                             data-color="<?php echo attr($status_option['color']); ?>"
                         <?php echo ($status_option['id'] == $trow['laststatus']) ? 'selected' : ''; ?>>
-                        <?php echo text($status_option['title']); ?>
+                        <?php echo text(xl_list_label($status_option['title'])); ?>
                     </option>
                 <?php } ?>
             </select>
