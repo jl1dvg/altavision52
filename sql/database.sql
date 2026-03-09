@@ -9591,7 +9591,7 @@ DROP TABLE IF EXISTS `form_eye_mag_wearing`;
 CREATE TABLE `form_eye_mag_wearing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ENCOUNTER` int(11) NOT NULL,
-  `FORM_ID` smallint(6) NOT NULL,
+  `FORM_ID` bigint(20) NOT NULL,
   `PID` bigint(20) NOT NULL,
   `RX_NUMBER` int(11) NOT NULL,
   `ODSPH` varchar(10) DEFAULT NULL,

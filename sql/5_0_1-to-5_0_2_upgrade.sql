@@ -779,6 +779,11 @@ ALTER TABLE `form_eye_mag_wearing`
     MODIFY `PID` bigint(20) NOT NULL;
 #EndIf
 
+#IfNotColumnType form_eye_mag_wearing FORM_ID bigint(20)
+ALTER TABLE `form_eye_mag_wearing`
+    MODIFY `FORM_ID` bigint(20) NOT NULL;
+#EndIf
+
 #IfNotColumnType therapy_groups_participants pid bigint(20)
 ALTER TABLE `therapy_groups_participants`
     MODIFY `pid` bigint(20) NOT NULL;

@@ -44,14 +44,14 @@ while ($prefs = sqlFetchArray($result)) {
     $LOCATION = $prefs['LOCATION'];
     $$LOCATION = text($prefs['GOVALUE']);
 }
-// Keep key refraction panels open by default on every EyeMag encounter.
-$RXHX = '1';
+// Keep only W, MR and CR refraction panels open by default on every EyeMag encounter.
+$RXHX = '0';
 $W = '1';
 $MR = '1';
 $CR = '1';
-$CTL = '1';
-$ADDITIONAL = '1';
-$VAX = '1';
+$CTL = '0';
+$ADDITIONAL = '0';
+$VAX = '0';
 // These settings are sticky user preferences linked to a given page.
 // Could do ALL preferences this way instead of the modified extract above...
 // mdsupport - user_settings prefix
@@ -1568,7 +1568,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                        class="closeButton_4 fa fa-list-ul"></i>
                                     <table id="wearing_1">
                                         <tr>
-                                            <th colspan="7"><?php echo xlt('Current Glasses'); ?>: #1
+                                            <th colspan="7"><?php echo xlt('Subjetivo'); ?>: #1
                                                 <i id="Add_Glasses" name="Add_Glasses"
                                                    class="button btn"><?php echo xlt('Additonal Rx{{Additional glasses}}'); ?></i>
                                             </th>
@@ -1738,8 +1738,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
 
                                             <td name="W_wide"></td>
 
-                                            <td name="W_wide"
-                                                title="<?php echo xla('Binocular Pupillary Diameter - Distance'); ?>"><?php echo xlt('PD-D{{abbreviation for Binocular Pupillary Diameter - Distance}}'); ?></td>
+                                            <td></td>
                                             <td name="W_wide"
                                                 title="<?php echo xla('Binocular Pupillary Diameter - Near'); ?>"><?php echo xlt('PD-N{{abbreviation for Binocular Pupillary Diameter - Near}}'); ?></td>
                                             <td name="W_wide" title="<?php echo xla('Lens Material'); ?>" colspan="2">
@@ -1772,13 +1771,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                      tabindex="107"></td>
                                             <td></td>
                                             <td><input class="jaeger" type="text" id="OSNEARVA_1" name="OSNEARVA_1"
-                                                       value="<?php echo attr($OSNEARVA_1); ?>" tabindex="110"></td>
+                                                       value="<?php echo attr($OSNEARVA_1); ?>" tabindex="112"></td>
 
                                             <td name="W_wide"></td>
-
-                                            <td name="W_wide"><input type="text" class="prism" id="BPDD_1" name="BPDD_1"
-                                                                     value="<?php echo attr($BPDD_1); ?>"
-                                                                     tabindex="138"></td>
+                                            <td name="W_wide"></td>
                                             <td name="W_wide"><input type="text" class="prism" id="BPDN_1" name="BPDN_1"
                                                                      value="<?php echo attr($BPDN_1); ?>"
                                                                      tabindex="140"></td>
@@ -1790,15 +1786,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         <tr>
                                             <td colspan="2"><b><?php echo xlt('Comments'); ?>:</b>
                                             </td>
-                                            <td colspan="4" class="up"></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="6">
+                                            <td colspan="2">
                                                 <textarea id="COMMENTS_1" name="COMMENTS_1"
                                                           tabindex="111"><?php echo text($COMMENTS_1); ?></textarea>
                                             </td>
-                                            <td colspan="8">
-                                            </td>
+                                            <td title="<?php echo xla('Binocular Pupillary Diameter - Distance'); ?>"><?php echo xlt('PD-D{{abbreviation for Binocular Pupillary Diameter - Distance}}'); ?></td>
+                                            <td><input type="text" class="prism" id="BPDD_1" name="BPDD_1"
+                                                       value="<?php echo attr($BPDD_1); ?>"
+                                                       tabindex="138"></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -2036,30 +2031,30 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                    value="<?php echo attr($ARODCYL); ?>" tabindex="10221"></td>
                                         <td><input type="text" id="ARODAXIS" name="ARODAXIS"
                                                    value="<?php echo attr($ARODAXIS); ?>" tabindex="10222"></td>
-                                        <td><input type="text" id="ODK1" name="ODK1" value="<?php echo attr($ODK1); ?>"
-                                                   tabindex="10228"></td>
-                                        <td><input type="text" id="ODK2" name="ODK2" value="<?php echo attr($ODK2); ?>"
-                                                   tabindex="10226">
+                                        <td><input type="text" id="ODK1_copy" name="ODK1_copy" value="<?php echo attr($ODK1); ?>"
+                                                   tabindex="10223"></td>
+                                        <td><input type="text" id="ODK2_copy" name="ODK2_copy" value="<?php echo attr($ODK2); ?>"
+                                                   tabindex="10224">
                                         </td>
-                                        <td><input type="text" id="ODK2AXIS" name="ODK2AXIS"
-                                                   value="<?php echo attr($ODK2AXIS); ?>"></td>
+                                        <td><input type="text" id="ODK2AXIS_copy" name="ODK2AXIS_copy"
+                                                   value="<?php echo attr($ODK2AXIS); ?>" tabindex="10225"></td>
                                         <td><input type="text" id="ARODPRISM" name="ARODPRISM"
                                                    value="<?php echo attr($ARODPRISM); ?>"></td>
                                     </tr>
                                     <tr>
                                         <td><b><?php echo xlt('OS{{left eye}}'); ?>:</b></td>
                                         <td><input type="text" id="AROSSPH" name="AROSSPH"
-                                                   value="<?php echo attr($AROSSPH); ?>" tabindex="10223"></td>
+                                                   value="<?php echo attr($AROSSPH); ?>" tabindex="10226"></td>
                                         <td><input type="text" id="AROSCYL" name="AROSCYL"
-                                                   value="<?php echo attr($AROSCYL); ?>" tabindex="10224"></td>
+                                                   value="<?php echo attr($AROSCYL); ?>" tabindex="10227"></td>
                                         <td><input type="text" id="AROSAXIS" name="AROSAXIS"
-                                                   value="<?php echo attr($AROSAXIS); ?>" tabindex="10225"></td>
-                                        <td><input type="text" id="OSK1" name="OSK1" value="<?php echo attr($OSK1); ?>"
+                                                   value="<?php echo attr($AROSAXIS); ?>" tabindex="10228"></td>
+                                        <td><input type="text" id="OSK1_copy" name="OSK1_copy" value="<?php echo attr($OSK1); ?>"
                                                    tabindex="10229"></td>
-                                        <td><input type="text" id="OSK2" name="OSK2" value="<?php echo attr($OSK2); ?>"
-                                                   tabindex="10227"></td>
-                                        <td><input type="text" id="OSK2AXIS" name="OSK2AXIS"
-                                                   value="<?php echo attr($OSK2AXIS); ?>"></td>
+                                        <td><input type="text" id="OSK2_copy" name="OSK2_copy" value="<?php echo attr($OSK2); ?>"
+                                                   tabindex="10230"></td>
+                                        <td><input type="text" id="OSK2AXIS_copy" name="OSK2AXIS_copy"
+                                                   value="<?php echo attr($OSK2AXIS); ?>" tabindex="10231"></td>
                                         <td><input type="text" id="AROSPRISM" name="AROSPRISM"
                                                    value="<?php echo attr($AROSPRISM); ?>"></td>
                                     </tr>
@@ -2173,20 +2168,20 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             }
                                                             ?>
                                                             <select id="CTLMANUFACTUREROD" name="CTLMANUFACTUREROD"
-                                                                    tabindex="10230">
+                                                                    tabindex="10340">
                                                                 <option></option>
                                                                 <?php echo $CTLMANUFACTURER_list_OD; ?>
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select id="CTLSUPPLIEROD" name="CTLSUPPLIEROD"
-                                                                    tabindex="10231">
+                                                                    tabindex="10341">
                                                                 <option></option>
                                                                 <?php echo $CTLSUPPLIER_list_OD; ?>
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <select id="CTLBRANDOD" name="CTLBRANDOD" tabindex="10232">
+                                                            <select id="CTLBRANDOD" name="CTLBRANDOD" tabindex="10342">
                                                                 <option></option>
                                                                 <?php echo $CTLBRAND_list_OD; ?>
                                                             </select>
@@ -2196,20 +2191,20 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                         <td><b><?php echo xlt('OS'); ?>:</b></td>
                                                         <td>
                                                             <select id="CTLMANUFACTUREROS" name="CTLMANUFACTUREROS"
-                                                                    tabindex="10233">
+                                                                    tabindex="10343">
                                                                 <option></option>
                                                                 <?php echo $CTLMANUFACTURER_list_OS; ?>
                                                             </select>
                                                         </td>
                                                         <td>
                                                             <select id="CTLSUPPLIEROS" name="CTLSUPPLIEROS"
-                                                                    tabindex="10234">
+                                                                    tabindex="10344">
                                                                 <option></option>
                                                                 <?php echo $CTLSUPPLIER_list_OS; ?>
                                                             </select>
                                                         </td>
                                                         <td>
-                                                            <select id="CTLBRANDOS" name="CTLBRANDOS" tabindex="10235">
+                                                            <select id="CTLBRANDOS" name="CTLBRANDOS" tabindex="10345">
                                                                 <option></option>
                                                                 <?php echo $CTLBRAND_list_OS; ?>
                                                             </select>
@@ -2236,36 +2231,36 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                     <tr>
                                         <td><b><?php echo xlt('OD{{right eye}}'); ?>:</b></td>
                                         <td><input type="text" id="CTLODSPH" name="CTLODSPH"
-                                                   value="<?php echo attr($CTLODSPH); ?>" tabindex="10236"></td>
+                                                   value="<?php echo attr($CTLODSPH); ?>" tabindex="10346"></td>
                                         <td><input type="text" id="CTLODCYL" name="CTLODCYL"
-                                                   value="<?php echo attr($CTLODCYL); ?>" tabindex="10240"></td>
+                                                   value="<?php echo attr($CTLODCYL); ?>" tabindex="10350"></td>
                                         <td><input type="text" id="CTLODAXIS" name="CTLODAXIS"
-                                                   value="<?php echo attr($CTLODAXIS); ?>" tabindex="10241"></td>
+                                                   value="<?php echo attr($CTLODAXIS); ?>" tabindex="10351"></td>
                                         <td><input type="text" id="CTLODBC" name="CTLODBC"
-                                                   value="<?php echo attr($CTLODBC); ?>" tabindex="10237"></td>
+                                                   value="<?php echo attr($CTLODBC); ?>" tabindex="10347"></td>
                                         <td><input type="text" id="CTLODDIAM" name="CTLODDIAM"
-                                                   value="<?php echo attr($CTLODDIAM); ?>" tabindex="10238"></td>
+                                                   value="<?php echo attr($CTLODDIAM); ?>" tabindex="10348"></td>
                                         <td><input type="text" id="CTLODADD" name="CTLODADD"
-                                                   value="<?php echo attr($CTLODADD); ?>" tabindex="10242"></td>
+                                                   value="<?php echo attr($CTLODADD); ?>" tabindex="10352"></td>
                                         <td><input type="text" id="CTLODVA" name="CTLODVA"
-                                                   value="<?php echo attr($CTLODVA); ?>" tabindex="10239"></td>
+                                                   value="<?php echo attr($CTLODVA); ?>" tabindex="10349"></td>
                                     </tr>
                                     <tr>
                                         <td><b><?php echo xlt('OS{{left eye}}'); ?>:</b></td>
                                         <td><input type="text" id="CTLOSSPH" name="CTLOSSPH"
-                                                   value="<?php echo attr($CTLOSSPH); ?>" tabindex="10243"></td>
+                                                   value="<?php echo attr($CTLOSSPH); ?>" tabindex="10353"></td>
                                         <td><input type="text" id="CTLOSCYL" name="CTLOSCYL"
-                                                   value="<?php echo attr($CTLOSCYL); ?>" tabindex="10247"></td>
+                                                   value="<?php echo attr($CTLOSCYL); ?>" tabindex="10357"></td>
                                         <td><input type="text" id="CTLOSAXIS" name="CTLOSAXIS"
-                                                   value="<?php echo attr($CTLOSAXIS); ?>" tabindex="10248"></td>
+                                                   value="<?php echo attr($CTLOSAXIS); ?>" tabindex="10358"></td>
                                         <td><input type="text" id="CTLOSBC" name="CTLOSBC"
-                                                   value="<?php echo attr($CTLOSBC); ?>" tabindex="10244"></td>
+                                                   value="<?php echo attr($CTLOSBC); ?>" tabindex="10354"></td>
                                         <td><input type="text" id="CTLOSDIAM" name="CTLOSDIAM"
-                                                   value="<?php echo attr($CTLOSDIAM); ?>" tabindex="10245"></td>
+                                                   value="<?php echo attr($CTLOSDIAM); ?>" tabindex="10355"></td>
                                         <td><input type="text" id="CTLOSADD" name="CTLOSADD"
-                                                   value="<?php echo attr($CTLOSADD); ?>" tabindex="10249"></td>
+                                                   value="<?php echo attr($CTLOSADD); ?>" tabindex="10359"></td>
                                         <td><input type="text" id="CTLOSVA" name="CTLOSVA"
-                                                   value="<?php echo attr($CTLOSVA); ?>" tabindex="10246"></td>
+                                                   value="<?php echo attr($CTLOSVA); ?>" tabindex="10356"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="2" class="right bold">
@@ -2273,7 +2268,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                         </td>
                                         <td colspan="6">
                                             <textarea name="CTL_COMMENTS" id="CTL_COMMENTS"
-                                                      tabindex="10250"><?php echo text($CTL_COMMENTS); ?></textarea>
+                                                      tabindex="10360"><?php echo text($CTL_COMMENTS); ?></textarea>
                                         </td>
                                     </tr>
                                 </table>

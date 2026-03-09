@@ -2114,6 +2114,8 @@ function update_READONLY() {
                  } else if (keyhere.match(/VA$/)) {
                  $("#"+keyhere+"_copy").val(valhere).css("background-color","#F0F8FF");;
                  $("#"+keyhere+"_copy_brd").val(valhere).css("background-color","#F0F8FF");;
+                 } else if (keyhere.match(/^(ODK1|ODK2|ODK2AXIS|OSK1|OSK2|OSK2AXIS)$/)) {
+                 $("#"+keyhere+"_copy").val(valhere).css("background-color","#F0F8FF");
                  } else if (keyhere.match(/^O.VA_/)) {
                  var side=keyhere.match(/(O.)VA_(.)/)[1];
                  var rx_number=keyhere.match(/(O.)VA_(.)/)[2];
@@ -3124,7 +3126,9 @@ $(function () {
                                                                                     });
                   $("[name^='menu_']").on('click', function() {
                                              $("[name^='menu_']").removeClass('active');
-                                             var menuitem = this.id.match(/menu_(.*)/)[1];
+                                             var menuMatch = (this.id || "").match(/^menu_(.*)$/);
+                                             if (!menuMatch) { return; }
+                                             var menuitem = menuMatch[1];
                                              $(this).addClass('active');
                                              $("#menustate").val('1');
                                              if (menuitem =='left_tabs') {
@@ -3669,6 +3673,17 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                        $("#" + newValue).val(hereValue).css("background-color","#F0F8FF");;
                                                        $("#" + newValue + "_copy").val(hereValue).css("background-color","#F0F8FF");;
                                                        });
+
+                  // Keep keratometry fields in sync between Auto Refraction and Additional panels.
+                  var keratometryFields = ['ODK1','ODK2','ODK2AXIS','OSK1','OSK2','OSK2AXIS'];
+                  keratometryFields.forEach(function(field) {
+                      $("#" + field).on("input change", function() {
+                          $("#" + field + "_copy").val($(this).val()).css("background-color","#F0F8FF");
+                      });
+                      $("#" + field + "_copy").on("input change", function() {
+                          $("#" + field).val($(this).val()).css("background-color","#F0F8FF");
+                      });
+                  });
                   $("[name^='more_']").on("mouseout", function() {
                                                 $(this).toggleClass('buttonRefraction_selected').toggleClass('underline');
                                                 });
@@ -4270,6 +4285,8 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                          } else if (keyhere.match(/VA$/)) {
                                                          $("#"+keyhere+"_copy").val(valhere).css("background-color","#F0F8FF");;
                                                          $("#"+keyhere+"_copy_brd").val(valhere).css("background-color","#F0F8FF");;
+                                                         } else if (keyhere.match(/^(ODK1|ODK2|ODK2AXIS|OSK1|OSK2|OSK2AXIS)$/)) {
+                                                         $("#"+keyhere+"_copy").val(valhere).css("background-color","#F0F8FF");
                                                          }
                                                          });
                                                    if (zone != "READONLY") { submit_form("eye_mag"); }

@@ -1189,9 +1189,9 @@ if ($requestMode == "new") {
             $success = sqlStatement($sql, $fields);
         }
     }
-    //now save any Wear RXs (1-4) entered.
+    //now save any Wear RXs (1-5) entered.
     //Guard this block to avoid deleting data when Wear fields are not posted (e.g. disabled/read-only form).
-    $has_wearing_payload = isset($_POST['W_1']) || isset($_POST['W_2']) || isset($_POST['W_3']) || isset($_POST['W_4']);
+    $has_wearing_payload = isset($_POST['W_1']) || isset($_POST['W_2']) || isset($_POST['W_3']) || isset($_POST['W_4']) || isset($_POST['W_5']);
     if ($has_wearing_payload) {
         $rx_number = '1';
         $comments_w1 = $_POST['COMMENTS_1'] ?? ($_POST['COMMENTS_W'] ?? '');
@@ -1203,6 +1203,8 @@ if ($requestMode == "new") {
         $osnearva_3 = $_POST['OSNEARVA_3'] ?? ($_POST['NEAROSVA_3'] ?? '');
         $odnearva_4 = $_POST['ODNEARVA_4'] ?? ($_POST['NEARODVA_4'] ?? '');
         $osnearva_4 = $_POST['OSNEARVA_4'] ?? ($_POST['NEAROSVA_4'] ?? '');
+        $odnearva_5 = $_POST['ODNEARVA_5'] ?? ($_POST['NEARODVA_5'] ?? '');
+        $osnearva_5 = $_POST['OSNEARVA_5'] ?? ($_POST['NEAROSVA_5'] ?? '');
     if (isset($_POST['W_1']) && $_POST['W_1'] == '1') {
         $query = "REPLACE INTO `form_eye_mag_wearing` (`ENCOUNTER` ,`FORM_ID` ,`PID` ,`RX_NUMBER` ,`ODSPH` ,`ODCYL` ,`ODAXIS` ,
             `ODVA` ,`ODADD` ,`ODNEARVA` ,`OSSPH` ,`OSCYL` ,`OSAXIS` ,
@@ -1304,7 +1306,33 @@ if ($requestMode == "new") {
         sqlQuery($query, array($encounter, $pid, $form_id, '4'));
     }
 
-    for ($i = $rx_number; $i < 5; $i++) {
+    if (isset($_POST['W_5']) && $_POST['W_5'] == '1') {
+        //store W_5
+        $query = "REPLACE INTO `form_eye_mag_wearing` (`ENCOUNTER` ,`FORM_ID` ,`PID` ,`RX_NUMBER` ,`ODSPH` ,`ODCYL` ,`ODAXIS` ,
+        `ODVA` ,`ODADD` ,`ODNEARVA` ,`OSSPH` ,`OSCYL` ,`OSAXIS` ,
+        `OSVA` ,`OSADD` ,`OSNEARVA` ,`ODMIDADD` ,`OSMIDADD` ,
+        `RX_TYPE` ,`COMMENTS`,
+        `ODHPD`,`ODHBASE`,`ODVPD`,`ODVBASE`,`ODSLABOFF`,`ODVERTEXDIST`,
+        `OSHPD`,`OSHBASE`,`OSVPD`,`OSVBASE`,`OSSLABOFF`,`OSVERTEXDIST`,
+        `ODMPDD`,`ODMPDN`,`OSMPDD`,`OSMPDN`,`BPDD`,`BPDN`,`LENS_MATERIAL`,
+        `LENS_TREATMENTS`
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        $LENS_TREATMENTS_5 = implode("|", (empty($_POST['LENS_TREATMENTS_5']) ? array() : $_POST['LENS_TREATMENTS_5']));
+        sqlQuery($query, array($encounter, $form_id, $pid, $rx_number, $_POST['ODSPH_5'], $_POST['ODCYL_5'], $_POST['ODAXIS_5'],
+            $_POST['ODVA_5'], $_POST['ODADD_5'], $odnearva_5, $_POST['OSSPH_5'], $_POST['OSCYL_5'], $_POST['OSAXIS_5'],
+            $_POST['OSVA_5'], $_POST['OSADD_5'], $osnearva_5, $_POST['ODMIDADD_5'], $_POST['OSMIDADD_5'],
+            0 + $_POST['RX_TYPE_5'], $_POST['COMMENTS_5'],
+            $_POST['ODHPD_5'], $_POST['ODHBASE_5'], $_POST['ODVPD_5'], $_POST['ODVBASE_5'], $_POST['ODSLABOFF_5'], $_POST['ODVERTEXDIST_5'],
+            $_POST['OSHPD_5'], $_POST['OSHBASE_5'], $_POST['OSVPD_5'], $_POST['OSVBASE_5'], $_POST['OSSLABOFF_5'], $_POST['OSVERTEXDIST_5'],
+            $_POST['ODMPDD_5'], $_POST['ODMPDN_5'], $_POST['OSMPDD_5'], $_POST['OSMPDN_5'], $_POST['BPDD_5'], $_POST['BPDN_5'], $_POST['LENS_MATERIAL_5'],
+            $LENS_TREATMENTS_5));
+        $rx_number++;
+    } elseif (isset($_POST['W_5'])) {
+        $query = "DELETE FROM form_eye_mag_wearing where ENCOUNTER=? and PID=? and FORM_ID=? and RX_NUMBER=?";
+        sqlQuery($query, array($encounter, $pid, $form_id, '5'));
+    }
+
+    for ($i = $rx_number; $i < 6; $i++) {
         $query = "DELETE FROM form_eye_mag_wearing where ENCOUNTER=? and PID=? and FORM_ID=? and RX_NUMBER=?";
         sqlQuery($query, array($encounter, $pid, $form_id, $i));
     }
