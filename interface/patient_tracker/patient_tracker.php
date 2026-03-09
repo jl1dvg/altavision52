@@ -215,14 +215,17 @@ if (!$_REQUEST['flb_table']) {
         }
 
         #flb_selectors select[multiple] {
-            width: 100%;
-            min-height: 130px;
+            width: 48%;
+            min-height: 120px;
             height: auto;
             color: #000;
             line-height: 1.25;
             overflow-y: auto;
             white-space: normal;
             padding: 4px;
+            display: inline-block;
+            vertical-align: top;
+            margin: 0 1% 8px 1%;
         }
 
         #flb_selectors select[multiple] option {
@@ -230,6 +233,13 @@ if (!$_REQUEST['flb_table']) {
             white-space: normal;
             word-break: break-word;
             padding: 2px 4px;
+        }
+
+        @media (max-width: 768px) {
+            #flb_selectors select[multiple] {
+                width: 100%;
+                margin: 0 0 8px 0;
+            }
         }
 
         .btn{
