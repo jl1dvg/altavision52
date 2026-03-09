@@ -235,8 +235,11 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
+        #flb_selectors .ptkr-filter-col {
+            display: contents;
+        }
+
         #flb_selectors select[multiple] {
-            width: 48%;
             min-height: 120px;
             height: auto;
             color: #000;
@@ -246,7 +249,21 @@ if (!$_REQUEST['flb_table']) {
             padding: 4px;
             display: inline-block;
             vertical-align: top;
-            margin: 0 1% 8px 1%;
+            margin: 0 0.5% 8px 0.5%;
+        }
+
+        #form_apptcat,
+        #form_apptstatus,
+        #form_facility,
+        #form_provider {
+            width: 24%;
+        }
+
+        #form_patient_name,
+        #form_patient_id {
+            width: 49%;
+            display: inline-block;
+            margin: 0 0.5% 8px 0.5%;
         }
 
         #flb_selectors select[multiple] option {
@@ -257,7 +274,17 @@ if (!$_REQUEST['flb_table']) {
         }
 
         @media (max-width: 768px) {
-            #flb_selectors select[multiple] {
+            #flb_selectors .ptkr-filter-col {
+                display: block;
+            }
+
+            #flb_selectors select[multiple],
+            #form_apptcat,
+            #form_apptstatus,
+            #form_facility,
+            #form_provider,
+            #form_patient_name,
+            #form_patient_id {
                 width: 100%;
                 margin: 0 0 8px 0;
             }
@@ -347,7 +374,7 @@ if (!$_REQUEST['flb_table']) {
                 <form name="flb" id="flb" method="post">
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
-                        <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
+                        <div class="col-sm-<?php echo attr($col_width); ?> text-center ptkr-filter-col" style="margin-top:15px;">
                             <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-control input-sm"
                                     onchange="refineMe('apptcat');" title="">
                                 <?php
@@ -385,7 +412,7 @@ if (!$_REQUEST['flb_table']) {
                                    value="<?php echo ($form_patient_name) ? attr($form_patient_name) : ""; ?>"
                                    onKeyUp="refineMe();">
                         </div>
-                        <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
+                        <div class="col-sm-<?php echo attr($col_width); ?> text-center ptkr-filter-col" style="margin-top:15px;">
                             <select class="form-control input-sm" id="form_facility" name="form_facility[]" multiple size="6"
                                 <?php
                                 $fac_sql = sqlStatement("SELECT * FROM facility ORDER BY id");
