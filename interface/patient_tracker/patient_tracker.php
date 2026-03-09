@@ -235,11 +235,8 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
-        #flb_selectors .ptkr-filter-col {
-            display: contents;
-        }
-
         #flb_selectors select[multiple] {
+            width: 48%;
             min-height: 120px;
             height: auto;
             color: #000;
@@ -249,21 +246,7 @@ if (!$_REQUEST['flb_table']) {
             padding: 4px;
             display: inline-block;
             vertical-align: top;
-            margin: 0 0.5% 8px 0.5%;
-        }
-
-        #form_apptcat,
-        #form_apptstatus,
-        #form_facility,
-        #form_provider {
-            width: 24%;
-        }
-
-        #form_patient_name,
-        #form_patient_id {
-            width: 49%;
-            display: inline-block;
-            margin: 0 0.5% 8px 0.5%;
+            margin: 0 1% 8px 1%;
         }
 
         #flb_selectors select[multiple] option {
@@ -274,17 +257,7 @@ if (!$_REQUEST['flb_table']) {
         }
 
         @media (max-width: 768px) {
-            #flb_selectors .ptkr-filter-col {
-                display: block;
-            }
-
-            #flb_selectors select[multiple],
-            #form_apptcat,
-            #form_apptstatus,
-            #form_facility,
-            #form_provider,
-            #form_patient_name,
-            #form_patient_id {
+            #flb_selectors select[multiple] {
                 width: 100%;
                 margin: 0 0 8px 0;
             }
