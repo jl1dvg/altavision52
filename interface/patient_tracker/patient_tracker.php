@@ -36,6 +36,27 @@ if (!empty($_POST)) {
 
 // These settings are sticky user preferences linked to a given page.
 // mdsupport - user_settings prefix
+if (isset($_POST['form_apptcat']) && is_array($_POST['form_apptcat'])) {
+    $_POST['form_apptcat'] = implode(',', array_filter($_POST['form_apptcat'], function ($v) {
+        return $v !== '';
+    }));
+}
+if (isset($_POST['form_apptstatus']) && is_array($_POST['form_apptstatus'])) {
+    $_POST['form_apptstatus'] = implode(',', array_filter($_POST['form_apptstatus'], function ($v) {
+        return $v !== '';
+    }));
+}
+if (isset($_POST['form_facility']) && is_array($_POST['form_facility'])) {
+    $_POST['form_facility'] = implode(',', array_filter($_POST['form_facility'], function ($v) {
+        return $v !== '';
+    }));
+}
+if (isset($_POST['form_provider']) && is_array($_POST['form_provider'])) {
+    $_POST['form_provider'] = implode(',', array_filter($_POST['form_provider'], function ($v) {
+        return $v !== '';
+    }));
+}
+
 $uspfx = substr(__FILE__, strlen($webserver_root)) . '.';
 $setting_new_window = prevSetting($uspfx, 'setting_new_window', 'setting_new_window', ' ');
 // flow board and recall board share bootstrap settings:
