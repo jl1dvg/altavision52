@@ -243,7 +243,7 @@ if (!$_REQUEST['flb_table']) {
         }
 
         #flb_selectors select[multiple] {
-            width: calc(25% - 6px);
+            width: calc(25% - 14px);
             min-height: 120px;
             height: auto;
             color: #000;
@@ -252,6 +252,11 @@ if (!$_REQUEST['flb_table']) {
             white-space: normal;
             padding: 4px;
             margin: 0 0 8px 0;
+        }
+
+        /* separación visual como el layout clásico: (cat+status) | (facility+provider) */
+        #form_apptstatus {
+            margin-right: 20px;
         }
 
         #form_patient_name,
@@ -273,6 +278,10 @@ if (!$_REQUEST['flb_table']) {
             #form_patient_id {
                 width: 100%;
                 margin: 0 0 8px 0;
+            }
+
+            #form_apptstatus {
+                margin-right: 0;
             }
         }
 
