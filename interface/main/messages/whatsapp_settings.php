@@ -2,6 +2,7 @@
 
 require_once '../../globals.php';
 require_once "$srcdir/acl.inc";
+require_once "$srcdir/../../library/WhatsAppMetaService.php";
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -27,6 +28,7 @@ function setGlobalValue($name, $value)
 }
 
 $saved = false;
+$testResult = null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!CsrfUtils::verifyCsrfToken($_POST['csrf_token_form'] ?? '')) {
         CsrfUtils::csrfNotVerified();
@@ -36,7 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     setGlobalValue('whatsapp_meta_phone_number_id', trim($_POST['whatsapp_meta_phone_number_id'] ?? ''));
     setGlobalValue('whatsapp_meta_verify_token', trim($_POST['whatsapp_meta_verify_token'] ?? ''));
     setGlobalValue('whatsapp_meta_graph_version', trim($_POST['whatsapp_meta_graph_version'] ?? 'v20.0'));
-    $saved = true;
+
+    $action = $_POST['form_action'] ?? 'save';
+    if ($action === 'test') {
+        $service = new WhatsAppMetaService();
+        $testResult = $service->testConnection();
+    } else {
+        $saved = true;
+    }
 }
 
 $vals = array(
@@ -58,7 +67,19 @@ $vals = array(
     <?php if ($saved) { ?>
         <div class="alert alert-success"><?php echo xlt('Configuracion guardada'); ?></div>
     <?php } ?>
+    <?php if (!empty($testResult)) { ?>
+        <?php if (!empty($testResult['ok'])) { ?>
+            <div class="alert alert-success"><?php echo xlt('Conexion exitosa con Meta Cloud API'); ?>
+                <pre style="margin-top:8px;"><?php echo text(json_encode($testResult['response'], JSON_PRETTY_PRINT)); ?></pre>
+            </div>
+        <?php } else { ?>
+            <div class="alert alert-danger"><?php echo xlt('Error probando conexion con Meta'); ?>
+                <pre style="margin-top:8px;"><?php echo text($testResult['raw'] ?? $testResult['error'] ?? ''); ?></pre>
+            </div>
+        <?php } ?>
+    <?php } ?>
     <form method="post">
+        <input type="hidden" id="form_action" name="form_action" value="save" />
         <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
 
         <div class="form-group">
@@ -78,7 +99,8 @@ $vals = array(
             <input class="form-control" name="whatsapp_meta_graph_version" value="<?php echo attr($vals['whatsapp_meta_graph_version']); ?>" />
         </div>
 
-        <button type="submit" class="btn btn-primary"><?php echo xlt('Guardar'); ?></button>
+        <button type="submit" class="btn btn-primary" onclick="document.getElementById('form_action').value='save';"><?php echo xlt('Guardar'); ?></button>
+        <button type="submit" class="btn btn-default" onclick="document.getElementById('form_action').value='test';"><?php echo xlt('Probar conexion Meta'); ?></button>
     </form>
 </div>
 </body>

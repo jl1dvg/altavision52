@@ -33,6 +33,12 @@ class WhatsAppMetaService
         return $this->request('POST', $this->baseUrl() . '/messages', $payload);
     }
 
+    public function testConnection()
+    {
+        $url = 'https://graph.facebook.com/' . $this->graphVersion . '/' . $this->phoneNumberId . '?fields=id,display_phone_number,verified_name';
+        return $this->request('GET', $url, null);
+    }
+
     public function uploadMedia($filePath, $mimeType)
     {
         $url = $this->baseUrl() . '/media';
@@ -99,11 +105,14 @@ class WhatsAppMetaService
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Authorization: Bearer ' . $this->accessToken,
-            'Content-Type: application/json'
-        ));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        $headers = array('Authorization: Bearer ' . $this->accessToken);
+        if ($payload !== null) {
+            $headers[] = 'Content-Type: application/json';
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        if ($payload !== null) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        }
         $raw = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
