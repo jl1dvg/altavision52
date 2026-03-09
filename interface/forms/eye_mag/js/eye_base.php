@@ -447,16 +447,23 @@ function updateGuidedFlow() {
     if (!eyeMagLastSections.length) {
         return;
     }
-    var nextSection = eyeMagLastSections[0];
-    $.each(eyeMagLastSections, function (_, s) {
-        if (s.state !== 'done') {
-            nextSection = s;
-            return false;
-        }
-    });
 
-    $('#eye_mag_flow_target').text(nextSection.label);
-    $('#eye_mag_flow_next').data('anchor', nextSection.anchor);
+    var criticalAnchor = $('#eye_mag_critical_list a[data-anchor]:first');
+    if (criticalAnchor.length) {
+        var criticalText = $.trim(criticalAnchor.text());
+        $('#eye_mag_flow_target').text('<?php echo xla('Crítico'); ?>: ' + criticalText);
+        $('#eye_mag_flow_next').data('anchor', criticalAnchor.data('anchor'));
+    } else {
+        var nextSection = eyeMagLastSections[0];
+        $.each(eyeMagLastSections, function (_, s) {
+            if (s.state !== 'done') {
+                nextSection = s;
+                return false;
+            }
+        });
+        $('#eye_mag_flow_target').text(nextSection.label);
+        $('#eye_mag_flow_next').data('anchor', nextSection.anchor);
+    }
 
     if (eyeMagFlowEnabled) {
         $('#eye_mag_flow').addClass('eye-mag-flow-on');
