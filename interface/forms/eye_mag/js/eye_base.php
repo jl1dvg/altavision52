@@ -396,6 +396,29 @@ function refreshSectionProgress() {
 function highlightActiveSection() {
     return;
 }
+
+function copySectionAllByPrefix(containerSelector, fromPrefix, toPrefix) {
+    var changed = 0;
+    $(containerSelector).find('input[type="text"], textarea, select').each(function () {
+        var sourceId = this.id || '';
+        if (!sourceId || sourceId.indexOf(fromPrefix) !== 0) {
+            return;
+        }
+        var suffix = sourceId.substring(fromPrefix.length);
+        var targetId = toPrefix + suffix;
+        var $target = $('#' + targetId);
+        if (!$target.length || $target.is(':disabled')) {
+            return;
+        }
+        $target.val($(this).val());
+        changed++;
+    });
+
+    if (changed > 0) {
+        submit_form('eye_mag');
+        refreshSectionProgress();
+    }
+}
 /*
  * Functions to add a quick pick selection to the correct fields on the form.
  */
@@ -2597,6 +2620,25 @@ $(function () {
                       if (anchor) {
                           scrollTo(anchor);
                       }
+                  });
+
+                  $('#COPY_ALL_EXT_LR').on('click', function () {
+                      copySectionAllByPrefix('#EXT_left_1', 'R', 'L');
+                  });
+                  $('#COPY_ALL_EXT_RL').on('click', function () {
+                      copySectionAllByPrefix('#EXT_left_1', 'L', 'R');
+                  });
+                  $('#COPY_ALL_ANTSEG_OSOD').on('click', function () {
+                      copySectionAllByPrefix('#ANTSEG_left_1', 'OD', 'OS');
+                  });
+                  $('#COPY_ALL_ANTSEG_ODOS').on('click', function () {
+                      copySectionAllByPrefix('#ANTSEG_left_1', 'OS', 'OD');
+                  });
+                  $('#COPY_ALL_RETINA_OSOD').on('click', function () {
+                      copySectionAllByPrefix('#RETINA_left_1', 'OD', 'OS');
+                  });
+                  $('#COPY_ALL_RETINA_ODOS').on('click', function () {
+                      copySectionAllByPrefix('#RETINA_left_1', 'OS', 'OD');
                   });
 
                 // AUTO- CODING FEATURES

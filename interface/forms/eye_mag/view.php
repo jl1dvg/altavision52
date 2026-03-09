@@ -2589,6 +2589,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                        title="<?php echo xla('Open/Close External Exam panels'); ?>" id="BUTTON_TAB_EXT"
                                        name="BUTTON_TAB_EXT"></i>
                                     <b><?php echo xlt('External Exam'); ?>:</b>
+                                    <span class="section-copy-arrows">
+                                        <i class="fa fa-arrow-left copier" id="COPY_ALL_EXT_RL" title="<?php echo xla('Copy all Left to Right in this section'); ?>"></i>
+                                        <i class="fa fa-arrow-right copier" id="COPY_ALL_EXT_LR" title="<?php echo xla('Copy all Right to Left in this section'); ?>"></i>
+                                    </span>
                                     <div class="kb kb_left"
                                          title="<?php echo xla("External Exam Default Values"); ?>"><?php echo text('DEXT'); ?>
 
@@ -2957,6 +2961,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                        title="<?php echo xla('Open/Close Ant Seg panels'); ?>" id="BUTTON_TAB_ANTSEG"
                                        name="BUTTON_TAB_ANTSEG"></i>
                                     <b><?php echo xlt('Anterior Segment'); ?>:</b>
+                                    <span class="section-copy-arrows">
+                                        <i class="fa fa-arrow-left copier" id="COPY_ALL_ANTSEG_ODOS" title="<?php echo xla('Copy all OS to OD in this section'); ?>"></i>
+                                        <i class="fa fa-arrow-right copier" id="COPY_ALL_ANTSEG_OSOD" title="<?php echo xla('Copy all OD to OS in this section'); ?>"></i>
+                                    </span>
                                     <div class="kb kb_left"
                                          title="<?php echo xla("Anterior Segment Default Values"); ?>"><?php echo text('DAS'); ?></div>
                                     <br/>
@@ -3351,6 +3359,10 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                        title="<?php echo xla('Open/Close Post Seg panels'); ?>" id="BUTTON_TAB_POSTSEG"
                                        name="BUTTON_TAB_POSTSEG"></i>
                                     <b><?php echo xlt('Retina'); ?>:</b>
+                                    <span class="section-copy-arrows">
+                                        <i class="fa fa-arrow-left copier" id="COPY_ALL_RETINA_ODOS" title="<?php echo xla('Copy all OS to OD in this section'); ?>"></i>
+                                        <i class="fa fa-arrow-right copier" id="COPY_ALL_RETINA_OSOD" title="<?php echo xla('Copy all OD to OS in this section'); ?>"></i>
+                                    </span>
                                     <div class="kb kb_left"
                                          title="<?php echo xla("Retina Default Values"); ?>"><?php echo text('DRET'); ?></div>
                                     <input type="checkbox" id="DIL_RISKS" name="DIL_RISKS"
