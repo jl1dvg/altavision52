@@ -1749,11 +1749,7 @@ function build_IMPPLAN(items,nodisplay) {
               return;
             }
                var title2 = value.title.replace(/(\')/g, '');
-               var planSuggestion = getPlanTemplateSuggestion(value.code, value.codedesc || value.title);
                var planHintMarkup = '';
-               if (planSuggestion) {
-                   planHintMarkup = "<div class='plan-template-hint' id='PLAN_HINT_"+index+"' data-template='"+escapeIMPPLANHtml(planSuggestion)+"'><strong><?php echo xlt('Suggested plan'); ?>:</strong> " + escapeIMPPLANHtml(planSuggestion) + "</div>";
-               }
                contents_here = "<span class='bold' contenteditable title='<?php echo xla('Click to edit'); ?>' id='IMPRESSION_"+index+"'>" +
                value.title +"</span>"+
                " <span contenteditable class='float-right' onclick='sel_diagnosis("+index+",\""+title2+"\");' title='"+value.codetext+"' id='CODE_"+index+"'>"+
