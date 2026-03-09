@@ -63,11 +63,34 @@ $appttime = $trow['appttime'];
 $apptdate = $trow['apptdate'];
 $pceid = $trow['eid'];
 $theroom = '';
+
+$appt_status_options = array();
+$apptstats = sqlStatement("SELECT option_id, title FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
+while ($apptstat = sqlFetchArray($apptstats)) {
+    $status_title = $apptstat['title'];
+    if (isset($status_title[1]) && $status_title[1] == ' ') {
+        $splitTitle = explode(' ', $status_title);
+        array_shift($splitTitle);
+        $status_title = implode(' ', $splitTitle);
+    }
+    $status_style = collectApptStatusSettings($apptstat['option_id']);
+    $appt_status_options[] = array(
+        'id' => $apptstat['option_id'],
+        'title' => $status_title,
+        'color' => $status_style['color']
+    );
+}
 ?>
 
 <html>
 <head>
     <?php Header::setupHeader(['common', 'opener']); ?>
+    <style>
+        #statustype {
+            border-left: 8px solid transparent;
+            transition: border-color .2s ease, background-color .2s ease;
+        }
+    </style>
 </head>
 
 <?php
@@ -135,7 +158,15 @@ $row = sqlQuery("select fname, lname " .
         <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>"/>
         <div class="form-group">
             <label for="statustype"><?php echo xlt('Status Type'); ?></label>
-            <?php echo generate_select_list('statustype', 'apptstat', $trow['laststatus'], xl('Status Type')); ?>
+            <select id="statustype" name="statustype" class="form-control">
+                <?php foreach ($appt_status_options as $status_option) { ?>
+                    <option value="<?php echo attr($status_option['id']); ?>"
+                            data-color="<?php echo attr($status_option['color']); ?>"
+                        <?php echo ($status_option['id'] == $trow['laststatus']) ? 'selected' : ''; ?>>
+                        <?php echo text($status_option['title']); ?>
+                    </option>
+                <?php } ?>
+            </select>
         </div>
         <div class="form-group">
             <label for="roomnum"><?php echo xlt('Exam Room Number'); ?></label>
@@ -156,6 +187,39 @@ $row = sqlQuery("select fname, lname " .
         </div>
     </form>
 </div>
+<script>
+(function () {
+    function getContrastColor(hex) {
+        if (!hex || hex.charAt(0) !== '#' || (hex.length !== 7 && hex.length !== 4)) {
+            return '#111111';
+        }
+        var normalized = hex;
+        if (hex.length === 4) {
+            normalized = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+        }
+        var r = parseInt(normalized.substr(1, 2), 16);
+        var g = parseInt(normalized.substr(3, 2), 16);
+        var b = parseInt(normalized.substr(5, 2), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b);
+        return luminance > 160 ? '#111111' : '#ffffff';
+    }
+
+    function paintStatusSelect() {
+        var $select = $('#statustype');
+        var color = $select.find('option:selected').data('color') || '#ffffff';
+        $select.css({
+            'background-color': color,
+            'border-left-color': color,
+            'color': getContrastColor(color)
+        });
+    }
+
+    $(document).ready(function () {
+        paintStatusSelect();
+        $('#statustype').on('change', paintStatusSelect);
+    });
+})();
+</script>
 </body>
 </html>
 
