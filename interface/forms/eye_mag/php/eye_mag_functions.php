@@ -2431,10 +2431,10 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
 
     //SOCH, FH and ROS are listed in $PMSFH even if negative, only count positives
     if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-        foreach ($PMSFH[0]['ROS'] as $key => $value) {
-            if ($value['display'] == '') {
-                $total_PMSFH--;
-                $count['ROS']--;
+    foreach ($PMSFH[0]['ROS'] as $key => $value) {
+        if ($value['display'] == '') {
+            $total_PMSFH--;
+            $count['ROS']--;
             }
         }
     }
@@ -2447,10 +2447,10 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
     }
 
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-        foreach ($PMSFH[0]['SOCH'] as $key => $value) {
+    foreach ($PMSFH[0]['SOCH'] as $key => $value) {
             if (($value['display'] == '') || ($value['display'] == 'not_applicable')) {
-                $total_PMSFH--;
-                $count['SOCH']--;
+            $total_PMSFH--;
+            $count['SOCH']--;
             }
         }
     }
@@ -2645,99 +2645,99 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
 
     echo $close_table;
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-        $count = $count + $count['SOCH'] + 4;
+    $count = $count + $count['SOCH'] + 4;
 
-        if (($count > $column_max) && ($row_count < $rows)) {
-            echo $div;
-            $count = 0;
-            $row_count = 2;
-        } ?>
-        <table class="PMSFH_header">
-            <tr>
-                <td width="90%">
-                    <span class="left" style="font-weight:800;font-size:0.9em;"><?php echo xlt("Social"); ?></span>
-                </td>
-                <td>
-                    <span class="right btn-sm" href="#PMH_anchor" onclick="alter_issue2('0','SOCH','');"
-                          style="text-align:right;font-size:8px;"><?php echo xlt("New"); ?></span>
-                </td>
-            </tr>
-        </table>
-        <?php
-        echo $open_table;
+    if (($count > $column_max) && ($row_count < $rows)) {
+        echo $div;
+        $count = 0;
+        $row_count = 2;
+    } ?>
+    <table class="PMSFH_header">
+        <tr>
+            <td width="90%">
+                <span class="left" style="font-weight:800;font-size:0.9em;"><?php echo xlt("Social"); ?></span>
+            </td>
+            <td>
+                <span class="right btn-sm" href="#PMH_anchor" onclick="alter_issue2('0','SOCH','');"
+                      style="text-align:right;font-size:8px;"><?php echo xlt("New"); ?></span>
+            </td>
+        </tr>
+    </table>
+    <?php
+    echo $open_table;
         $mentions_SOCH = 0;
-        foreach ($PMSFH[0]['SOCH'] as $item) {
+    foreach ($PMSFH[0]['SOCH'] as $item) {
+        if (($counter > $column_max) && ($row_count < $rows)) {
+            echo $close_table . $div . $open_table;
+            $counter = "0";
+            $row_count++;
+        }
+
+        if (($item['display'] > '') && ($item['display'] != 'not_applicable')) {
+            echo "<span name='QP_PMH_" . $item['rowid'] . "' href='#PMH_anchor' id='QP_PMH_" . $item['rowid'] . "'
+                                onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+            $counter++;
+            $mentions_SOCH++;
+        }
+    }
+
+    if (!$mentions_SOCH) {
+        ?>
+        <span href="#PMH_anchor"
+              onclick="alter_issue2('0','SOCH','');"
+              style="text-align:right;"><?php echo xlt("Not documented"); ?></span><br/>
+        <?php
+        $counter = $counter + 2;
+    }
+
+    echo $close_table;
+    }
+
+    if (!eye_mag_should_hide_pmsfh_section('ROS')) {
+    $count = $count + $count['ROS'] + 4;
+
+    if (($count > $column_max) && ($row_count < $rows)) {
+        echo $div;
+        $count = 0;
+        $row_count = 2;
+    } ?>
+    <table class="PMSFH_header">
+        <tr>
+            <td width="90%">
+                <span class="left"
+                      style="font-weight:800;font-size:0.9em;"><?php echo xlt("ROS{{Review of Systems}}"); ?></span>
+            </td>
+            <td>
+                <span class="right btn-sm" href="#PMH_anchor" onclick="alter_issue2('0','ROS','');"
+                      style="text-align:right;font-size:8px;"><?php echo xlt("New"); ?></span>
+            </td>
+        </tr>
+    </table>
+    <?php
+    echo $open_table;
+        $mention = 0;
+    foreach ($PMSFH[0]['ROS'] as $item) {
+        if ($item['display'] > '') {
             if (($counter > $column_max) && ($row_count < $rows)) {
                 echo $close_table . $div . $open_table;
                 $counter = "0";
                 $row_count++;
             }
 
-            if (($item['display'] > '') && ($item['display'] != 'not_applicable')) {
-                echo "<span name='QP_PMH_" . $item['rowid'] . "' href='#PMH_anchor' id='QP_PMH_" . $item['rowid'] . "'
-                                    onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
-                $counter++;
-                $mentions_SOCH++;
-            }
+            //xlt($item['short_title']) - for a list of short_titles, see the predefined ROS categories
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
+                             onclick=\"alter_issue2('0','ROS','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+            $mention++;
+            $counter++;
         }
-
-        if (!$mentions_SOCH) {
-            ?>
-            <span href="#PMH_anchor"
-                  onclick="alter_issue2('0','SOCH','');"
-                  style="text-align:right;"><?php echo xlt("Not documented"); ?></span><br/>
-            <?php
-            $counter = $counter + 2;
-        }
-
-        echo $close_table;
     }
 
-    if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-        $count = $count + $count['ROS'] + 4;
+    if ($mention < 1) {
+        echo xlt("Negative") . "<br />";
+        $counter = $counter++;
+    }
 
-        if (($count > $column_max) && ($row_count < $rows)) {
-            echo $div;
-            $count = 0;
-            $row_count = 2;
-        } ?>
-        <table class="PMSFH_header">
-            <tr>
-                <td width="90%">
-                    <span class="left"
-                          style="font-weight:800;font-size:0.9em;"><?php echo xlt("ROS{{Review of Systems}}"); ?></span>
-                </td>
-                <td>
-                    <span class="right btn-sm" href="#PMH_anchor" onclick="alter_issue2('0','ROS','');"
-                          style="text-align:right;font-size:8px;"><?php echo xlt("New"); ?></span>
-                </td>
-            </tr>
-        </table>
-        <?php
-        echo $open_table;
-        $mention = 0;
-        foreach ($PMSFH[0]['ROS'] as $item) {
-            if ($item['display'] > '') {
-                if (($counter > $column_max) && ($row_count < $rows)) {
-                    echo $close_table . $div . $open_table;
-                    $counter = "0";
-                    $row_count++;
-                }
-
-                //xlt($item['short_title']) - for a list of short_titles, see the predefined ROS categories
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-                                 onclick=\"alter_issue2('0','ROS','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
-                $mention++;
-                $counter++;
-            }
-        }
-
-        if ($mention < 1) {
-            echo xlt("Negative") . "<br />";
-            $counter = $counter++;
-        }
-
-        echo $close_table;
+    echo $close_table;
     }
     ?>
     </div>
@@ -2924,27 +2924,27 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
     }
 
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-        //<!-- Social History -->
-        echo "<br /><span class='panel_title' title='" . xla("Social History") . "'>" . xlt('Soc Hx{{Social History}}') . ":</span>";
-        ?><span class="top-right btn-sm" href="#PMH_anchor"
-                onclick="alter_issue2('0','SOCH','');" style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?>
-        </span><br/>
-        <?php
+    //<!-- Social History -->
+    echo "<br /><span class='panel_title' title='" . xla("Social History") . "'>" . xlt('Soc Hx{{Social History}}') . ":</span>";
+    ?><span class="top-right btn-sm" href="#PMH_anchor"
+            onclick="alter_issue2('0','SOCH','');" style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?>
+    </span><br/>
+    <?php
         $mention_SOCH = 0;
-        foreach ($PMSFH[0]['SOCH'] as $k => $item) {
-            if (($item['display']) && ($item['display'] != 'not_applicable')) {
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "<br /></span>";
+    foreach ($PMSFH[0]['SOCH'] as $k => $item) {
+        if (($item['display']) && ($item['display'] != 'not_applicable')) {
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
+        onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "<br /></span>";
 
-                $mention_SOCH++;
-            }
+            $mention_SOCH++;
         }
+    }
 
-        if (!$mention_SOCH) {
-            ?>
-            <span href="#PMH_anchor"
-                  onclick="alter_issue2('0','SOCH','');" class="disabled_button"><?php echo xlt("Negative"); ?><br/></span>
-            <?php
+    if (!$mention_SOCH) {
+        ?>
+        <span href="#PMH_anchor"
+              onclick="alter_issue2('0','SOCH','');" class="disabled_button"><?php echo xlt("Negative"); ?><br/></span>
+        <?php
         }
     }
 
@@ -2973,25 +2973,25 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
     }
 
     if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-        echo "<br /><span class='panel_title' title='" . xla("Review of Systems") . "'>" . xlt("ROS{{Review of Systems}}") . ":</span>";
-        ?><span class="top-right btn-sm" href="#PMH_anchor"
-                onclick="alter_issue('0','ROS','');"
-                style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-        <br/>
-        <?php
+    echo "<br /><span class='panel_title' title='" . xla("Review of Systems") . "'>" . xlt("ROS{{Review of Systems}}") . ":</span>";
+    ?><span class="top-right btn-sm" href="#PMH_anchor"
+            onclick="alter_issue('0','ROS','');"
+            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
+    <br/>
+    <?php
         $mention_ROS = 0;
-        foreach ($PMSFH[0]['ROS'] as $item) {
-            if ($item['display']) {
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-                onclick=\"alter_issue2('0','ROS','');\">" . text($item['short_title']) . ": " . text($item['display']) . "</span><br />";
-                $mention_ROS++;
-            }
+    foreach ($PMSFH[0]['ROS'] as $item) {
+        if ($item['display']) {
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
+            onclick=\"alter_issue2('0','ROS','');\">" . text($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+            $mention_ROS++;
         }
+    }
 
-        if (!$mention_ROS) { ?>
-            <span href="#PMH_anchor"
-                  onclick="alter_issue2('0','ROS','');" class="disabled_button"><?php echo xlt('Negative'); ?><br/></span>
-            <?php
+    if (!$mention_ROS) { ?>
+        <span href="#PMH_anchor"
+              onclick="alter_issue2('0','ROS','');" class="disabled_button"><?php echo xlt('Negative'); ?><br/></span>
+        <?php
         }
     }
 
@@ -3033,10 +3033,10 @@ function show_PMSFH_report($PMSFH)
 
     //SOCH, FH and ROS are listed in $PMSFH even if negative, only count positives
     if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-        foreach ($PMSFH[0]['ROS'] as $key => $value) {
-            if ($value['display'] == '') {
-                $total_PMSFH--;
-                $count['ROS']--;
+    foreach ($PMSFH[0]['ROS'] as $key => $value) {
+        if ($value['display'] == '') {
+            $total_PMSFH--;
+            $count['ROS']--;
             }
         }
     }
@@ -3049,10 +3049,10 @@ function show_PMSFH_report($PMSFH)
     }
 
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-        foreach ($PMSFH[0]['SOCH'] as $key => $value) {
-            if (($value['display'] == '') || ($value['display'] == 'not_applicable')) {
-                $total_PMSFH--;
-                $count['SOCH']--;
+    foreach ($PMSFH[0]['SOCH'] as $key => $value) {
+        if (($value['display'] == '') || ($value['display'] == 'not_applicable')) {
+            $total_PMSFH--;
+            $count['SOCH']--;
             }
         }
     }
@@ -3184,29 +3184,29 @@ function show_PMSFH_report($PMSFH)
     }
 
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-        if ($counter + $count['SOCH'] > $panel_size) {
-            echo "</td><td class='show_report' style='vertical-align:top;width:150px;'>";
-            $counter = "0";
-        }
+    if ($counter + $count['SOCH'] > $panel_size) {
+        echo "</td><td class='show_report' style='vertical-align:top;width:150px;'>";
+        $counter = "0";
+    }
 
-        $counter++;
-        $counter++;
-        //<!-- SocHx -->
-        echo "<br /><b>" . xlt("Soc Hx{{Social History}}") . ":</b>";
-        ?>
-        <br/>
-        <?php
+    $counter++;
+    $counter++;
+    //<!-- SocHx -->
+    echo "<br /><b>" . xlt("Soc Hx{{Social History}}") . ":</b>";
+    ?>
+    <br/>
+    <?php
         $mention_PSOCH = 0;
-        foreach ($PMSFH[0]['SOCH'] as $k => $item) {
-            if (($item['display']) && ($item['display'] != 'not_applicable')) {
-                echo xlt($item['short_title']) . ": " . text($item['display']) . "<br />";
-                $mention_PSOCH++;
-                $counter++;
-            }
+    foreach ($PMSFH[0]['SOCH'] as $k => $item) {
+        if (($item['display']) && ($item['display'] != 'not_applicable')) {
+            echo xlt($item['short_title']) . ": " . text($item['display']) . "<br />";
+            $mention_PSOCH++;
+            $counter++;
         }
+    }
 
-        if (!$mention_PSOCH) {
-            echo xlt("Negative") . "<br />";
+    if (!$mention_PSOCH) {
+        echo xlt("Negative") . "<br />";
         }
     }
 
@@ -3235,28 +3235,28 @@ function show_PMSFH_report($PMSFH)
     }
 
     if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-        if (($counter !== "0") && (($counter + $count['ROS']) > $panel_size)) {
-            echo "</td><td class='show_report' style='vertical-align:top;width:150px;'>";
-            $counter = "0";
-        }
+    if (($counter !== "0") && (($counter + $count['ROS']) > $panel_size)) {
+        echo "</td><td class='show_report' style='vertical-align:top;width:150px;'>";
+        $counter = "0";
+    }
 
-        $counter++;
-        $counter++;
-        //<!-- ROS -->
-        echo "<br /><b>" . xlt("ROS{{Review of Systems}}") . ":</b>";
-        ?><br/>
-        <?php
+    $counter++;
+    $counter++;
+    //<!-- ROS -->
+    echo "<br /><b>" . xlt("ROS{{Review of Systems}}") . ":</b>";
+    ?><br/>
+    <?php
         $mention_ROS = 0;
-        foreach ($PMSFH[0]['ROS'] as $item) {
-            if ($item['display']) {
-                echo xlt($item['short_title']) . ": " . $item['display'] . "<br />";
-                $mention_ROS++;
-                $counter++;
-            }
+    foreach ($PMSFH[0]['ROS'] as $item) {
+        if ($item['display']) {
+            echo xlt($item['short_title']) . ": " . $item['display'] . "<br />";
+            $mention_ROS++;
+            $counter++;
         }
+    }
 
-        if ($mention_ROS < '1') {
-            echo xlt("Negative");
+    if ($mention_ROS < '1') {
+        echo xlt("Negative");
         }
     }
 
