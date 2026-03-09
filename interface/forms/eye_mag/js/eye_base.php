@@ -397,7 +397,10 @@ function refreshSectionProgress() {
     var iopOD = $.trim($('#ODIOPAP').val() || $('#ODIOPTPN').val() || '');
     var iopOS = $.trim($('#OSIOPAP').val() || $('#OSIOPTPN').val() || '');
     if (iopOD === '' || iopOS === '') {
-        critical.push('<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-anchor="LayerTension"><?php echo xla('IOP incompleto (OD/OS)'); ?></a></li>');
+        critical.push({
+            priority: 100,
+            html: '<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-priority="100" data-anchor="LayerTension"><?php echo xla('IOP incompleto (OD/OS)'); ?></a></li>'
+        });
     }
 
     var hasPlan = false;
@@ -408,17 +411,26 @@ function refreshSectionProgress() {
         }
     });
     if (!hasPlan) {
-        critical.push('<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Falta plan clínico en IMP/PLAN'); ?></a></li>');
+        critical.push({
+            priority: 90,
+            html: '<li><span class="eye-mag-priority eye-mag-priority-high"><?php echo xla('Alta'); ?></span> <a href="#" data-priority="90" data-anchor="IMPPLAN_left"><?php echo xla('Falta plan clínico en IMP/PLAN'); ?></a></li>'
+        });
     }
 
     var hasCoding = $.trim($('#Coding_DX_Codes').text()) !== '';
     if (!hasCoding) {
-        critical.push('<li><span class="eye-mag-priority eye-mag-priority-medium"><?php echo xla('Media'); ?></span> <a href="#" data-anchor="IMPPLAN_left"><?php echo xla('Sin códigos diagnósticos visibles'); ?></a></li>');
+        critical.push({
+            priority: 60,
+            html: '<li><span class="eye-mag-priority eye-mag-priority-medium"><?php echo xla('Media'); ?></span> <a href="#" data-priority="60" data-anchor="IMPPLAN_left"><?php echo xla('Sin códigos diagnósticos visibles'); ?></a></li>'
+        });
     }
 
     if (critical.length) {
+        critical.sort(function (a, b) {
+            return b.priority - a.priority;
+        });
         $('#eye_mag_critical').removeClass('nodisplay');
-        $('#eye_mag_critical_list').html(critical.join(''));
+        $('#eye_mag_critical_list').html($.map(critical, function (item) { return item.html; }).join(''));
     } else {
         $('#eye_mag_critical').addClass('nodisplay');
         $('#eye_mag_critical_list').html('');
@@ -448,8 +460,16 @@ function updateGuidedFlow() {
         return;
     }
 
-    var criticalAnchor = $('#eye_mag_critical_list a[data-anchor]:first');
-    if (criticalAnchor.length) {
+    var criticalAnchors = $('#eye_mag_critical_list a[data-anchor]');
+    if (criticalAnchors.length) {
+        var criticalAnchor = criticalAnchors.first();
+        criticalAnchors.each(function () {
+            var currentPriority = parseInt($(this).data('priority'), 10) || 0;
+            var bestPriority = parseInt(criticalAnchor.data('priority'), 10) || 0;
+            if (currentPriority > bestPriority) {
+                criticalAnchor = $(this);
+            }
+        });
         var criticalText = $.trim(criticalAnchor.text());
         $('#eye_mag_flow_target').text('<?php echo xla('Crítico'); ?>: ' + criticalText);
         $('#eye_mag_flow_next').data('anchor', criticalAnchor.data('anchor'));
