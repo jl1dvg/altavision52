@@ -214,6 +214,24 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
+        #flb_selectors select[multiple] {
+            width: 100%;
+            min-height: 130px;
+            height: auto;
+            color: #000;
+            line-height: 1.25;
+            overflow-y: auto;
+            white-space: normal;
+            padding: 4px;
+        }
+
+        #flb_selectors select[multiple] option {
+            color: #000;
+            white-space: normal;
+            word-break: break-word;
+            padding: 2px 4px;
+        }
+
         .btn{
             border: solid black 0.5pt;
             box-shadow: 3px 3px 3px #7b777760;
@@ -299,7 +317,7 @@ if (!$_REQUEST['flb_table']) {
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
                         <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
-                            <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
+                            <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-control input-sm"
                                     onchange="refineMe('apptcat');" title="">
                                 <?php
                                 $categories = fetchAppointmentCategories();
@@ -314,7 +332,7 @@ if (!$_REQUEST['flb_table']) {
                                 ?>
                             </select>
 
-                            <select id="form_apptstatus" name="form_apptstatus[]" multiple size="6" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
+                            <select id="form_apptstatus" name="form_apptstatus[]" multiple size="6" class="form-control input-sm"
                                     onchange="refineMe();">
                                 <option value=""><?php echo xlt("Visit Status"); ?></option>
 
@@ -337,7 +355,7 @@ if (!$_REQUEST['flb_table']) {
                                    onKeyUp="refineMe();">
                         </div>
                         <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
-                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_facility" name="form_facility[]" multiple size="6"
+                            <select class="form-control input-sm" id="form_facility" name="form_facility[]" multiple size="6"
                                 <?php
                                 $fac_sql = sqlStatement("SELECT * FROM facility ORDER BY id");
                                 while ($fac = sqlFetchArray($fac_sql)) {
@@ -369,7 +387,7 @@ if (!$_REQUEST['flb_table']) {
                             }
                             ?>
 
-                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_provider" name="form_provider[]" multiple size="6" <?php
+                            <select class="form-control input-sm" id="form_provider" name="form_provider[]" multiple size="6" <?php
                             if ($count_provs < '2') {
                                 echo "disabled";
                             }
