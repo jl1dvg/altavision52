@@ -3242,13 +3242,6 @@ body.eye-mag-ui .eye-mag-critical a {
     color: #8f2f2f;
 }
 
-body.eye-mag-ui #QP_PMH {
-    background: #f8fbff;
-    border: 1px solid #d9e6f7;
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-
 body.eye-mag-ui #QP_PMH .panel_title {
     color: #1f4f84;
     display: inline-block;
