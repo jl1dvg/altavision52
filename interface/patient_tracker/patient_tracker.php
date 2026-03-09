@@ -46,6 +46,29 @@ $form_apptstatus = prevSetting($uspfx, 'form_apptstatus', 'form_apptstatus', '')
 $facility = prevSetting($uspfx, 'form_facility', 'form_facility', '');
 $provider = prevSetting($uspfx, 'form_provider', 'form_provider', $_SESSION['authUserID']);
 
+function normalizeMultiSelection($value)
+{
+    if (is_array($value)) {
+        return array_values(array_filter(array_map('strval', $value), function ($v) {
+            return $v !== '';
+        }));
+    }
+
+    $value = trim((string)$value);
+    if ($value === '') {
+        return array();
+    }
+
+    return array_values(array_filter(array_map('trim', explode(',', $value)), function ($v) {
+        return $v !== '';
+    }));
+}
+
+$selected_apptcats = normalizeMultiSelection($_POST['form_apptcat'] ?? $form_apptcat);
+$selected_apptstatus = normalizeMultiSelection($_POST['form_apptstatus'] ?? $form_apptstatus);
+$selected_facilities = normalizeMultiSelection($_POST['form_facility'] ?? $facility);
+$selected_providers = normalizeMultiSelection($_POST['form_provider'] ?? $provider);
+
 if (
     ($_POST['setting_new_window']) ||
     ($_POST['setting_bootstrap_submenu']) ||
@@ -276,14 +299,14 @@ if (!$_REQUEST['flb_table']) {
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
                         <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
-                            <select id="form_apptcat" name="form_apptcat" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
+                            <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
                                     onchange="refineMe('apptcat');" title="">
                                 <?php
                                 $categories = fetchAppointmentCategories();
                                 echo "<option value=''>" . xlt("Visit Categories") . "</option>";
                                 while ($cat = sqlFetchArray($categories)) {
                                     echo "<option value='" . attr($cat['id']) . "'";
-                                    if ($cat['id'] == $_POST['form_apptcat']) {
+                                    if (in_array((string)$cat['id'], $selected_apptcats, true)) {
                                         echo " selected='true' ";
                                     }
                                     echo ">" . xlt($cat['category']) . "</option>";
@@ -291,7 +314,7 @@ if (!$_REQUEST['flb_table']) {
                                 ?>
                             </select>
 
-                            <select id="form_apptstatus" name="form_apptstatus" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
+                            <select id="form_apptstatus" name="form_apptstatus[]" multiple size="6" class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all"
                                     onchange="refineMe();">
                                 <option value=""><?php echo xlt("Visit Status"); ?></option>
 
@@ -299,7 +322,7 @@ if (!$_REQUEST['flb_table']) {
                                 $apptstats = sqlStatement("SELECT * FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
                                 while ($apptstat = sqlFetchArray($apptstats)) {
                                     echo "<option value='" . attr($apptstat['option_id']) . "'";
-                                    if ($apptstat['option_id'] == $_POST['form_apptstatus']) {
+                                    if (in_array((string)$apptstat['option_id'], $selected_apptstatus, true)) {
                                         echo " selected='true' ";
                                     }
                                     echo ">" . xlt($apptstat['title']) . "</option>";
@@ -314,11 +337,11 @@ if (!$_REQUEST['flb_table']) {
                                    onKeyUp="refineMe();">
                         </div>
                         <div class="col-sm-<?php echo attr($col_width); ?> text-center" style="margin-top:15px;">
-                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_facility" name="form_facility"
+                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_facility" name="form_facility[]" multiple size="6"
                                 <?php
                                 $fac_sql = sqlStatement("SELECT * FROM facility ORDER BY id");
                                 while ($fac = sqlFetchArray($fac_sql)) {
-                                    $true = ($fac['id'] == $_POST['form_facility']) ? "selected=true" : '';
+                                    $true = in_array((string)$fac['id'], $selected_facilities, true) ? "selected=true" : '';
                                     $select_facs .= "<option value=" . attr($fac['id']) . " " . $true . ">" . text($fac['name']) . "</option>\n";
                                     $count_facs++;
                                 }
@@ -338,9 +361,7 @@ if (!$_REQUEST['flb_table']) {
                             while ($urow = sqlFetchArray($ures)) {
                                 $provid = $urow['id'];
                                 $select_provs .= "    <option value='" . attr($provid) . "'";
-                                if (isset($_POST['form_provider']) && $provid == $_POST['form_provider']) {
-                                    $select_provs .= " selected";
-                                } elseif (!isset($_POST['form_provider']) && $_SESSION['userauthorized'] && $provid == $_SESSION['authUserID']) {
+                                if (in_array((string)$provid, $selected_providers, true)) {
                                     $select_provs .= " selected";
                                 }
                                 $select_provs .= ">" . text($urow['lname']) . ", " . text($urow['fname']) . "\n";
@@ -348,13 +369,11 @@ if (!$_REQUEST['flb_table']) {
                             }
                             ?>
 
-                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_provider" name="form_provider" <?php
+                            <select class="form-group ui-selectmenu-button ui-button ui-widget ui-selectmenu-button-closed ui-corner-all" id="form_provider" name="form_provider[]" multiple size="6" <?php
                             if ($count_provs < '2') {
                                 echo "disabled";
                             }
                             ?> onchange="refineMe('provider');">
-                                <option value="" selected><?php echo xlt('All Providers'); ?></option>
-
                                 <?php
                                 echo $select_provs;
                                 ?>
@@ -487,7 +506,10 @@ if (!$_REQUEST['flb_table']) {
                        class='fa fa-caret-<?php echo $caret = ($setting_selectors == 'none') ? 'down' : 'up'; ?> fa-stack-1x'></i>
                   </span>
 
-                  <a target='_blank'  <?php echo "href='parte.php?provider=" . $_POST['form_provider'] . "&from=" . date($_POST['form_from_date']) . "&to=" . $_POST['form_to_date'] . "'"; ?>
+                  <a target='_blank'  <?php
+                  $providers_for_report = implode(',', $selected_providers);
+                  echo "href='parte.php?provider=" . attr_url($providers_for_report) . "&from=" . date($_POST['form_from_date']) . "&to=" . $_POST['form_to_date'] . "'";
+                  ?>
                   class='btn btn-primary' onclick="top.restoreSession()"> <?php echo xlt('Imprimir Parte'); ?> </a>
                   <a class='btn btn-primary' onclick="print_FLB();"> <?php echo xlt('Imprimir Agenda'); ?> </a>
 
@@ -759,7 +781,8 @@ if (!$_REQUEST['flb_table']) {
                             data-pid="' . attr($appointment['pc_pid']) . '"
                             data-pname="' . attr($ptname) . '"
                             class="text-small"
-                            bgcolor="' . attr($bgcolor) . '" >';
+                            bgcolor="' . attr($bgcolor) . '"
+                            style="border-left: 6px solid ' . attr($bgcolor) . ';" >';
                         if ($GLOBALS['ptkr_show_pid']) {
                             ?>
                             <td class="detail hidden-xs" align="center" name="kiosk_hide">
@@ -1069,6 +1092,16 @@ function myLocalJS()
         /**
          * This function refreshes the whole flb_table according to our to/from dates.
          */
+        function getSelectedValues(selector) {
+            var selected = $(selector).val();
+            if (!Array.isArray(selected)) {
+                selected = (selected && selected !== '') ? [selected] : [];
+            }
+            return selected.filter(function (v) {
+                return v !== '';
+            });
+        }
+
         function refreshMe(fromTimer) {
 
             if(typeof fromTimer === 'undefined' || !fromTimer) {
@@ -1083,12 +1116,12 @@ function myLocalJS()
                 flb_table: '1',
                 form_from_date: $("#form_from_date").val(),
                 form_to_date: $("#form_to_date").val(),
-                form_facility: $("#form_facility").val(),
-                form_provider: $("#form_provider").val(),
-                form_apptstatus: $("#form_apptstatus").val(),
+                form_facility: getSelectedValues("#form_facility").join(','),
+                form_provider: getSelectedValues("#form_provider").join(','),
+                form_apptstatus: getSelectedValues("#form_apptstatus").join(','),
                 form_patient_name: $("#form_patient_name").val(),
                 form_patient_id: $("#form_patient_id").val(),
-                form_apptcat: $("#form_apptcat").val(),
+                form_apptcat: getSelectedValues("#form_apptcat").join(','),
                 kiosk: $("#kiosk").val(),
                 csrf_token_form: <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>
             }).done(
@@ -1130,10 +1163,10 @@ function myLocalJS()
          * It is called on initial load, on refresh and 'onchange/onkeyup' of a flow board parameter.
          */
         function refineMe() {
-            var apptcatV = $("#form_apptcat").val();
-            var apptstatV = $("#form_apptstatus").val();
-            var facV = $("#form_facility").val();
-            var provV = $("#form_provider").val();
+            var apptcatV = getSelectedValues("#form_apptcat");
+            var apptstatV = getSelectedValues("#form_apptstatus");
+            var facV = getSelectedValues("#form_facility");
+            var provV = getSelectedValues("#form_provider");
             var pidV = String($("#form_patient_id").val());
             var pidRE = new RegExp(pidV, 'g');
             var pnameV = $("#form_patient_name").val();
@@ -1142,15 +1175,20 @@ function myLocalJS()
             //and hide what we don't want to show
             $('#flb_table tbody tr').hide().filter(function () {
                 var d = $(this).data();
-                meets_cat = (apptcatV === '') || (apptcatV == d.apptcat);
-                meets_stat = (apptstatV === '') || (apptstatV == d.apptstatus);
-                meets_fac = (facV === '') || (facV == d.facility);
-                meets_prov = (provV === '') || (provV == d.provider);
-                meets_pid = (pidV === '');
+                var apptcatData = String(d.apptcat);
+                var apptstatusData = String(d.apptstatus);
+                var facilityData = String(d.facility);
+                var providerData = String(d.provider);
+
+                var meets_cat = (apptcatV.length === 0) || (apptcatV.indexOf(apptcatData) !== -1);
+                var meets_stat = (apptstatV.length === 0) || (apptstatV.indexOf(apptstatusData) !== -1);
+                var meets_fac = (facV.length === 0) || (facV.indexOf(facilityData) !== -1);
+                var meets_prov = (provV.length === 0) || (provV.indexOf(providerData) !== -1);
+                var meets_pid = (pidV === '');
                 if ((pidV > '') && pidRE.test(d.pid)) {
                     meets_pid = true;
                 }
-                meets_pname = (pnameV === '');
+                var meets_pname = (pnameV === '');
                 if ((pnameV > '') && pnameRE.test(d.pname)) {
                     meets_pname = true;
                 }
