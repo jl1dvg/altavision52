@@ -314,6 +314,12 @@ function isTrackedSaveRequest(settings) {
     return true;
 }
 
+function safeMatchGroup(value, pattern, index) {
+    var m = String(value || '').match(pattern);
+    var i = (typeof index === 'number') ? index : 1;
+    return (m && typeof m[i] !== 'undefined') ? m[i] : '';
+}
+
 function refreshSectionProgress() {
     var map = [
         { key: 'HPI', label: '<?php echo xla('HPI'); ?>', box: '#HPI_1', anchor: 'HPI_left' },
@@ -2102,8 +2108,11 @@ function build_CODING_list() {
         //2. Tests/procedures performed to bill
     $('.TESTS').each(function(i, obj) {
                     if  ($(this).is(':checked')) {
-                      var codetype = obj.value.match(/(.*):(.*)/)[1];
-                      var code = obj.value.match(/(.*):(.*)/)[2];
+                      var codetype = safeMatchGroup(obj.value, /(.*):(.*)/, 1);
+                      var code = safeMatchGroup(obj.value, /(.*):(.*)/, 2);
+                      if (!codetype || !code) {
+                          return;
+                      }
                       var modifier = $('#'+obj.id+'_modifier').val();
                       var justify = '';
                       $('[name="TEST_'+i+'_justifiers"]').each(function(j,obj2) {
@@ -3298,7 +3307,7 @@ $(function () {
                     }
                   }
                   $("body").on("click","[name$='_text_view']" , function() {
-                               var header = this.id.match(/(.*)_text_view$/)[1];
+                               var header = safeMatchGroup(this.id, /(.*)_text_view$/);
                                $("#"+header+"_text_list").toggleClass('wide_textarea');
                                $("#"+header+"_text_list").toggleClass('narrow_textarea');
                                $(this).toggleClass('fa-plus-square-o');
@@ -3317,7 +3326,7 @@ $(function () {
                                 var newValue = this.value;
                                 if (new_section[1] =='') return;
                                 if (new_section[1].match(/_canvas/)) {
-                                    goto_section = new_section[1].match(/_canvas/)[1];
+                                    goto_section = new_section[1].replace(/_canvas/, '');
                                     show_PRIOR_CANVAS_section(goto_section,newValue);
                                     return;
                                 }
@@ -3404,7 +3413,7 @@ $("body").on("click","[name^='old_canvas']", function() {
 
 
                   $("body").on("click","[id^='Close_PRIORS_']", function() {
-                               var new_section = this.id.match(/Close_PRIORS_(.*)$/)[1];
+                               var new_section = safeMatchGroup(this.id, /Close_PRIORS_(.*)$/);
                                $("#PRIORS_"+ new_section +"_left_text").addClass('nodisplay');
                                $("#QP_" + new_section).removeClass('nodisplay');
                                });
@@ -4129,9 +4138,9 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                  });
 
                   $("[name^='Close_']").on("click", function()  {
-                                              var section = this.id.match(/Close_(.*)$/)[1];
+                                              var section = safeMatchGroup(this.id, /Close_(.*)$/);
                                               if (this.id.match(/Close_W_(.*)$/) != null) {
-                                              var W_section = this.id.match(/Close_W_(.*)$/)[1];
+                                              var W_section = safeMatchGroup(this.id, /Close_W_(.*)$/);
                                               if (W_section > '1') {
                                               $('#LayerVision_W_'+W_section).addClass('nodisplay');
                                               $('[name$=SPH_'+W_section+']').val('');
