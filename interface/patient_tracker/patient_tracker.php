@@ -398,7 +398,7 @@ if (!$_REQUEST['flb_table']) {
                                     <option value=""><?php echo xlt("Visit Status"); ?></option>
 
                                     <?php
-                                    $apptstats = sqlStatement("SELECT * FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
+                                    $apptstats = sqlStatement("SELECT * FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY CAST(seq AS UNSIGNED), seq, title");
                                     while ($apptstat = sqlFetchArray($apptstats)) {
                                         echo "<option value='" . attr($apptstat['option_id']) . "'";
                                         if (in_array((string)$apptstat['option_id'], $selected_apptstatus, true)) {

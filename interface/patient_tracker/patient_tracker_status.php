@@ -65,7 +65,7 @@ $pceid = $trow['eid'];
 $theroom = '';
 
 $appt_status_options = array();
-$apptstats = sqlStatement("SELECT option_id, title FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
+$apptstats = sqlStatement("SELECT option_id, title FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY CAST(seq AS UNSIGNED), seq, title");
 while ($apptstat = sqlFetchArray($apptstats)) {
     $status_title = $apptstat['title'];
     if (isset($status_title[1]) && $status_title[1] == ' ') {
