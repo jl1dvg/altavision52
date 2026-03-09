@@ -2551,23 +2551,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                             <div id="eye_mag_progress_bar" class="eye-mag-progress-bar"></div>
                         </div>
                         <div id="eye_mag_progress_pct" class="eye-mag-progress-pct">0%</div>
-                        <div id="eye_mag_progress_chips" class="eye-mag-progress-chips"></div>
-                        <div id="eye_mag_pending" class="eye-mag-pending nodisplay">
-                            <b><?php echo xlt('Pendientes'); ?>:</b>
-                            <ul id="eye_mag_pending_list"></ul>
-                        </div>
                         <div id="eye_mag_critical" class="eye-mag-critical nodisplay">
                             <b><?php echo xlt('Campos críticos faltantes'); ?>:</b>
                             <ul id="eye_mag_critical_list"></ul>
-                        </div>
-                        <div id="eye_mag_ready" class="eye-mag-ready">
-                            <span id="eye_mag_ready_badge" class="eye-mag-ready-badge eye-mag-ready-red"><?php echo xlt('No listo para cerrar'); ?></span>
-                            <span id="eye_mag_ready_text"><?php echo xlt('Complete pendientes y críticos para marcar el encuentro como listo.'); ?></span>
-                        </div>
-                        <div id="eye_mag_flow" class="eye-mag-flow">
-                            <button type="button" id="eye_mag_flow_toggle" class="btn btn-sm btn-default"><i class="fa fa-magic"></i> <?php echo xlt('Flujo guiado'); ?></button>
-                            <span id="eye_mag_flow_hint" class="eye-mag-flow-hint"><?php echo xlt('Siguiente paso recomendado'); ?>: <b id="eye_mag_flow_target"><?php echo xlt('HPI'); ?></b></span>
-                            <button type="button" id="eye_mag_flow_next" class="btn btn-sm btn-primary"><?php echo xlt('Ir al siguiente'); ?></button>
                         </div>
                     </div>
                     <!-- end of the exam selection row -->

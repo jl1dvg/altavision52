@@ -52,8 +52,6 @@ var doc=[];
 var syncStatusTimer = null;
 var eyeMagUiReady = false;
 var eyeMagAutoPrefillStarted = false;
-var eyeMagFlowEnabled = false;
-var eyeMagLastSections = [];
 
 function updateActiveChartBadge(state) {
     var isActive = (state === "on");
@@ -327,11 +325,8 @@ function refreshSectionProgress() {
         { key: 'IMPPLAN', label: '<?php echo xla('Imp/Plan'); ?>', box: '#IMPPLAN_1', anchor: 'IMPPLAN_left' }
     ];
 
-    var chips = [];
-    var pending = [];
     var totalFields = 0;
     var filledFields = 0;
-    var sectionStatus = [];
 
     $.each(map, function (_, section) {
         if (!$(section.box).length) {
@@ -346,52 +341,13 @@ function refreshSectionProgress() {
                 filled++;
             }
         });
-
         totalFields += total;
         filledFields += filled;
-
-        var ratio = (total > 0) ? (filled / total) : 0;
-        var state = 'empty';
-        var stateLabel = '<?php echo xla('Vacío'); ?>';
-        if (ratio >= 0.45) {
-            state = 'done';
-            stateLabel = '<?php echo xla('Completo'); ?>';
-        } else if (ratio >= 0.1) {
-            state = 'progress';
-            stateLabel = '<?php echo xla('En progreso'); ?>';
-        }
-
-        sectionStatus.push({
-            key: section.key,
-            label: section.label,
-            anchor: section.anchor,
-            ratio: ratio,
-            state: state
-        });
-
-        chips.push('<button type="button" class="eye-mag-chip eye-mag-chip-' + state + '" data-anchor="' + section.anchor + '">' +
-            '<span class="eye-mag-chip-label">' + section.label + '</span>' +
-            '<span class="eye-mag-chip-state">' + stateLabel + '</span>' +
-            '</button>');
-
-        if (state !== 'done') {
-            pending.push('<li><a href="#" data-anchor="' + section.anchor + '">' + section.label + '</a></li>');
-        }
     });
-
-    $('#eye_mag_progress_chips').html(chips.join(''));
 
     var progressPct = (totalFields > 0) ? Math.round((filledFields / totalFields) * 100) : 0;
     $('#eye_mag_progress_bar').css('width', progressPct + '%');
     $('#eye_mag_progress_pct').text(progressPct + '%');
-
-    if (pending.length) {
-        $('#eye_mag_pending').removeClass('nodisplay');
-        $('#eye_mag_pending_list').html(pending.join(''));
-    } else {
-        $('#eye_mag_pending').addClass('nodisplay');
-        $('#eye_mag_pending_list').html('');
-    }
 
     var critical = [];
     var iopOD = $.trim($('#ODIOPAP').val() || $('#ODIOPTPN').val() || '');
@@ -435,103 +391,10 @@ function refreshSectionProgress() {
         $('#eye_mag_critical').addClass('nodisplay');
         $('#eye_mag_critical_list').html('');
     }
-
-    var readyBadge = $('#eye_mag_ready_badge');
-    var readyText = $('#eye_mag_ready_text');
-    readyBadge.removeClass('eye-mag-ready-red eye-mag-ready-yellow eye-mag-ready-green');
-
-    if (!critical.length && !pending.length && progressPct >= 75) {
-        readyBadge.addClass('eye-mag-ready-green').text('<?php echo xla('Listo para cerrar'); ?>');
-        readyText.text('<?php echo xla('Se completaron críticos y pendientes principales del encuentro.'); ?>');
-    } else if (!critical.length && progressPct >= 50) {
-        readyBadge.addClass('eye-mag-ready-yellow').text('<?php echo xla('Casi listo'); ?>');
-        readyText.text('<?php echo xla('Revise pendientes restantes antes del cierre.'); ?>');
-    } else {
-        readyBadge.addClass('eye-mag-ready-red').text('<?php echo xla('No listo para cerrar'); ?>');
-        readyText.text('<?php echo xla('Hay críticos o bajo avance general en el encuentro.'); ?>');
-    }
-
-    eyeMagLastSections = sectionStatus;
-    updateGuidedFlow();
-}
-
-function updateGuidedFlow() {
-    if (!eyeMagLastSections.length) {
-        return;
-    }
-
-    var criticalAnchors = $('#eye_mag_critical_list a[data-anchor]');
-    if (criticalAnchors.length) {
-        var criticalAnchor = criticalAnchors.first();
-        criticalAnchors.each(function () {
-            var currentPriority = parseInt($(this).data('priority'), 10) || 0;
-            var bestPriority = parseInt(criticalAnchor.data('priority'), 10) || 0;
-            if (currentPriority > bestPriority) {
-                criticalAnchor = $(this);
-            }
-        });
-        var criticalText = $.trim(criticalAnchor.text());
-        $('#eye_mag_flow_target').text('<?php echo xla('Crítico'); ?>: ' + criticalText);
-        $('#eye_mag_flow_next').data('anchor', criticalAnchor.data('anchor'));
-    } else {
-        var nextSection = eyeMagLastSections[0];
-        $.each(eyeMagLastSections, function (_, s) {
-            if (s.state !== 'done') {
-                nextSection = s;
-                return false;
-            }
-        });
-        $('#eye_mag_flow_target').text(nextSection.label);
-        $('#eye_mag_flow_next').data('anchor', nextSection.anchor);
-    }
-
-    if (eyeMagFlowEnabled) {
-        $('#eye_mag_flow').addClass('eye-mag-flow-on');
-    } else {
-        $('#eye_mag_flow').removeClass('eye-mag-flow-on');
-    }
-}
-
-function gotoNextGuidedStep() {
-    var anchor = $('#eye_mag_flow_next').data('anchor');
-    if (!anchor) {
-        return;
-    }
-    scrollTo(anchor);
-    window.setTimeout(function () {
-        var panel = $('#' + anchor).closest('div[id$="_1"]');
-        if (panel.length) {
-            panel.addClass('eye-mag-guided-focus');
-            window.setTimeout(function () {
-                panel.removeClass('eye-mag-guided-focus');
-            }, 1200);
-        }
-        highlightActiveSection();
-    }, 220);
 }
 
 function highlightActiveSection() {
-    var anchors = ['HPI_left', 'PMH_left', 'EXT_left', 'ANTSEG_left', 'RETINA_left', 'NEURO_left', 'IMPPLAN_left'];
-    var bestAnchor = '';
-    var bestDistance = 999999;
-    var viewportPoint = $(window).scrollTop() + 160;
-
-    $.each(anchors, function (_, anchor) {
-        var node = $('#' + anchor);
-        if (!node.length || node.hasClass('nodisplay')) {
-            return;
-        }
-        var distance = Math.abs(node.offset().top - viewportPoint);
-        if (distance < bestDistance) {
-            bestDistance = distance;
-            bestAnchor = anchor;
-        }
-    });
-
-    $('#eye_mag_progress_chips .eye-mag-chip').removeClass('eye-mag-chip-active');
-    if (bestAnchor !== '') {
-        $('#eye_mag_progress_chips .eye-mag-chip[data-anchor="' + bestAnchor + '"]').addClass('eye-mag-chip-active');
-    }
+    return;
 }
 /*
  * Functions to add a quick pick selection to the correct fields on the form.
@@ -1116,7 +979,6 @@ function populate_form(result) {
     build_Chronics(obj);
     build_DX_list(obj); //build the list of DXs to show in the Impression/Plan Builder
     refreshSectionProgress();
-    highlightActiveSection();
 }
 /*
  *  Function to auto-fill CHRONIC fields
@@ -2724,39 +2586,21 @@ $(function () {
                   var allPanels2 = $('.building_blocks2 > dd').hide();
                   refresh_page();
                   refreshSectionProgress();
-                  highlightActiveSection();
 
                   var progressRefreshTimer = null;
                   $('form#eye_mag').on('input change', 'input[type="text"], textarea, select', function () {
                       window.clearTimeout(progressRefreshTimer);
                       progressRefreshTimer = window.setTimeout(function () {
                           refreshSectionProgress();
-                          highlightActiveSection();
                       }, 220);
                   });
 
-                  $('body').on('click', '#eye_mag_progress_chips [data-anchor], #eye_mag_pending_list [data-anchor], #eye_mag_critical_list [data-anchor]', function (e) {
+                  $('body').on('click', '#eye_mag_critical_list [data-anchor]', function (e) {
                       e.preventDefault();
                       var anchor = $(this).data('anchor');
                       if (anchor) {
                           scrollTo(anchor);
-                          window.setTimeout(highlightActiveSection, 240);
                       }
-                  });
-
-                  $(window).on('scroll resize', function () {
-                      window.clearTimeout(progressRefreshTimer);
-                      progressRefreshTimer = window.setTimeout(highlightActiveSection, 80);
-                  });
-
-                  $('#eye_mag_flow_toggle').on('click', function () {
-                      eyeMagFlowEnabled = !eyeMagFlowEnabled;
-                      $(this).toggleClass('btn-primary', eyeMagFlowEnabled).toggleClass('btn-default', !eyeMagFlowEnabled);
-                      updateGuidedFlow();
-                  });
-
-                  $('#eye_mag_flow_next').on('click', function () {
-                      gotoNextGuidedStep();
                   });
 
                 // AUTO- CODING FEATURES
