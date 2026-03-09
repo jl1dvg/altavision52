@@ -231,7 +231,7 @@ if (!empty($_REQUEST['go'])) { ?>
                                 <?php }?>
                                 <?php if ($logged_in) { ?>
                                 <li class="oe-bold-black" id='li-sms'>
-                                    <a href='#' id='sms-li' style="font-weight:700; color:#000000"><?php echo xlt('SMS Zone'); ?></a>
+                                    <a href='#' id='sms-li' style="font-weight:700; color:#000000"><?php echo xlt('WhatsApp'); ?></a>
                                 </li>
                                 <?php }?>
                             </ul>
@@ -848,12 +848,12 @@ if (!empty($_REQUEST['go'])) { ?>
                 <fieldset>
                     <?php if ($logged_in) { ?>
                     <div class="col-sm-4 col-md-4 col-lg-4">
-                        <span class="title"><?php echo xlt('SMS Zone'); ?></span>
+                        <span class="title"><?php echo xlt('WhatsApp'); ?></span>
                         <br/><br/>
                         <form id="smsForm" class="input-group">
                             <input id="SMS_patient" type="text" style="margin:0;max-width:100%;" class="form-control"
                                    placeholder="<?php echo xla("Patient Name"); ?>" />
-                            <span class="input-group-addon" onclick="SMS_direct();"><i
+                            <span class="input-group-addon" onclick="WA_direct();"><i
                                         class="glyphicon glyphicon-phone"></i></span>
                             <input type="hidden" id="sms_pid">
                             <input type="hidden" id="sms_mobile" value="">
@@ -950,7 +950,7 @@ if (!empty($_REQUEST['go'])) { ?>
         $(function () {
             var f = $("#smsForm");
             $("#SMS_patient").autocomplete({
-                source: "save.php?go=sms_search",
+                source: "whatsapp_api.php?action=search_patient", 
                 minLength: 2,
                 select: function (event, ui) {
                     event.preventDefault();
@@ -1144,17 +1144,17 @@ if (!empty($_REQUEST['go'])) { ?>
             }
         }
 
-        function SMS_direct() {
+        function WA_direct() {
             var pid = $("#sms_pid").val();
             var m = $("#sms_mobile").val();
             var allow = $("#sms_allow").val();
             if ((pid === '') || (m === '')) {
-                alert('<?php echo xls("MedEx needs a valid mobile number to send SMS messages..."); ?>');
+                alert('<?php echo xls("Se necesita un movil valido para enviar mensajes de WhatsApp..."); ?>');
             } else if (allow === 'NO') {
-                alert('<?php echo xls("This patient does not allow SMS messaging!"); ?>');
+                alert('<?php echo xls("Este paciente no permite mensajeria movil!"); ?>');
             } else {
                 top.restoreSession();
-                window.open('messages.php?nomenu=1&go=SMS_bot&pid=' + encodeURIComponent(pid) + '&m=' + encodeURIComponent(m), 'SMS_bot', 'width=370,height=600,resizable=0');
+                window.open('whatsapp_bot.php?pid=' + encodeURIComponent(pid) + '&m=' + encodeURIComponent(m), 'WA_bot', 'width=420,height=700,resizable=1');
             }
         }
     </script>
