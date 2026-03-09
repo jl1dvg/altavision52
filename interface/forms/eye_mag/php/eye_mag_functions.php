@@ -2758,246 +2758,169 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
 {
     global $pcp_data;
     global $ref_data;
+
     ob_start();
-    echo '<div>
-    <div>';
+    echo '<div><div>';
 
     //<!-- POH -->
-    echo "<br /><span class='panel_title' title='" . xla('Past Ocular History') . "'>" . xlt("POH{{Past Ocular History}}") . ":</span>";
-    ?>
-    <span class="top-right btn-sm" href="#PMH_anchor"
-          onclick="alter_issue2('0','POH','');"
-          style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['POH']) {
+    echo "<span class='panel_title' title='" . xla('Past Ocular History') . "'>" . xlt("POH{{Past Ocular History}}") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','POH','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    if (!empty($PMSFH[0]['POH'])) {
         $i = 0;
         foreach ($PMSFH[0]['POH'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POH','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POH','" . $i . "');\">" . text($item['title']) . "</span><br />";
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','POH','');" class="disabled_button"><?php echo xlt("None"); ?><br/></span>
-        <?php
+    } else {
+        echo "<span onclick=\"alter_issue2('0','POH','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
     //<!-- POS -->
-    echo "<br /><span class='panel_title' title='" . xla('Past Ocular Surgery') . "'>" . xlt("POS{{Past Ocular Surgery}}") . ":</span>";
-    ?>
-    <span class="top-right btn-sm" href="#PMH_anchor"
-          onclick="alter_issue2('0','POS','');"
-          style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['POS']) {
+    echo "<span class='panel_title' title='" . xla('Past Ocular Surgery') . "'>" . xlt("POS{{Past Ocular Surgery}}") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','POS','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    if (!empty($PMSFH[0]['POS'])) {
         $i = 0;
         foreach ($PMSFH[0]['POS'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POS','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POS','" . $i . "');\">" . text($item['title']) . "</span><br />";
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','POS','');" class="disabled_button"><?php echo xlt("None"); ?><br/></span>
-        <?php
+    } else {
+        echo "<span onclick=\"alter_issue2('0','POS','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
-//<!-- Eye Meds -->
-    echo "<br /><span class='panel_title' title='" . xla("Eye Meds") . "'>" . xlt("Eye Meds") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','Medication','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['Eye Meds']) {
+    //<!-- Eye Meds -->
+    echo "<span class='panel_title' title='" . xla("Eye Meds") . "'>" . xlt("Eye Meds") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','Medication','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    $mention_eye_meds = 0;
+    if (!empty($PMSFH[0]['Eye Meds'])) {
         $i = 0;
         foreach ($PMSFH[0]['Eye Meds'] as $item) {
             if (($item['status'] == "Inactive") || ($item['row_subtype'] != "eye")) {
                 $i++;
                 continue;
             }
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\" > " . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            $mention_eye_meds++;
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','Medication','');"
-              class="disabled_button"><?php echo xlt("None"); ?><br/></span>
-        <?php
+    }
+    if (!$mention_eye_meds) {
+        echo "<span onclick=\"alter_issue2('0','Medication','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
     //<!-- PMH -->
-    echo "<br /> <span class='panel_title' title='" . xla('Past Medical History') . "'>" . xlt("PMH{{Past Medical History}}") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','PMH','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['PMH']) {
+    echo "<span class='panel_title' title='" . xla('Past Medical History') . "'>" . xlt("PMH{{Past Medical History}}") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','PMH','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    $mention_pmh = 0;
+    if (!empty($PMSFH[0]['PMH'])) {
         $i = 0;
         foreach ($PMSFH[0]['PMH'] as $item) {
             if ($item['enddate'] !== " ") {
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'PMH','" . $i . "');\">" . text($item['title']) . "</span><br />";
+                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'PMH','" . $i . "');\">" . text($item['title']) . "</span><br />";
+                $mention_pmh++;
                 $i++;
             }
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','PMH','');" class="disabled_button"><?php echo xlt("None"); ?></br></span>
-        <?php
+    }
+    if (!$mention_pmh) {
+        echo "<span onclick=\"alter_issue2('0','PMH','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
     //<!-- Surgeries -->
-    echo "<br /><span class='panel_title' title='" . xla("Past Surgical History") . "'>" . xlt("Surgery") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','Surgery','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['Surgery']) {
+    echo "<span class='panel_title' title='" . xla("Past Surgical History") . "'>" . xlt("Surgery") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','Surgery','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    if (!empty($PMSFH[0]['Surgery'])) {
         $i = 0;
         foreach ($PMSFH[0]['Surgery'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Surgery','" . $i . "');\">" . text($item['title']) . "<br /></span>";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Surgery','" . $i . "');\">" . text($item['title']) . "</span><br />";
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','Surgery','');" class="disabled_button"><?php echo xlt("None"); ?><br/></span>
-        <?php
+    } else {
+        echo "<span onclick=\"alter_issue2('0','Surgery','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
     //<!-- Meds -->
-    echo "<br /><span class='panel_title' title='" . xla("Medications") . "'>" . xlt("Medication") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','Medication','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['Medication']) {
+    echo "<span class='panel_title' title='" . xla("Medications") . "'>" . xlt("Medication") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','Medication','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    $mention_meds = 0;
+    if (!empty($PMSFH[0]['Medication'])) {
         $i = 0;
         foreach ($PMSFH[0]['Medication'] as $item) {
             if (($item['row_subtype'] == "eye") || ($item['status'] == "Inactive")) {
                 $i++;
                 continue;
             }
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            $mention_meds++;
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','Medication','');"
-              class="disabled_button"><?php echo xlt("None"); ?><br/></span>
-        <?php
+    }
+    if (!$mention_meds) {
+        echo "<span onclick=\"alter_issue2('0','Medication','');\" class='disabled_button'>" . xlt("None") . "</span><br />";
     }
 
-
     //<!-- Allergies -->
-    echo "<br /><span class='panel_title' title='" . xla("Allergies") . "'>" . xlt("Allergy") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','Allergy','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
-    if ($PMSFH[0]['Allergy']) {
+    echo "<span class='panel_title' title='" . xla("Allergies") . "'>" . xlt("Allergy") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','Allergy','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    if (!empty($PMSFH[0]['Allergy'])) {
         $i = 0;
         foreach ($PMSFH[0]['Allergy'] as $item) {
-            if ($item['reaction']) {
-                $reaction = "(" . text($item['reaction']) . ")";
-            } else {
-                $reaction = "";
-            }
-
-            echo "<span style='color:red;' name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-      onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Allergy','" . $i . "');\">" . text($item['title']) . " " . $reaction . "</span><br />";
+            $reaction = $item['reaction'] ? "(" . text($item['reaction']) . ")" : "";
+            echo "<span style='color:red;' name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Allergy','" . $i . "');\">" . text($item['title']) . " " . $reaction . "</span><br />";
             $i++;
         }
-    } else { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','Allergy','');"><?php echo xlt("NKDA{{No known drug allergies}}"); ?><br/></span>
-        <?php
+    } else {
+        echo "<span onclick=\"alter_issue2('0','Allergy','');\">" . xlt("NKDA{{No known drug allergies}}") . "</span><br />";
     }
 
     if (!eye_mag_should_hide_pmsfh_section('SOCH')) {
-    //<!-- Social History -->
-    echo "<br /><span class='panel_title' title='" . xla("Social History") . "'>" . xlt('Soc Hx{{Social History}}') . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','SOCH','');" style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?>
-    </span><br/>
-    <?php
+        //<!-- Social History -->
+        echo "<span class='panel_title' title='" . xla("Social History") . "'>" . xlt('Soc Hx{{Social History}}') . ":</span>";
+        echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','SOCH','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
         $mention_SOCH = 0;
-    foreach ($PMSFH[0]['SOCH'] as $k => $item) {
-        if (($item['display']) && ($item['display'] != 'not_applicable')) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-        onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "<br /></span>";
-
-            $mention_SOCH++;
+        foreach ($PMSFH[0]['SOCH'] as $k => $item) {
+            if (($item['display']) && ($item['display'] != 'not_applicable')) {
+                echo "<span onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+                $mention_SOCH++;
+            }
         }
-    }
-
-    if (!$mention_SOCH) {
-        ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','SOCH','');" class="disabled_button"><?php echo xlt("Negative"); ?><br/></span>
-        <?php
+        if (!$mention_SOCH) {
+            echo "<span onclick=\"alter_issue2('0','SOCH','');\" class='disabled_button'>" . xlt("Negative") . "</span><br />";
         }
     }
 
     //<!-- Family History -->
-    echo "<br /><span class='panel_title' title='" . xla("Family History") . "'>" . xlt("FH{{Family History}}") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue2('0','FH','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span><br/>
-
-    <?php
-    if (count($PMSFH[0]['FH']) > 0) {
+    echo "<span class='panel_title' title='" . xla("Family History") . "'>" . xlt("FH{{Family History}}") . ":</span>";
+    echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','FH','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
+    $mention_FH = 0;
+    if (!empty($PMSFH[0]['FH'])) {
         foreach ($PMSFH[0]['FH'] as $item) {
             if ($item['display'] > '') {
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-                onclick=\"alter_issue2('0','FH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "<br /></span>";
+                echo "<span onclick=\"alter_issue2('0','FH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
                 $mention_FH++;
             }
         }
     }
-
     if (!$mention_FH) {
-        ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','FH','');" class="disabled_button"><?php echo xlt("Negative"); ?><br/></span>
-        <?php
+        echo "<span onclick=\"alter_issue2('0','FH','');\" class='disabled_button'>" . xlt("Negative") . "</span><br />";
     }
 
     if (!eye_mag_should_hide_pmsfh_section('ROS')) {
-    echo "<br /><span class='panel_title' title='" . xla("Review of Systems") . "'>" . xlt("ROS{{Review of Systems}}") . ":</span>";
-    ?><span class="top-right btn-sm" href="#PMH_anchor"
-            onclick="alter_issue('0','ROS','');"
-            style="text-align:right;font-size:8px;"><?php echo xlt("Add"); ?></span>
-    <br/>
-    <?php
+        echo "<span class='panel_title' title='" . xla("Review of Systems") . "'>" . xlt("ROS{{Review of Systems}}") . ":</span>";
+        echo "<span class='top-right btn-sm' onclick=\"alter_issue2('0','ROS','');\" style='text-align:right;font-size:8px;'>" . xlt("Add") . "</span><br />";
         $mention_ROS = 0;
-    foreach ($PMSFH[0]['ROS'] as $item) {
-        if ($item['display']) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-            onclick=\"alter_issue2('0','ROS','');\">" . text($item['short_title']) . ": " . text($item['display']) . "</span><br />";
-            $mention_ROS++;
+        foreach ($PMSFH[0]['ROS'] as $item) {
+            if ($item['display']) {
+                echo "<span onclick=\"alter_issue2('0','ROS','');\">" . text($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+                $mention_ROS++;
+            }
+        }
+        if (!$mention_ROS) {
+            echo "<span onclick=\"alter_issue2('0','ROS','');\" class='disabled_button'>" . xlt('Negative') . "</span><br />";
         }
     }
 
-    if (!$mention_ROS) { ?>
-        <span href="#PMH_anchor"
-              onclick="alter_issue2('0','ROS','');" class="disabled_button"><?php echo xlt('Negative'); ?><br/></span>
-        <?php
-        }
-    }
-
-    echo "<br /><br /><br />";
     $right_panel = ob_get_contents();
-
     ob_end_clean();
     return $right_panel;
 }
