@@ -242,6 +242,10 @@ if (!$_REQUEST['flb_table']) {
             gap: 8px;
         }
 
+        .ptkr-input-row {
+            flex-wrap: nowrap;
+        }
+
         #flb_selectors select[multiple] {
             width: calc(25% - 14px);
             min-height: 120px;
@@ -261,7 +265,8 @@ if (!$_REQUEST['flb_table']) {
 
         #form_patient_name,
         #form_patient_id {
-            width: calc(50% - 4px);
+            flex: 1 1 0;
+            width: auto;
             margin-bottom: 8px;
         }
 
