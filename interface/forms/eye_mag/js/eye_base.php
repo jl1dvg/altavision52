@@ -2606,7 +2606,7 @@ $(function () {
                   hide_right();
                 //alert('Suggest a Code');
                   Suggest_visit_code();
-                  show_QP_section('PMH','1');
+                  show_QP_section('IMPPLAN','1');
 
 
                   //on checking TESTS, show modifiers and justifier fields

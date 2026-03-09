@@ -3242,6 +3242,7 @@ body.eye-mag-ui .eye-mag-critical a {
     color: #8f2f2f;
 }
 
+body.eye-mag-ui #right_panel_refresh .panel_title,
 body.eye-mag-ui #QP_PMH .panel_title {
     color: #1f4f84;
     display: inline-block;
@@ -3251,6 +3252,7 @@ body.eye-mag-ui #QP_PMH .panel_title {
     margin-top: 7px;
 }
 
+body.eye-mag-ui #right_panel_refresh .top-right.btn-sm,
 body.eye-mag-ui #QP_PMH .top-right.btn-sm {
     background: #eaf2ff;
     border: 1px solid #c8d9f2;
@@ -3264,6 +3266,7 @@ body.eye-mag-ui #QP_PMH .top-right.btn-sm {
     padding: 2px 8px;
 }
 
+body.eye-mag-ui #right_panel_refresh span[name^='QP_PMH_'],
 body.eye-mag-ui #QP_PMH span[name^='QP_PMH_'] {
     background: #fff;
     border: 1px solid #e2ebf8;
@@ -3275,6 +3278,7 @@ body.eye-mag-ui #QP_PMH span[name^='QP_PMH_'] {
     padding: 5px 8px;
 }
 
+body.eye-mag-ui #right_panel_refresh .disabled_button,
 body.eye-mag-ui #QP_PMH .disabled_button {
     background: #fcfcfc;
     border: 1px dashed #cfd9e8;
