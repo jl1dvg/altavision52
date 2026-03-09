@@ -235,8 +235,15 @@ if (!$_REQUEST['flb_table']) {
             width: 170px;
         }
 
+        .ptkr-filter-row,
+        .ptkr-input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         #flb_selectors select[multiple] {
-            width: 48%;
+            width: calc(25% - 6px);
             min-height: 120px;
             height: auto;
             color: #000;
@@ -244,9 +251,13 @@ if (!$_REQUEST['flb_table']) {
             overflow-y: auto;
             white-space: normal;
             padding: 4px;
-            display: inline-block;
-            vertical-align: top;
-            margin: 0 1% 8px 1%;
+            margin: 0 0 8px 0;
+        }
+
+        #form_patient_name,
+        #form_patient_id {
+            width: calc(50% - 4px);
+            margin-bottom: 8px;
         }
 
         #flb_selectors select[multiple] option {
@@ -257,7 +268,9 @@ if (!$_REQUEST['flb_table']) {
         }
 
         @media (max-width: 768px) {
-            #flb_selectors select[multiple] {
+            #flb_selectors select[multiple],
+            #form_patient_name,
+            #form_patient_id {
                 width: 100%;
                 margin: 0 0 8px 0;
             }
@@ -338,8 +351,10 @@ if (!$_REQUEST['flb_table']) {
                 <?php
                 if ($GLOBALS['medex_enable'] == '1') {
                     $col_width = "3";
+                    $filters_col_width = "6";
                 } else {
                     $col_width = "4";
+                    $filters_col_width = "8";
                     $last_col_width = "nodisplay";
                 }
                 ?>
@@ -347,91 +362,95 @@ if (!$_REQUEST['flb_table']) {
                 <form name="flb" id="flb" method="post">
                     <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
                     <div class=" text-center row divTable" style="width: 85%;padding: 10px 10px 0;margin: 10px auto;">
-                        <div class="col-sm-<?php echo attr($col_width); ?> text-center ptkr-filter-col" style="margin-top:15px;">
-                            <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-control input-sm"
-                                    onchange="refineMe('apptcat');" title="">
-                                <?php
-                                $categories = fetchAppointmentCategories();
-                                echo "<option value=''>" . xlt("Visit Categories") . "</option>";
-                                while ($cat = sqlFetchArray($categories)) {
-                                    echo "<option value='" . attr($cat['id']) . "'";
-                                    if (in_array((string)$cat['id'], $selected_apptcats, true)) {
-                                        echo " selected='true' ";
+                        <div class="col-sm-<?php echo attr($filters_col_width); ?> text-center ptkr-filter-col" style="margin-top:15px;">
+                            <div class="ptkr-filter-row">
+                                <select id="form_apptcat" name="form_apptcat[]" multiple size="6" class="form-control input-sm"
+                                        onchange="refineMe('apptcat');" title="">
+                                    <?php
+                                    $categories = fetchAppointmentCategories();
+                                    echo "<option value=''>" . xlt("Visit Categories") . "</option>";
+                                    while ($cat = sqlFetchArray($categories)) {
+                                        echo "<option value='" . attr($cat['id']) . "'";
+                                        if (in_array((string)$cat['id'], $selected_apptcats, true)) {
+                                            echo " selected='true' ";
+                                        }
+                                        echo ">" . xlt($cat['category']) . "</option>";
                                     }
-                                    echo ">" . xlt($cat['category']) . "</option>";
+                                    ?>
+                                </select>
+
+                                <select id="form_apptstatus" name="form_apptstatus[]" multiple size="6" class="form-control input-sm"
+                                        onchange="refineMe();">
+                                    <option value=""><?php echo xlt("Visit Status"); ?></option>
+
+                                    <?php
+                                    $apptstats = sqlStatement("SELECT * FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
+                                    while ($apptstat = sqlFetchArray($apptstats)) {
+                                        echo "<option value='" . attr($apptstat['option_id']) . "'";
+                                        if (in_array((string)$apptstat['option_id'], $selected_apptstatus, true)) {
+                                            echo " selected='true' ";
+                                        }
+                                        echo ">" . xlt($apptstat['title']) . "</option>";
+                                    }
+                                    ?>
+                                </select>
+
+                                <select class="form-control input-sm" id="form_facility" name="form_facility[]" multiple size="6"
+                                    <?php
+                                    $fac_sql = sqlStatement("SELECT * FROM facility ORDER BY id");
+                                    while ($fac = sqlFetchArray($fac_sql)) {
+                                        $true = in_array((string)$fac['id'], $selected_facilities, true) ? "selected=true" : '';
+                                        $select_facs .= "<option value=" . attr($fac['id']) . " " . $true . ">" . text($fac['name']) . "</option>\n";
+                                        $count_facs++;
+                                    }
+                                    if ($count_facs < '1') {
+                                        echo "disabled";
+                                    }
+                                    ?> onchange="refineMe('facility');">
+                                    <option value=""><?php echo xlt('All Facilities'); ?></option>
+                                    <?php echo $select_facs; ?>
+                                </select>
+
+                                <?php
+                                // Build a drop-down list of ACTIVE providers.
+                                $query = "SELECT id, lname, fname FROM users WHERE " .
+                                    "authorized = 1  AND active = 1 AND username > '' ORDER BY lname, fname"; #(CHEMED) facility filter
+                                $ures = sqlStatement($query);
+                                while ($urow = sqlFetchArray($ures)) {
+                                    $provid = $urow['id'];
+                                    $select_provs .= "    <option value='" . attr($provid) . "'";
+                                    if (in_array((string)$provid, $selected_providers, true)) {
+                                        $select_provs .= " selected";
+                                    }
+                                    $select_provs .= ">" . text($urow['lname']) . ", " . text($urow['fname']) . "\n";
+                                    $count_provs++;
                                 }
                                 ?>
-                            </select>
 
-                            <select id="form_apptstatus" name="form_apptstatus[]" multiple size="6" class="form-control input-sm"
-                                    onchange="refineMe();">
-                                <option value=""><?php echo xlt("Visit Status"); ?></option>
-
-                                <?php
-                                $apptstats = sqlStatement("SELECT * FROM list_options WHERE list_id = 'apptstat' AND activity = 1 ORDER BY seq");
-                                while ($apptstat = sqlFetchArray($apptstats)) {
-                                    echo "<option value='" . attr($apptstat['option_id']) . "'";
-                                    if (in_array((string)$apptstat['option_id'], $selected_apptstatus, true)) {
-                                        echo " selected='true' ";
-                                    }
-                                    echo ">" . xlt($apptstat['title']) . "</option>";
-                                }
-                                ?>
-                            </select>
-
-                            <input type="text"
-                                   placeholder="<?php echo xla('Patient Name'); ?>"
-                                   class="form-control input-sm" id="form_patient_name" name="form_patient_name"
-                                   value="<?php echo ($form_patient_name) ? attr($form_patient_name) : ""; ?>"
-                                   onKeyUp="refineMe();">
-                        </div>
-                        <div class="col-sm-<?php echo attr($col_width); ?> text-center ptkr-filter-col" style="margin-top:15px;">
-                            <select class="form-control input-sm" id="form_facility" name="form_facility[]" multiple size="6"
-                                <?php
-                                $fac_sql = sqlStatement("SELECT * FROM facility ORDER BY id");
-                                while ($fac = sqlFetchArray($fac_sql)) {
-                                    $true = in_array((string)$fac['id'], $selected_facilities, true) ? "selected=true" : '';
-                                    $select_facs .= "<option value=" . attr($fac['id']) . " " . $true . ">" . text($fac['name']) . "</option>\n";
-                                    $count_facs++;
-                                }
-                                if ($count_facs < '1') {
+                                <select class="form-control input-sm" id="form_provider" name="form_provider[]" multiple size="6" <?php
+                                if ($count_provs < '2') {
                                     echo "disabled";
                                 }
-                                ?> onchange="refineMe('facility');">
-                                <option value=""><?php echo xlt('All Facilities'); ?></option>
-                                <?php echo $select_facs; ?>
-                            </select>
+                                ?> onchange="refineMe('provider');">
+                                    <?php
+                                    echo $select_provs;
+                                    ?>
+                                </select>
+                            </div>
 
-                            <?php
-                            // Build a drop-down list of ACTIVE providers.
-                            $query = "SELECT id, lname, fname FROM users WHERE " .
-                                "authorized = 1  AND active = 1 AND username > '' ORDER BY lname, fname"; #(CHEMED) facility filter
-                            $ures = sqlStatement($query);
-                            while ($urow = sqlFetchArray($ures)) {
-                                $provid = $urow['id'];
-                                $select_provs .= "    <option value='" . attr($provid) . "'";
-                                if (in_array((string)$provid, $selected_providers, true)) {
-                                    $select_provs .= " selected";
-                                }
-                                $select_provs .= ">" . text($urow['lname']) . ", " . text($urow['fname']) . "\n";
-                                $count_provs++;
-                            }
-                            ?>
+                            <div class="ptkr-input-row">
+                                <input type="text"
+                                       placeholder="<?php echo xla('Patient Name'); ?>"
+                                       class="form-control input-sm" id="form_patient_name" name="form_patient_name"
+                                       value="<?php echo ($form_patient_name) ? attr($form_patient_name) : ""; ?>"
+                                       onKeyUp="refineMe();">
 
-                            <select class="form-control input-sm" id="form_provider" name="form_provider[]" multiple size="6" <?php
-                            if ($count_provs < '2') {
-                                echo "disabled";
-                            }
-                            ?> onchange="refineMe('provider');">
-                                <?php
-                                echo $select_provs;
-                                ?>
-                            </select>
-                            <input placeholder="<?php echo xla('Patient ID'); ?>"
-                                   class="form-control input-sm" type="text"
-                                   id="form_patient_id" name="form_patient_id"
-                                   value="<?php echo ($form_patient_id) ? attr($form_patient_id) : ""; ?>"
-                                   onKeyUp="refineMe();">
+                                <input placeholder="<?php echo xla('Patient ID'); ?>"
+                                       class="form-control input-sm" type="text"
+                                       id="form_patient_id" name="form_patient_id"
+                                       value="<?php echo ($form_patient_id) ? attr($form_patient_id) : ""; ?>"
+                                       onKeyUp="refineMe();">
+                            </div>
                         </div>
                         <div class="col-sm-<?php echo attr($col_width); ?>">
                             <div style="margin: 0 auto;" class="input-append">
