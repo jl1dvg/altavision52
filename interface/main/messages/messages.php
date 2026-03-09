@@ -849,6 +849,9 @@ if (!empty($_REQUEST['go'])) { ?>
                     <?php if ($logged_in) { ?>
                     <div class="col-sm-4 col-md-4 col-lg-4">
                         <span class="title"><?php echo xlt('WhatsApp'); ?></span>
+                        <?php if (acl_check('admin', 'super')) { ?>
+                            <a class="btn btn-default btn-xs" style="margin-left:10px;" href="whatsapp_settings.php" target="_blank"><?php echo xlt('Config'); ?></a>
+                        <?php } ?>
                         <br/><br/>
                         <form id="smsForm" class="input-group">
                             <input id="SMS_patient" type="text" style="margin:0;max-width:100%;" class="form-control"

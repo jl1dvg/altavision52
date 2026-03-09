@@ -11,9 +11,9 @@ class WhatsAppMetaService
 
     public function __construct()
     {
-        $this->accessToken = $GLOBALS['whatsapp_meta_access_token'] ?? '';
-        $this->phoneNumberId = $GLOBALS['whatsapp_meta_phone_number_id'] ?? '';
-        $this->graphVersion = $GLOBALS['whatsapp_meta_graph_version'] ?? 'v20.0';
+        $this->accessToken = $this->getConfig('whatsapp_meta_access_token', $GLOBALS['whatsapp_meta_access_token'] ?? '');
+        $this->phoneNumberId = $this->getConfig('whatsapp_meta_phone_number_id', $GLOBALS['whatsapp_meta_phone_number_id'] ?? '');
+        $this->graphVersion = $this->getConfig('whatsapp_meta_graph_version', $GLOBALS['whatsapp_meta_graph_version'] ?? 'v20.0');
     }
 
     public function isConfigured()
@@ -66,11 +66,22 @@ class WhatsAppMetaService
 
     public function verifyWebhook($mode, $token, $challenge)
     {
-        $verifyToken = $GLOBALS['whatsapp_meta_verify_token'] ?? '';
+        $verifyToken = $this->getConfig('whatsapp_meta_verify_token', $GLOBALS['whatsapp_meta_verify_token'] ?? '');
         if ($mode === 'subscribe' && !empty($verifyToken) && hash_equals($verifyToken, (string)$token)) {
             return $challenge;
         }
         return false;
+    }
+
+    private function getConfig($name, $fallback = '')
+    {
+        if (function_exists('sqlQuery')) {
+            $row = sqlQuery('SELECT gl_value FROM globals WHERE gl_name = ? LIMIT 1', array($name));
+            if (!empty($row['gl_value'])) {
+                return $row['gl_value'];
+            }
+        }
+        return $fallback;
     }
 
     private function baseUrl()
