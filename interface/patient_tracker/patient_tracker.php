@@ -65,7 +65,7 @@ $setting_selectors = prevSetting($uspfx, 'setting_selectors', 'setting_selectors
 $form_apptcat = prevSetting($uspfx, 'form_apptcat', 'form_apptcat', '');
 $form_apptstatus = prevSetting($uspfx, 'form_apptstatus', 'form_apptstatus', '');
 $facility = prevSetting($uspfx, 'form_facility', 'form_facility', '');
-$provider = prevSetting($uspfx, 'form_provider', 'form_provider', $_SESSION['authUserID']);
+$provider = prevSetting($uspfx, 'form_provider', 'form_provider', '');
 
 function normalizeMultiSelection($value)
 {
@@ -446,6 +446,7 @@ if (!$_REQUEST['flb_table']) {
                                     echo "disabled";
                                 }
                                 ?> onchange="refineMe('provider');">
+                                    <option value=""><?php echo xlt('Todos los proveedores'); ?></option>
                                     <?php
                                     echo $select_provs;
                                     ?>
