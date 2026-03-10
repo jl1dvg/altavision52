@@ -645,13 +645,6 @@ while ($prow = sqlFetchArray($providerRes)) {
             }
 
             foreach ($allRows as &$row) {
-                $referFromId = trim((string)($row['refer_from_id'] ?? ''));
-                if ($referFromId !== '') {
-                    // Business rule: when refer_from already has a user assigned,
-                    // that user owns the referral and we do not infer assignment from subsequent appointments.
-                    continue;
-                }
-
                 $pidKey = (string)($row['pid'] ?? '');
                 if ($pidKey === '' || empty($appointmentsByPid[$pidKey])) {
                     continue;
@@ -789,7 +782,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                     $apptLabel = $hasAssignedProvider ? xlt('Pending Scheduling') : xlt('Pending');
                 }
 
-                $nextAppointment = $hasAssignedProvider ? xlt('Pending scheduling') : xlt('No appointment');
+                $nextAppointment = xlt('No appointment');
                 if ($hasAppointment) {
                     $nextAppointment = oeFormatShortDate($row['next_appt_date']);
                     if (!empty($row['next_appt_status'])) {
