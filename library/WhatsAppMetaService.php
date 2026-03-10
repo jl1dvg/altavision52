@@ -8,12 +8,14 @@ class WhatsAppMetaService
     private $accessToken;
     private $phoneNumberId;
     private $graphVersion;
+    private $appSecret;
 
     public function __construct()
     {
         $this->accessToken = $this->getConfig('whatsapp_meta_access_token', $GLOBALS['whatsapp_meta_access_token'] ?? '');
         $this->phoneNumberId = $this->getConfig('whatsapp_meta_phone_number_id', $GLOBALS['whatsapp_meta_phone_number_id'] ?? '');
         $this->graphVersion = $this->getConfig('whatsapp_meta_graph_version', $GLOBALS['whatsapp_meta_graph_version'] ?? 'v20.0');
+        $this->appSecret = $this->getConfig('whatsapp_meta_app_secret', $GLOBALS['whatsapp_meta_app_secret'] ?? '');
     }
 
     public function isConfigured()
@@ -77,6 +79,38 @@ class WhatsAppMetaService
             return $challenge;
         }
         return false;
+    }
+
+    public function verifySignature($rawPayload, $signatureHeader)
+    {
+        if (empty($this->appSecret)) {
+            return true;
+        }
+        if (empty($signatureHeader) || strpos($signatureHeader, 'sha256=') !== 0) {
+            return false;
+        }
+        $received = substr($signatureHeader, 7);
+        $computed = hash_hmac('sha256', $rawPayload, $this->appSecret);
+        return hash_equals($computed, $received);
+    }
+
+    public function sendTemplate($to, $templateName, $languageCode = 'es', $components = array())
+    {
+        $payload = array(
+            'messaging_product' => 'whatsapp',
+            'to' => $this->normalizePhone($to),
+            'type' => 'template',
+            'template' => array(
+                'name' => $templateName,
+                'language' => array('code' => $languageCode)
+            )
+        );
+
+        if (!empty($components)) {
+            $payload['template']['components'] = $components;
+        }
+
+        return $this->request('POST', $this->baseUrl() . '/messages', $payload);
     }
 
     private function getConfig($name, $fallback = '')

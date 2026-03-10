@@ -24,6 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 $raw = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '';
+if (!$service->verifySignature($raw, $signature)) {
+    http_response_code(403);
+    echo 'invalid signature';
+    exit;
+}
+
 $payload = json_decode($raw, true);
 
 if (empty($payload['entry'])) {

@@ -12,19 +12,41 @@ header('Content-Type: application/json');
 $service = new WhatsAppMetaService();
 $action = $_REQUEST['action'] ?? '';
 
+function hasColumn($table, $column)
+{
+    $row = sqlQuery("SHOW COLUMNS FROM `" . $table . "` LIKE ?", array($column));
+    return !empty($row);
+}
+
+function isWhatsAppAllowed($patientRow)
+{
+    static $hasWaField = null;
+    if ($hasWaField === null) {
+        $hasWaField = hasColumn('patient_data', 'hipaa_allowwhatsapp');
+    }
+    if ($hasWaField) {
+        return (($patientRow['hipaa_allowwhatsapp'] ?? 'NO') === 'YES');
+    }
+    return (($patientRow['hipaa_allowsms'] ?? 'NO') === 'YES');
+}
+
 if ($action === 'search_patient') {
     $term = trim($_GET['term'] ?? '');
     $param = '%' . $term . '%';
     $results = array();
     if ($term !== '') {
-        $query = "SELECT pid, fname, lname, phone_cell, hipaa_allowsms FROM patient_data WHERE fname LIKE ? OR lname LIKE ? LIMIT 20";
+        $hasWaField = hasColumn('patient_data', 'hipaa_allowwhatsapp');
+        $fields = $hasWaField
+            ? 'pid, fname, lname, phone_cell, hipaa_allowsms, hipaa_allowwhatsapp'
+            : 'pid, fname, lname, phone_cell, hipaa_allowsms';
+        $query = "SELECT $fields FROM patient_data WHERE fname LIKE ? OR lname LIKE ? LIMIT 20";
         $stmt = sqlStatement($query, array($param, $param));
         while ($row = sqlFetchArray($stmt)) {
             $results[] = array(
                 'label' => trim($row['fname'] . ' ' . $row['lname']),
                 'pid' => $row['pid'],
                 'mobile' => $row['phone_cell'],
-                'allow' => $row['hipaa_allowsms']
+                'allow' => isWhatsAppAllowed($row) ? 'YES' : 'NO'
             );
         }
     }
@@ -59,6 +81,27 @@ if ($action === 'list') {
     exit;
 }
 
+if ($action === 'send_template') {
+    if (!$service->isConfigured()) {
+        echo json_encode(array('ok' => false, 'error' => 'Meta WhatsApp no configurado'));
+        exit;
+    }
+    $to = $_POST['to'] ?? '';
+    $template = trim($_POST['template_name'] ?? '');
+    $lang = trim($_POST['template_lang'] ?? 'es');
+    if ($to === '' || $template === '') {
+        echo json_encode(array('ok' => false, 'error' => 'Telefono y template requeridos'));
+        exit;
+    }
+    $res = $service->sendTemplate($to, $template, $lang);
+    if (!$res['ok']) {
+        echo json_encode(array('ok' => false, 'error' => 'Meta envio template error', 'meta' => $res));
+        exit;
+    }
+    echo json_encode(array('ok' => true, 'meta' => $res['response']));
+    exit;
+}
+
 if ($action === 'send') {
     if (!$service->isConfigured()) {
         echo json_encode(array('ok' => false, 'error' => 'Meta WhatsApp no configurado'));
@@ -72,6 +115,16 @@ if ($action === 'send') {
     if (empty($to)) {
         echo json_encode(array('ok' => false, 'error' => 'Telefono requerido'));
         exit;
+    }
+
+    if ($pid > 0) {
+        $hasWaField = hasColumn('patient_data', 'hipaa_allowwhatsapp');
+        $fields = $hasWaField ? 'hipaa_allowsms, hipaa_allowwhatsapp' : 'hipaa_allowsms';
+        $patient = sqlQuery("SELECT $fields FROM patient_data WHERE pid = ? LIMIT 1", array($pid));
+        if (!isWhatsAppAllowed($patient ?: array())) {
+            echo json_encode(array('ok' => false, 'error' => 'Paciente sin consentimiento WhatsApp'));
+            exit;
+        }
     }
 
     $sendResponse = null;

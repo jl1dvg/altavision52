@@ -37,7 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     setGlobalValue('whatsapp_meta_access_token', trim($_POST['whatsapp_meta_access_token'] ?? ''));
     setGlobalValue('whatsapp_meta_phone_number_id', trim($_POST['whatsapp_meta_phone_number_id'] ?? ''));
     setGlobalValue('whatsapp_meta_verify_token', trim($_POST['whatsapp_meta_verify_token'] ?? ''));
+    setGlobalValue('whatsapp_meta_app_secret', trim($_POST['whatsapp_meta_app_secret'] ?? ''));
     setGlobalValue('whatsapp_meta_graph_version', trim($_POST['whatsapp_meta_graph_version'] ?? 'v20.0'));
+    setGlobalValue('whatsapp_meta_default_template', trim($_POST['whatsapp_meta_default_template'] ?? ''));
+    setGlobalValue('whatsapp_meta_default_template_lang', trim($_POST['whatsapp_meta_default_template_lang'] ?? 'es'));
 
     $action = $_POST['form_action'] ?? 'save';
     if ($action === 'test') {
@@ -52,7 +55,10 @@ $vals = array(
     'whatsapp_meta_access_token' => getGlobalValue('whatsapp_meta_access_token', ''),
     'whatsapp_meta_phone_number_id' => getGlobalValue('whatsapp_meta_phone_number_id', ''),
     'whatsapp_meta_verify_token' => getGlobalValue('whatsapp_meta_verify_token', ''),
+    'whatsapp_meta_app_secret' => getGlobalValue('whatsapp_meta_app_secret', ''),
     'whatsapp_meta_graph_version' => getGlobalValue('whatsapp_meta_graph_version', 'v20.0'),
+    'whatsapp_meta_default_template' => getGlobalValue('whatsapp_meta_default_template', ''),
+    'whatsapp_meta_default_template_lang' => getGlobalValue('whatsapp_meta_default_template_lang', 'es'),
 );
 ?>
 <!doctype html>
@@ -95,8 +101,20 @@ $vals = array(
             <input class="form-control" name="whatsapp_meta_verify_token" value="<?php echo attr($vals['whatsapp_meta_verify_token']); ?>" />
         </div>
         <div class="form-group">
+            <label><?php echo xlt('App Secret (Webhook Signature)'); ?></label>
+            <input class="form-control" name="whatsapp_meta_app_secret" value="<?php echo attr($vals['whatsapp_meta_app_secret']); ?>" />
+        </div>
+        <div class="form-group">
             <label><?php echo xlt('Graph Version'); ?></label>
             <input class="form-control" name="whatsapp_meta_graph_version" value="<?php echo attr($vals['whatsapp_meta_graph_version']); ?>" />
+        </div>
+        <div class="form-group">
+            <label><?php echo xlt('Default Template Name'); ?></label>
+            <input class="form-control" name="whatsapp_meta_default_template" value="<?php echo attr($vals['whatsapp_meta_default_template']); ?>" />
+        </div>
+        <div class="form-group">
+            <label><?php echo xlt('Default Template Language'); ?></label>
+            <input class="form-control" name="whatsapp_meta_default_template_lang" value="<?php echo attr($vals['whatsapp_meta_default_template_lang']); ?>" />
         </div>
 
         <button type="submit" class="btn btn-primary" onclick="document.getElementById('form_action').value='save';"><?php echo xlt('Guardar'); ?></button>

@@ -1,7 +1,17 @@
 <?php
 require_once '../../globals.php';
+
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
+
+function waGetGlobal($name, $default = '')
+{
+    $row = sqlQuery('SELECT gl_value FROM globals WHERE gl_name = ? LIMIT 1', array($name));
+    return $row['gl_value'] ?? $default;
+}
+
+$defaultTemplate = waGetGlobal('whatsapp_meta_default_template', '');
+$defaultTemplateLang = waGetGlobal('whatsapp_meta_default_template_lang', 'es');
 
 $pid = (int)($_GET['pid'] ?? 0);
 $mobile = trim($_GET['m'] ?? '');
@@ -41,6 +51,9 @@ $mobile = trim($_GET['m'] ?? '');
             <input class="form-control" type="file" name="attachment">
         </div>
         <button type="submit" class="btn btn-primary"><?php echo xlt('Enviar'); ?></button>
+        <button type="button" id="wa-send-template" class="btn btn-default"><?php echo xlt('Enviar plantilla'); ?></button>
+        <input type="text" id="wa-template-name" class="form-control" style="margin-top:8px;" placeholder="template_name" value="<?php echo attr($defaultTemplate); ?>" />
+        <input type="text" id="wa-template-lang" class="form-control" style="margin-top:8px;" placeholder="es" value="<?php echo attr($defaultTemplateLang); ?>" />
     </form>
 </div>
 
@@ -63,6 +76,22 @@ function loadLog() {
         $('#wa-log').scrollTop($('#wa-log')[0].scrollHeight);
     });
 }
+
+$('#wa-send-template').on('click', function(){
+    $.post('whatsapp_api.php', {
+        action: 'send_template',
+        to: $('input[name="to"]').val(),
+        template_name: $('#wa-template-name').val(),
+        template_lang: $('#wa-template-lang').val(),
+        csrf_token_form: <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>
+    }).done(function(r){
+        if (!r.ok) {
+            alert(r.error || 'Error plantilla');
+            return;
+        }
+        loadLog();
+    });
+});
 
 $('#wa-form').on('submit', function(e){
     e.preventDefault();
