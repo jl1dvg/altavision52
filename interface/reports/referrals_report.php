@@ -779,17 +779,17 @@ while ($prow = sqlFetchArray($providerRes)) {
             foreach ($allRows as &$row) {
                 $hasAppointment = !empty($row['next_appt_date']);
                 $hasAssignedProvider = trim((string)($row['effective_provider_id'] ?? '')) !== '';
-                if ($hasAppointment || $hasAssignedProvider) {
+                if ($hasAppointment) {
                     $apptKey = 'assigned';
                     $apptClass = 'pill-assigned';
-                    $apptLabel = xlt('Assigned');
+                    $apptLabel = xlt('Scheduled');
                 } else {
                     $apptKey = 'pending';
                     $apptClass = 'pill-pending';
-                    $apptLabel = xlt('Pending');
+                    $apptLabel = $hasAssignedProvider ? xlt('Pending Scheduling') : xlt('Pending');
                 }
 
-                $nextAppointment = xlt('No appointment');
+                $nextAppointment = $hasAssignedProvider ? xlt('Pending scheduling') : xlt('No appointment');
                 if ($hasAppointment) {
                     $nextAppointment = oeFormatShortDate($row['next_appt_date']);
                     if (!empty($row['next_appt_status'])) {
