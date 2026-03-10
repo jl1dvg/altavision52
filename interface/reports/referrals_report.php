@@ -519,6 +519,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "d3.field_value AS reply_date, " .
                 "d4.field_value AS body, " .
                 "d5.field_value AS refer_id, " .
+                "d8.field_value AS refer_from_id, " .
                 "d9.field_value AS assigned_provider_id, " .
                 "ut.organization, uf.facility_id, p.pubpid, " .
                 "CONCAT(uf.fname,' ', uf.lname) AS referer_name, " .
@@ -590,7 +591,18 @@ while ($prow = sqlFetchArray($providerRes)) {
                 $row['appt_class'] = '';
                 $row['appt_label'] = '';
                 $row['next_appointment'] = '';
+                $row['effective_provider_id'] = '';
+                $row['effective_provider_name'] = '';
                 $row['specialty_key'] = classifyReferralSpecialty($row['body'] ?? '');
+
+                $referFromId = trim((string)($row['refer_from_id'] ?? ''));
+                if ($referFromId !== '') {
+                    $row['effective_provider_id'] = $referFromId;
+                    $row['effective_provider_name'] = trim((string)($row['referer_name'] ?? ''));
+                } elseif (trim((string)($row['assigned_provider_id'] ?? '')) !== '') {
+                    $row['effective_provider_id'] = trim((string)$row['assigned_provider_id']);
+                    $row['effective_provider_name'] = trim((string)($row['assigned_provider_name'] ?? ''));
+                }
                 $allRows[] = $row;
 
                 if (!empty($row['pid'])) {
@@ -633,6 +645,13 @@ while ($prow = sqlFetchArray($providerRes)) {
             }
 
             foreach ($allRows as &$row) {
+                $referFromId = trim((string)($row['refer_from_id'] ?? ''));
+                if ($referFromId !== '') {
+                    // Business rule: when refer_from already has a user assigned,
+                    // that user owns the referral and we do not infer assignment from subsequent appointments.
+                    continue;
+                }
+
                 $pidKey = (string)($row['pid'] ?? '');
                 if ($pidKey === '' || empty($appointmentsByPid[$pidKey])) {
                     continue;
@@ -654,6 +673,11 @@ while ($prow = sqlFetchArray($providerRes)) {
                     $row['next_appt_status'] = (string)($apptRow['pc_apptstatus'] ?? '');
                     $row['next_appt_provider_id'] = trim((string)($apptRow['pc_aid'] ?? ''));
                     $row['next_appt_provider'] = trim((string)($apptRow['provider_name'] ?? ''));
+
+                    if (trim((string)$row['effective_provider_id']) === '') {
+                        $row['effective_provider_id'] = $row['next_appt_provider_id'];
+                        $row['effective_provider_name'] = $row['next_appt_provider'];
+                    }
                     break;
                 }
             }
@@ -754,7 +778,8 @@ while ($prow = sqlFetchArray($providerRes)) {
 
             foreach ($allRows as &$row) {
                 $hasAppointment = !empty($row['next_appt_date']);
-                if ($hasAppointment) {
+                $hasAssignedProvider = trim((string)($row['effective_provider_id'] ?? '')) !== '';
+                if ($hasAppointment || $hasAssignedProvider) {
                     $apptKey = 'assigned';
                     $apptClass = 'pill-assigned';
                     $apptLabel = xlt('Assigned');
@@ -805,7 +830,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                     continue;
                 }
 
-                $rowProviderId = trim((string)($row['next_appt_provider_id'] ?? ''));
+                $rowProviderId = trim((string)($row['effective_provider_id'] ?? ''));
                 if ($form_assigned_provider !== '' && $rowProviderId !== $form_assigned_provider) {
                     continue;
                 }
@@ -829,7 +854,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
 
                 if ($row['appt_key'] === 'assigned') {
-                    $providerName = trim((string)($row['next_appt_provider'] ?? ''));
+                    $providerName = trim((string)($row['effective_provider_name'] ?? ''));
                     if ($providerName === '') {
                         $providerName = xlt('Unassigned');
                     }
@@ -991,7 +1016,10 @@ while ($prow = sqlFetchArray($providerRes)) {
                                 </td>
                                 <td>
                                     <?php
-                                    $apptProvider = trim((string)($row['next_appt_provider'] ?? ''));
+                                    $apptProvider = trim((string)($row['effective_provider_name'] ?? ''));
+                                    if ($apptProvider === '') {
+                                        $apptProvider = trim((string)($row['next_appt_provider'] ?? ''));
+                                    }
                                     if ($apptProvider === '') {
                                         $apptProvider = trim((string)($row['assigned_provider_name'] ?? ''));
                                     }
