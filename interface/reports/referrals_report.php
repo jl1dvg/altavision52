@@ -134,7 +134,7 @@ if (!in_array($form_appt_state, $allowedAppointmentFilters, true)) {
     $form_appt_state = '';
 }
 
-if ($form_assigned_provider !== '' && !ctype_digit($form_assigned_provider)) {
+if ($form_assigned_provider !== '' && $form_assigned_provider !== '__unassigned__' && !ctype_digit($form_assigned_provider)) {
     $form_assigned_provider = '';
 }
 
@@ -458,6 +458,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                                     <td>
                                         <select name='form_assigned_provider' id='form_assigned_provider' class='form-control'>
                                             <option value=''>-- <?php echo xlt('All'); ?> --</option>
+                                            <option value='__unassigned__'<?php echo ($form_assigned_provider === '__unassigned__') ? ' selected' : ''; ?>><?php echo xlt('Unassigned Only'); ?></option>
                                             <?php foreach ($providerOptions as $providerOption) { ?>
                                                 <option value='<?php echo attr($providerOption['id']); ?>'<?php echo ($form_assigned_provider === (string)$providerOption['id']) ? ' selected' : ''; ?>>
                                                     <?php echo text(trim(($providerOption['lname'] ?? '') . ', ' . ($providerOption['fname'] ?? ''))); ?>
@@ -824,7 +825,10 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
 
                 $rowProviderId = trim((string)($row['effective_provider_id'] ?? ''));
-                if ($form_assigned_provider !== '' && $rowProviderId !== $form_assigned_provider) {
+                if ($form_assigned_provider === '__unassigned__' && $rowProviderId !== '') {
+                    continue;
+                }
+                if ($form_assigned_provider !== '' && $form_assigned_provider !== '__unassigned__' && $rowProviderId !== $form_assigned_provider) {
                     continue;
                 }
 
