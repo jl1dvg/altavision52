@@ -505,6 +505,19 @@ function createFormWithFieldValues($patient_id, $visitid, $formtitle, $formname,
             cursor: pointer;
             border: none;
         }
+
+        .certificado-descanso-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .certificado-descanso-form input {
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
 
     <!-- *************** -->
@@ -1278,57 +1291,54 @@ if ($pass_sens_squad &&
         }
 
         if (substr($formdir, 0, 7) == 'eye_mag' || substr($formdir, 0, 12) == 'LBFprotocolo') {
+            $popupKey = preg_replace('/[^a-zA-Z0-9_]/', '_', $formdir . '_' . $iter['form_id']);
+            $certCommon = array(
+                'formname' => $formdir,
+                'formid' => $iter['form_id'],
+                'visitid' => $encounter,
+                'patientid' => $pid,
+                'encid' => $encounter,
+                'ptid' => $pid
+            );
+            $asistenciaUrl = $rootdir . '/forms/eye_mag/asistencia.php?' . http_build_query($certCommon);
+            $descansoAction = $rootdir . '/forms/LBF/certificado_descanso.php';
+            $defaultRestStart = date('Y-m-d');
+
             echo "<button type='button' class='css_button_small certificados-trigger' " .
-                "data-formname='" . attr($formdir) . "' " .
-                "data-formid='" . attr($iter['form_id']) . "' " .
-                "data-visitid='" . attr($encounter) . "' " .
-                "data-patientid='" . attr($pid) . "'>" .
+                "onclick=\"this.nextElementSibling.style.display='flex'; return false;\">" .
                 xlt('Certificados') . "</button>";
+
+            echo "<div class='popup-overlay certificados-popup' style='display:none;'>" .
+                "<div class='popup-content'>" .
+                "<h2 class='popup-title'>" . xlt('Certificados') . "</h2>" .
+                "<p>" . xlt('Escoja el certificado que desea crear.') . "</p>";
+
+            if (substr($formdir, 0, 7) == 'eye_mag') {
+                echo "<div class='popup-link'>" .
+                    "<a target='_blank' href='" . attr($asistenciaUrl) . "' class='css_button_small'>" . xlt('Asistencia') . "</a>" .
+                    "</div>";
+            }
+
+            echo "<form class='popup-link certificado-descanso-form' target='_blank' method='get' action='" . attr($descansoAction) . "'>" .
+                "<input type='hidden' name='formname' value='" . attr($formdir) . "'>" .
+                "<input type='hidden' name='formid' value='" . attr($iter['form_id']) . "'>" .
+                "<input type='hidden' name='visitid' value='" . attr($encounter) . "'>" .
+                "<input type='hidden' name='patientid' value='" . attr($pid) . "'>" .
+                "<input type='hidden' name='encid' value='" . attr($encounter) . "'>" .
+                "<input type='hidden' name='ptid' value='" . attr($pid) . "'>" .
+                "<label for='descanso_dias_" . attr($popupKey) . "'>" . xlt('Días de descanso') . "</label>" .
+                "<input id='descanso_dias_" . attr($popupKey) . "' name='rest_days' type='number' min='1' max='120' value='15'>" .
+                "<label for='descanso_desde_" . attr($popupKey) . "'>" . xlt('Fecha de inicio') . "</label>" .
+                "<input id='descanso_desde_" . attr($popupKey) . "' name='rest_start' type='date' value='" . attr($defaultRestStart) . "'>" .
+                "<button type='submit' class='css_button_small'>" . xlt('Descanso') . "</button>" .
+                "</form>";
+
+            echo "<div class='popup-close'>" .
+                "<button type='button' onclick=\"this.parentNode.parentNode.parentNode.style.display='none'; return false;\">" . xlt('Cerrar') . "</button>" .
+                "</div>" .
+                "</div>" .
+                "</div>";
         }
-
-        $popupIconPath = $GLOBALS['web_root'] . '/public/images/file3.png';
-        ?>
-        <div id="popup-overlay" class="popup-overlay">
-            <div class="popup-content">
-                <h2 class="popup-title">Seleccionar Documento</h2>
-
-                <div class="popup-link">
-                    <a href="ruta/consentimientos.pdf">Consentimientos</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Consentimientos"></button>
-                </div>
-
-                <div class="popup-link">
-                    <a href="ruta/no_invasivos.pdf">No Invasivos</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="No Invasivos"></button>
-                </div>
-
-                <div class="popup-link">
-                    <a href="ruta/formulario_012.pdf">Formulario 012</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Formulario 012"></button>
-                </div>
-
-                <div class="popup-link">
-                    <a href="ruta/informe_medico.pdf">Informe Medico</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Informe Medico"></button>
-                </div>
-
-                <div class="popup-link">
-                    <a href="ruta/certificados.pdf">Certificados</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Certificados"></button>
-                </div>
-
-                <div class="popup-link">
-                    <a href="#">Todos</a>
-                    <button><img src="<?php echo attr($popupIconPath); ?>" alt="Todos"></button>
-                </div>
-
-                <div id="popup-close">
-                    <button onclick="closePopup()">Cerrar</button>
-                </div>
-            </div>
-        </div>
-
-        <?php
         if (substr($formdir, 0, 15) == 'treatment_plan') {
             // A link for a nice printout of the Encuentro
             echo "<a target='_blank' " .
@@ -1398,196 +1408,24 @@ if (!$pass_sens_squad) {
     ?>
 </div>
 </div> <!-- end large encounter_forms DIV -->
-<div class="modal" id="exampleModalCenter">
-
-    <!-- Modal content -->
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Certificados</h5>
-                <button type="button" class="btn-danger close">
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Escoja el certificado que desea crear.</p>
-                <div class="form-group mb-2">
-                    <label for="descanso-dias" class="small mb-1"><?php echo xlt('Días de descanso'); ?></label>
-                    <input id="descanso-dias" type="number" min="1" max="120" value="15" class="form-control form-control-sm">
-                </div>
-                <div class="form-group mb-2">
-                    <label for="descanso-desde" class="small mb-1"><?php echo xlt('Fecha de inicio'); ?></label>
-                    <input id="descanso-desde" type="date" value="<?php echo attr(date('Y-m-d')); ?>" class="form-control form-control-sm">
-                </div>
-                <small id="descanso-hasta-preview" class="text-muted"></small>
-            </div>
-            <div class="modal-footer">
-                <a id="cert-asistencia-link" target="_blank" href="#"
-                   class="btn btn-outline-success light">Asistencia
-                </a>
-                <a id="cert-descanso-link" target="_blank" href="#"
-                   class="btn btn-outline-primary">Descanso</a>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-
 <script>
     jQuery.noConflict();
-    jQuery(document).ready(function ($) {
-        var rootdir = <?php echo json_encode($rootdir); ?>;
-        // Get the modal
-        var modal = document.getElementById("exampleModalCenter");
-
-        // Get buttons that open the modal
-        var certButtons = document.querySelectorAll(".certificados-trigger");
-
-        // Get the <span> element that closes the modal
-        var span = document.querySelector("#exampleModalCenter .close");
-        var asistenciaLink = document.getElementById("cert-asistencia-link");
-        var descansoLink = document.getElementById("cert-descanso-link");
-        var descansoDias = document.getElementById("descanso-dias");
-        var descansoDesde = document.getElementById("descanso-desde");
-        var descansoHastaPreview = document.getElementById("descanso-hasta-preview");
-        var selectedForm = null;
-
-        function buildQuery(params) {
-            return Object.keys(params)
-                .map(function (key) {
-                    return encodeURIComponent(key) + "=" + encodeURIComponent(params[key] || "");
-                })
-                .join("&");
-        }
-
-        function addDays(baseDate, days) {
-            var result = new Date(baseDate.getTime());
-            result.setDate(result.getDate() + days);
-            return result;
-        }
-
-        function formatDateISO(date) {
-            var month = String(date.getMonth() + 1).padStart(2, "0");
-            var day = String(date.getDate()).padStart(2, "0");
-            return date.getFullYear() + "-" + month + "-" + day;
-        }
-
-        function formatDateHuman(date) {
-            var month = String(date.getMonth() + 1).padStart(2, "0");
-            var day = String(date.getDate()).padStart(2, "0");
-            return day + "/" + month + "/" + date.getFullYear();
-        }
-
-        function updateDescansoPreview() {
-            if (!descansoHastaPreview || !descansoDesde || !descansoDias) {
-                return;
-            }
-            var days = parseInt(descansoDias.value, 10);
-            if (!days || days < 1) {
-                days = 1;
-            }
-            var start = new Date(descansoDesde.value + "T00:00:00");
-            if (isNaN(start.getTime())) {
-                start = new Date();
-                descansoDesde.value = formatDateISO(start);
-            }
-            var end = addDays(start, days - 1);
-            descansoHastaPreview.textContent = "Hasta: " + formatDateHuman(end);
-        }
-
-        function updateCertificateLinks() {
-            if (!selectedForm || !descansoDias || !descansoDesde) {
-                return;
-            }
-
-            var days = parseInt(descansoDias.value, 10);
-            if (!days || days < 1) {
-                days = 1;
-                descansoDias.value = "1";
-            } else if (days > 120) {
-                days = 120;
-                descansoDias.value = "120";
-            }
-
-            if (!descansoDesde.value) {
-                descansoDesde.value = formatDateISO(new Date());
-            }
-
-            var commonParams = {
-                formname: selectedForm.formname,
-                formid: selectedForm.formid,
-                visitid: selectedForm.visitid,
-                patientid: selectedForm.patientid
-            };
-
-            if (asistenciaLink) {
-                asistenciaLink.href = rootdir + "/forms/eye_mag/asistencia.php?" + buildQuery(commonParams);
-                asistenciaLink.style.display = selectedForm.formname.indexOf("eye_mag") === 0 ? "" : "none";
-            }
-
-            if (descansoLink) {
-                descansoLink.href = rootdir + "/forms/LBF/certificado_descanso.php?" + buildQuery({
-                    formname: commonParams.formname,
-                    formid: commonParams.formid,
-                    visitid: commonParams.visitid,
-                    patientid: commonParams.patientid,
-                    rest_days: days,
-                    rest_start: descansoDesde.value
-                });
-            }
-
-            updateDescansoPreview();
-        }
-
-        certButtons.forEach(function (button) {
-            button.addEventListener("click", function () {
-                selectedForm = {
-                    formname: button.getAttribute("data-formname") || "",
-                    formid: button.getAttribute("data-formid") || "",
-                    visitid: button.getAttribute("data-visitid") || "",
-                    patientid: button.getAttribute("data-patientid") || ""
-                };
-                updateCertificateLinks();
-                if (modal) {
-                    modal.style.display = "block";
-                }
-            });
-        });
-
-        if (descansoDias) {
-            descansoDias.addEventListener("input", updateCertificateLinks);
-        }
-        if (descansoDesde) {
-            descansoDesde.addEventListener("change", updateCertificateLinks);
-        }
-
-        // When the user clicks on close button, close the modal
-        if (span) {
-            span.addEventListener("click", function () {
-                if (modal) {
-                    modal.style.display = "none";
-                }
-            });
-        }
-
-        // When the user clicks anywhere outside of the modal, close it
-        window.addEventListener("click", function (event) {
-            if (modal && event.target == modal) {
-                modal.style.display = "none";
-            }
-        });
-
+    (function ($) {
         function toggleChevron(e) {
-            let i = e.target.closest('.form-holder').querySelector('i');
-            let o = (i.classList.contains('fa-chevron-right')) ? 'fa-chevron-right' : 'fa-chevron-down';
-            let n = (o == "fa-chevron-right") ? "fa-chevron-down" : "fa-chevron-right";
-            i.classList.replace(o, n);
+            var icon = $(e.target).closest(".form-holder").find("i").first();
+            if (!icon.length) {
+                return;
+            }
+            if (icon.hasClass("fa-chevron-right")) {
+                icon.removeClass("fa-chevron-right").addClass("fa-chevron-down");
+            } else {
+                icon.removeClass("fa-chevron-down").addClass("fa-chevron-right");
+            }
         }
 
-        // Usa $ dentro del ámbito seguro
         $('.form-detail div').on('show.bs.collapse', toggleChevron);
         $('.form-detail div').on('hide.bs.collapse', toggleChevron);
-    });
+    })(jQuery);
 </script>
 </body>
 </html>

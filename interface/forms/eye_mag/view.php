@@ -6258,7 +6258,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             </td>
                                                             <td class="top">
                                                                 <button
-                                                                    onclick="editScripts('/openemr/controller.php?prescription&list&id=<?php echo attr($pat_data['pid']); ?>');"><?php echo xlt('eRx'); ?></button>
+                                                                    onclick="editScripts('/controller.php?prescription&list&id=<?php echo attr($pat_data['pid']); ?>');"><?php echo xlt('eRx'); ?></button>
                                                             </td>
                                                         </tr>
 

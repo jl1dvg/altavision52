@@ -2630,7 +2630,7 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
             if ($item['display'] > '') {
                 $counter++;
                 echo "<span name='QP_PMH_" . $item['rowid'] . "' href='#PMH_anchor' id='QP_PMH_" . $item['rowid'] . "'
-                            onclick=\"alter_issue2('0','FH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+                            onclick=\"alter_issue2('0','FH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span>";
                 $mentions_FH++;
             }
         }
@@ -2675,7 +2675,7 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
 
         if (($item['display'] > '') && ($item['display'] != 'not_applicable')) {
             echo "<span name='QP_PMH_" . $item['rowid'] . "' href='#PMH_anchor' id='QP_PMH_" . $item['rowid'] . "'
-                                onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+                                onclick=\"alter_issue2('0','SOCH','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span>";
             $counter++;
             $mentions_SOCH++;
         }
@@ -2726,7 +2726,7 @@ function display_PMSFH($rows, $view = "pending", $min_height = "min-height:344px
 
             //xlt($item['short_title']) - for a list of short_titles, see the predefined ROS categories
             echo "<span name='QP_PMH_" . attr($item['rowid']) . "' href='#PMH_anchor' id='QP_PMH_" . attr($item['rowid']) . "'
-                             onclick=\"alter_issue2('0','ROS','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span><br />";
+                             onclick=\"alter_issue2('0','ROS','');\">" . xlt($item['short_title']) . ": " . text($item['display']) . "</span>";
             $mention++;
             $counter++;
         }
@@ -2768,7 +2768,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
     if (!empty($PMSFH[0]['POH'])) {
         $i = 0;
         foreach ($PMSFH[0]['POH'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POH','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POH','" . $i . "');\">" . text($item['title']) . "</span>";
             $i++;
         }
     } else {
@@ -2781,7 +2781,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
     if (!empty($PMSFH[0]['POS'])) {
         $i = 0;
         foreach ($PMSFH[0]['POS'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POS','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'POS','" . $i . "');\">" . text($item['title']) . "</span>";
             $i++;
         }
     } else {
@@ -2799,7 +2799,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
                 $i++;
                 continue;
             }
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span>";
             $mention_eye_meds++;
             $i++;
         }
@@ -2816,7 +2816,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
         $i = 0;
         foreach ($PMSFH[0]['PMH'] as $item) {
             if ($item['enddate'] !== " ") {
-                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'PMH','" . $i . "');\">" . text($item['title']) . "</span><br />";
+                echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'PMH','" . $i . "');\">" . text($item['title']) . "</span>";
                 $mention_pmh++;
                 $i++;
             }
@@ -2832,7 +2832,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
     if (!empty($PMSFH[0]['Surgery'])) {
         $i = 0;
         foreach ($PMSFH[0]['Surgery'] as $item) {
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Surgery','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Surgery','" . $i . "');\">" . text($item['title']) . "</span>";
             $i++;
         }
     } else {
@@ -2850,7 +2850,7 @@ function show_PMSFH_panel($PMSFH, $columns = '1')
                 $i++;
                 continue;
             }
-            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span><br />";
+            echo "<span name='QP_PMH_" . attr($item['rowid']) . "' id='QP_PMH_" . attr($item['rowid']) . "' onclick=\"alter_issue2(" . attr_js($item['rowid']) . ",'Medication','" . $i . "');\">" . text($item['title']) . "</span>";
             $mention_meds++;
             $i++;
         }
@@ -4332,7 +4332,7 @@ if ($number_rows == 22) { ?>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li><span style="margin-right:15px;color:black;"
-                                  onclick="editScripts('/openemr/controller.php?prescription&list&id=<?php echo $pid; ?>');">eRx</button>
+                                  onclick="editScripts('/controller.php?prescription&list&id=<?php echo $pid; ?>');">eRx</button>
                         </span></li>
                         <li class="eye-mag-header-state">
                             <span id="active_flag" name="active_flag" class="eye-mag-state-badge eye-mag-state-active">

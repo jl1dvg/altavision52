@@ -16,24 +16,16 @@ $facilityService = new FacilityService();
 // Incluye funciones específicas del formulario
 require_once(__DIR__ . "/../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
 
-if ($_REQUEST['CHOICE'] ?? '') {
-    $choice = $_REQUEST['choice'];
-}
+$choice = $_REQUEST['choice'] ?? $_REQUEST['CHOICE'] ?? null;
+$pid = (int)($_REQUEST['ptid'] ?? $_REQUEST['patientid'] ?? 0);
+$encounter = (int)($_REQUEST['encid'] ?? $_REQUEST['visitid'] ?? 0);
+$form_id = (int)($_REQUEST['formid'] ?? $_REQUEST['form_id'] ?? 0);
+$form_name = $_REQUEST['formname'] ?? $_REQUEST['formdir'] ?? $form_name;
 
-if ($_REQUEST['ptid'] ?? '') {
-    $pid = $_REQUEST['ptid'];
-}
-
-if ($_REQUEST['encid'] ?? '') {
-    $encounter = $_REQUEST['encid'];
-}
-
-if ($_REQUEST['formid'] ?? '') {
-    $form_id = $_REQUEST['formid'];
-}
-
-if ($_REQUEST['formname'] ?? '') {
-    $form_name = $_REQUEST['formname'];
+if (!$pid || !$encounter || !$form_id) {
+    http_response_code(400);
+    echo xlt('Faltan parámetros requeridos para generar el certificado.');
+    exit;
 }
 
 if (!($id ?? '')) {
