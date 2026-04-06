@@ -788,10 +788,15 @@ $billresult = BillingUtilities::getBillingByEncounter($fs->pid, $fs->encounter, 
     }
 
     function selectAll() {
-        var checkboxes = document.querySelectorAll('input[type="checkbox"][name^="bill["][name$="][del]"]');
         var selectAllCheckbox = document.getElementById('select-all');
+        var checkboxes = document.querySelectorAll(
+            '#selected_codes input[type="checkbox"][name$="][del]"]'
+        );
 
         checkboxes.forEach(function (checkbox) {
+            if (checkbox.disabled) {
+                return;
+            }
             checkbox.checked = selectAllCheckbox.checked;
         });
     }

@@ -2064,86 +2064,96 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
      */
     $query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? order by IMPPLAN_order ASC";
     $result = sqlStatement($query, array($form_id, $pid));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
+    $IMPPLAN_items = array();
+    $i = 0;
     while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
+        $IMPPLAN_items[$i] = array(
             'form_id' => $ip_list['form_id'],
             'pid' => $ip_list['pid'],
             'title' => $ip_list['title'],
             'code' => $ip_list['code'],
             'codetype' => $ip_list['codetype'],
             'codetext' => $ip_list['codetext'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
+            'codedesc' => $ip_list['codedesc'],
+            'plan' => $ip_list['plan'],
             'IMPPLAN_order' => $ip_list['IMPPLAN_order']
         );
-        $IMPPLAN_items[$i] = $newdata;
         $i++;
     }
+
     if (!empty($IMPPLAN_items)) {
-                    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-                    foreach ($IMPPLAN_items as $item) {
-                        echo ($item['IMPPLAN_order'] + 1) . '. <b>' . text($item['title']) . '</b><br />';
-                        echo '<div style="padding-left:15px;">';
-                        $pattern = '/Code/';
-                        if (preg_match($pattern, $item['code'])) {
-                            $item['code'] = '';
-                        }
+        foreach ($IMPPLAN_items as $item) {
+            echo (intval($item['IMPPLAN_order']) + 1) . '. <b>' . text($item['title']) . '</b><br />';
+            echo '<div style="padding-left:15px;padding-bottom:10px;">';
 
-                        if ($item['codetext'] > '') {
-                            echo $item['codetext'] . "<br />";
-                        } else {
-                            if ($item['code'] > '') {
-                                if ($item['codetype'] > '') {
-                                    $item['code'] = $item['codetype'] . ": " . $item['code'];
-                                }
+            $displayCode = trim((string) $item['code']);
+            if ($displayCode !== '' && preg_match('/Code/', $displayCode)) {
+                $displayCode = '';
+            }
+            if ($displayCode !== '' && !empty($item['codetype'])) {
+                $displayCode = $item['codetype'] . ': ' . $displayCode;
+            }
 
-                                echo $item['plan'] . "</div><br />";
-                            }
-                        }
-                $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
-                $PLAN_results = sqlStatement($query, array($form_id, $pid));
+            if (!empty($item['codetext'])) {
+                echo text($item['codetext']) . '<br />';
+            } elseif (!empty($item['codedesc'])) {
+                $diagnosisLine = trim(($displayCode !== '' ? $displayCode . ' ' : '') . $item['codedesc']);
+                echo text($diagnosisLine) . '<br />';
+            } elseif ($displayCode !== '') {
+                echo text($displayCode) . '<br />';
+            }
 
+            if (!empty($item['plan'])) {
+                echo nl2br(text($item['plan'])) . '<br />';
+            }
 
-                if (!empty($PLAN_results)) { ?>
-                <b><?php echo xlt('Orders') . "/" . xlt('Next Visit'); ?>:</b>
-                <br/>
-                <div style="padding-left:15px;padding-bottom:10px;width:400px;">
-                    <?php
-                    while ($plan_row = sqlFetchArray($PLAN_results)) {
-                        echo $plan_row['ORDER_DETAILS'] . "<br />";
-                    }
-                    echo $item['plan'] . "</div><br />";
+            echo '</div>';
+        }
 
-                    }
+        $planSections = array(
+            array(
+                'title' => xlt('Orders') . '/' . xlt('Next Visit'),
+                'table' => 'form_eye_mag_orders',
+                'underlined' => false
+            ),
+            array(
+                'title' => xlt('Procedimiento propuesto OD'),
+                'table' => 'form_eye_mag_ordenqxod',
+                'underlined' => true
+            ),
+            array(
+                'title' => xlt('Procedimiento propuesto OI'),
+                'table' => 'form_eye_mag_ordenqxoi',
+                'underlined' => true
+            )
+        );
 
-                    $query1 = "SELECT * FROM form_eye_mag_ordenqxod where form_id=? and pid=? ORDER BY id ASC";
-                    $PLAN_results1 = sqlStatement($query1, array($form_id, $pid));
-                    if (!empty($PLAN_results1)) { ?>
-                    <b><u><?php echo xlt('Procedimiento propuesto OD'); ?>:</u></b>
-                    <br/>
-                    <div style="padding-left:15px;padding-bottom:10px;width:400px;">
-                    <?php
-                        while ($plan_row1 = sqlFetchArray($PLAN_results1)) {
-                        echo $plan_row1['ORDER_DETAILS'] . "<br/>";
-                         }
-                        echo "</div><br />";
-                    }
+        foreach ($planSections as $section) {
+            $query = "SELECT ORDER_DETAILS FROM " . $section['table'] . " WHERE form_id=? AND pid=? ORDER BY id ASC";
+            $planResults = sqlStatement($query, array($form_id, $pid));
+            $details = array();
+            while ($planRow = sqlFetchArray($planResults)) {
+                if (!empty(trim((string) $planRow['ORDER_DETAILS']))) {
+                    $details[] = $planRow['ORDER_DETAILS'];
+                }
+            }
 
-                    $query2 = "SELECT * FROM form_eye_mag_ordenqxoi where form_id=? and pid=? ORDER BY id ASC";
-                    $PLAN_results2 = sqlStatement($query2, array($form_id, $pid));
-                    if (!empty($PLAN_results2)) { ?>
-                        <b><u><?php echo xlt('Procedimiento propuesto OI'); ?>:</u></b>
-                        <br/>
-                        <div style="padding-left:15px;padding-bottom:10px;width:400px;">
-                        <?php
-                        while ($plan_row2 = sqlFetchArray($PLAN_results2)) {
-                            echo $plan_row2['ORDER_DETAILS'] . "<br/>";
-                        }
-                        echo "</div><br />";
-                    }
+            if (empty($details)) {
+                continue;
+            }
+
+            if ($section['underlined']) {
+                echo '<b><u>' . text($section['title']) . ':</u></b><br />';
+            } else {
+                echo '<b>' . text($section['title']) . ':</b><br />';
+            }
+
+            echo '<div style="padding-left:15px;padding-bottom:10px;width:400px;">';
+            foreach ($details as $detail) {
+                echo text($detail) . '<br />';
+            }
+            echo '</div><br />';
+        }
 
                     display_draw_image("IMPPLAN", $encounter, $pid);
 
@@ -2168,7 +2178,6 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
                                 }
                             }
 
-    }
     ?>
 
             </tr>

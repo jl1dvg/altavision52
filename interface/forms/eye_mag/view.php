@@ -5683,13 +5683,18 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             ?>
                                             <dt class="borderShadow">
                                                 <span><?php echo xlt('Next Visit Orders'); ?></span>
+                                                <a href="#"
+                                                   onclick="printPlanOrders(); return false;"
+                                                   title="<?php echo xla('Print selected exams and authorizations'); ?>"
+                                                   style="color:black;font-weight:600;"><i
+                                                        class="fa fa-file-pdf-o fa-fw"></i></a>
                                                 <a href="<?php echo $GLOBALS['webroot']; ?>/interface/super/edit_list.php?list_id=Eye_todo_done_<?php echo attr($provider_id); ?>"
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>"
                                                    name="provider_todo" style="color:black;font-weight:600;"><i
                                                         class="fa fa-pencil fa-fw"></i></a>
                                             </dt>
-                                            <dd>
+                                            <dd id="plan_orders_section">
                                                 <table>
                                                     <tr class="" style="vertical-align:bottom;margin: 10px;;">
                                                         <td></td>
@@ -5762,7 +5767,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </tr>
                                                     <tr>
                                                         <td colspan="3" style="padding-left:20px;padding-top:4px;">
-                                <textarea id="Plan<?php echo $counter; ?>" name="PLAN[]"
+                                <textarea id="PLAN_free_text" name="PLAN[]"
                                           style="width: 440px;height: 44px;"><?php if ($found < (empty($PLAN_arr) ? 0 : count($PLAN_arr))) {
                                         echo $PLAN_arr[count($PLAN_arr) - 1]['ORDER_DETAILS'];
                                     } ?></textarea>
@@ -6369,6 +6374,70 @@ if ($display != "fullscreen") {
         document.getElementsByTagName("div")[0].appendChild(a);
     }
     var base = '<?php echo $GLOBALS['webroot']; ?>';
+
+    function printPlanOrders() {
+        var section = document.getElementById('plan_orders_section');
+        if (!section) {
+            return;
+        }
+
+        var checkedPlans = section.querySelectorAll("input[type='checkbox'][name='PLAN[]']:checked");
+        var freeTextField = document.getElementById('PLAN_free_text');
+        var freeText = freeTextField ? freeTextField.value.trim() : '';
+        var selectedOptions = [];
+
+        checkedPlans.forEach(function (input) {
+            var index = parseInt(input.id.replace('PLAN', ''), 10);
+            if (Array.isArray(window.PLANoptions) && window.PLANoptions[index]) {
+                selectedOptions.push(window.PLANoptions[index]);
+            } else {
+                selectedOptions.push({
+                    title: input.value,
+                    subtype: '',
+                    notes: ''
+                });
+            }
+        });
+
+        if (!selectedOptions.length && !freeText) {
+            alert('<?php echo xla('Select at least one exam or enter an additional note to print.'); ?>');
+            return;
+        }
+
+        var targetName = 'plan_orders_print_' + Date.now();
+        window.open('', targetName);
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<?php echo $GLOBALS['webroot']; ?>/interface/forms/<?php echo attr($form_folder); ?>/plan_orders_print.php';
+        form.target = targetName;
+
+        function appendField(name, value) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value || '';
+            form.appendChild(input);
+        }
+
+        appendField('pid', <?php echo json_encode((string)($pid ?? '')); ?>);
+        appendField('encounter', <?php echo json_encode((string)($encounter ?? '')); ?>);
+        appendField('form_id', <?php echo json_encode((string)($form_id ?? '')); ?>);
+        appendField('visit_date', <?php echo json_encode((string)($encounter_date ?? $visit_date ?? '')); ?>);
+        appendField('provider_name', <?php echo json_encode(trim((string)(($prov_data["fname"] ?? '') . " " . ($prov_data["lname"] ?? '')))); ?>);
+        appendField('provider_suffix', <?php echo json_encode((string)($prov_data["suffix"] ?? '')); ?>);
+        appendField('free_text', freeText);
+
+        selectedOptions.forEach(function (option) {
+            appendField('plan_titles[]', option.title || '');
+            appendField('plan_subtypes[]', option.subtype || '');
+            appendField('plan_notes[]', option.notes || '');
+        });
+
+        document.body.appendChild(form);
+        top.restoreSession();
+        form.submit();
+        document.body.removeChild(form);
+    }
 </script>
 <script type="text/javascript"
         src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/<?php echo $form_folder; ?>/js/shorthand_eye.js"></script>

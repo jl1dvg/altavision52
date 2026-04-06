@@ -4579,7 +4579,7 @@ if ($number_rows == 22) { ?>
          * $sql = "SELECT * FROM facility ORDER BY billing_location DESC LIMIT 1";
          *******************************************************************/
         //$titleres = getPatientData($pid, "fname,lname,providerID,DATE_FORMAT(DOB,'%m/%d/%Y') as DOB_TS");
-        $titleres = getPatientData($pid, "fname,lname,lname2, providerID,DOB");
+        $titleres = getPatientData($pid, "fname,mname,lname,lname2,pubpid,providerID,DOB");
         $facility = null;
         if ($_SESSION['pc_facility']) {
             $facility = $facilityService->getById($_SESSION['pc_facility']);
@@ -4588,19 +4588,120 @@ if ($number_rows == 22) { ?>
         }
 
         $DOB = oeFormatShortDate($titleres['DOB']);
+        $patientName = trim(implode(' ', array_filter(array(
+            $titleres['fname'],
+            $titleres['mname'],
+            $titleres['lname'],
+            $titleres['lname2']
+        ))));
+        $addressParts = array_filter(array(
+            $facility['street'] ?? '',
+            $facility['city'] ?? '',
+            $facility['state'] ?? '',
+            $facility['country_code'] ?? '',
+            $facility['postal_code'] ?? ''
+        ));
+        $facilityAddress = trim(implode(', ', $addressParts), ', ');
+        $facilityPhone = $facility['phone'] ?? '';
+        $facilityEmail = $facility['email'] ?? '';
+        $formattedVisitDate = '';
+        if (!empty($visit_date)) {
+            if (preg_match('/^\d{4}-\d{2}-\d{2}/', $visit_date)) {
+                $formattedVisitDate = oeFormatShortDate(substr($visit_date, 0, 10));
+            } else {
+                $formattedVisitDate = $visit_date;
+            }
+        }
         /******************************************************************/
         ob_start();
         // Use logo if it exists as 'practice_logo.gif' in the site dir
         // old code used the global custom dir which is no longer a valid
         //need to fix logo for multi-site
         ?>
-        <table style="width:100%;">
+        <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
             <tr>
+                <td style="width:65%; vertical-align:top; padding-right:16px;">
+                    <div style="font-size:20px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">
+                        <?php echo text($facility['name'] ?? ''); ?>
+                    </div>
+                    <?php if ($facilityAddress) { ?>
+                        <div style="font-size:12px; margin-bottom:2px;">
+                            <b><?php echo xlt('Address'); ?>:</b> <?php echo text($facilityAddress); ?>
+                        </div>
+                    <?php } ?>
+                    <?php if ($facilityPhone) { ?>
+                        <div style="font-size:12px; margin-bottom:2px;">
+                            <b><?php echo xlt('Phone'); ?>:</b> <?php echo text($facilityPhone); ?>
+                        </div>
+                    <?php } ?>
+                    <?php if ($facilityEmail) { ?>
+                        <div style="font-size:12px;">
+                            <b><?php echo xlt('Email'); ?>:</b> <?php echo text($facilityEmail); ?>
+                        </div>
+                    <?php } ?>
+                </td>
+                <td style="width:35%; vertical-align:top; text-align:right;">
+                    <?php
+                    $siteId = $_SESSION['site_id'] ?? 'default';
+                    if ($direction == "web") {
+                        $logoCandidates = array(
+                            array(
+                                'file' => $GLOBALS['OE_SITE_DIR'] . "/images/ma_logo.png",
+                                'src' => $GLOBALS['webroot'] . "/sites/" . rawurlencode($siteId) . "/images/ma_logo.png"
+                            ),
+                            array(
+                                'file' => $OE_SITE_DIR . "/images/practice_logo.gif",
+                                'src' => $GLOBALS['webroot'] . "/sites/" . rawurlencode($siteId) . "/images/practice_logo.gif"
+                            )
+                        );
+                        foreach ($logoCandidates as $logoCandidate) {
+                            if (file_exists($logoCandidate['file'])) {
+                                echo "<img src='" . attr($logoCandidate['src']) . "' style='max-width:150px; max-height:85px;' alt='Logo'><br />";
+                                break;
+                            }
+                        }
+                    } else {
+                        $logoCandidates = array(
+                            $GLOBALS['OE_SITE_DIR'] . "/images/ma_logo.png",
+                            "$OE_SITE_DIR/images/practice_logo.gif"
+                        );
+                        foreach ($logoCandidates as $logoCandidate) {
+                            if (file_exists($logoCandidate)) {
+                                echo "<img src='" . attr($logoCandidate) . "' style='max-width:150px; max-height:85px;' alt='Logo'><br />";
+                                break;
+                            }
+                        }
+                    }
+                    ?>
+                </td>
+            </tr>
+        </table>
 
-                <td>
-                    <em style="font-weight:bold;font-size:1.4em;"><?php echo text($titleres['fname']) . " " . text($titleres['lname'] . " " . text($titleres['lname2'])); ?></em><br/>
-                    <b><?php echo xlt('Visit Date'); ?>:</b> <?php echo oeFormatSDFT(strtotime($visit_date)); ?><br/>
-
+        <table style="width:100%; border-collapse:collapse; margin-bottom:12px; border:1px solid #777;">
+            <tr>
+                <td style="width:60%; padding:8px 10px; border-right:1px solid #777;">
+                    <div style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:3px;">
+                        <?php echo xlt('Patient'); ?>
+                    </div>
+                    <div style="font-size:16px; font-weight:700;">
+                        <?php echo text($patientName); ?>
+                    </div>
+                </td>
+                <td style="width:20%; padding:8px 10px; border-right:1px solid #777;">
+                    <div style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:3px;">
+                        <?php echo xlt('ID'); ?>
+                    </div>
+                    <div style="font-size:14px; font-weight:700;">
+                        <?php echo text($titleres['pubpid'] ?? ''); ?>
+                    </div>
+                </td>
+                <td style="width:20%; padding:8px 10px;">
+                    <div style="font-size:11px; text-transform:uppercase; color:#555; margin-bottom:3px;">
+                        <?php echo xlt('Visit Date'); ?>
+                    </div>
+                    <div style="font-size:14px; font-weight:700;">
+                        <?php echo text($formattedVisitDate); ?>
+                    </div>
                 </td>
             </tr>
         </table>

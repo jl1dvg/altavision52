@@ -100,6 +100,23 @@ function monthLabelEs($dateValue)
     return $months[$monthNumber] ?? date('F', strtotime($dateValue));
 }
 
+function resolveListTitle($listId, $optionId, $defaultValue = '')
+{
+    $optionId = trim((string) $optionId);
+    if ($optionId === '') {
+        return $defaultValue;
+    }
+
+    if (function_exists('getListItemTitle')) {
+        $title = getListItemTitle($listId, $optionId);
+        if (!empty($title)) {
+            return $title;
+        }
+    }
+
+    return $defaultValue !== '' ? $defaultValue : $optionId;
+}
+
 function endDoctor(&$docrow)
 {
     global $grand_total_charges, $grand_total_collected, $grand_total_encounters;
@@ -113,6 +130,9 @@ function endDoctor(&$docrow)
     echo "  </td>\n";
     echo "  <td >\n";
     echo "   &nbsp;" . text($docrow['encounters']) . "&nbsp;\n";
+    echo "  </td>\n";
+    echo "  <td >\n";
+    echo "   &nbsp;\n";
     echo "  </td>\n";
     echo "  <td >\n";
     echo "   &nbsp;\n";
@@ -159,6 +179,9 @@ function endDate(&$daterow)
     echo "  </td>\n";
     echo "  <td >\n";
     echo "   &nbsp;" . text($daterow['encounters']) . "&nbsp;\n";
+    echo "  </td>\n";
+    echo "  <td >\n";
+    echo "   &nbsp;\n";
     echo "  </td>\n";
     echo "  <td >\n";
     echo "   &nbsp;\n";
@@ -276,12 +299,16 @@ $res = sqlStatement($query, $sqlBindArray);
 if ($form_excelexport) {
     $excelBindArray = array($form_from_date . ' 00:00:00', $form_to_date . ' 23:59:59');
     $excelQuery = "SELECT fe.date AS service_date, p.pubpid, p.fname, p.lname, p.lname2, " .
-        "COALESCE(NULLIF(p.pricelevel, ''), 'Particular') AS payer_name, " .
-        "b.code, b.modifier, b.code_text, b.fee, COALESCE(NULLIF(b.units, 0), 1) AS units " .
+        "COALESCE(NULLIF(loprice.title, ''), NULLIF(p.pricelevel, ''), 'Particular') AS payer_name, " .
+        "COALESCE(NULLIF(c.superbill, ''), '') AS code_category, " .
+        "b.code, b.modifier, COALESCE(NULLIF(c.code_text_short, ''), NULLIF(b.code_text, ''), b.code) AS procedure_text, " .
+        "b.fee, COALESCE(NULLIF(b.units, 0), 1) AS units " .
         "FROM form_encounter AS fe " .
         "INNER JOIN patient_data AS p ON p.pid = fe.pid " .
         "INNER JOIN billing AS b ON b.pid = fe.pid AND b.encounter = fe.encounter AND b.activity = 1 " .
         "INNER JOIN code_types AS ct ON ct.ct_key = b.code_type AND ct.ct_fee = 1 " .
+        "LEFT JOIN codes AS c ON c.code_type = ct.ct_id AND c.code = b.code AND COALESCE(c.modifier, '') = COALESCE(b.modifier, '') " .
+        "LEFT JOIN list_options AS loprice ON loprice.list_id = 'pricelevel' AND loprice.option_id = p.pricelevel AND loprice.activity = 1 " .
         "WHERE fe.date >= ? AND fe.date <= ? " .
         "AND UPPER(COALESCE(p.pricelevel, '')) != ? ";
     $excelBindArray[] = 'IESS';
@@ -317,12 +344,12 @@ if ($form_excelexport) {
         .subtotal td { background: #ffd966; font-weight: bold; }
     </style></head><body>";
     echo "<table>";
-    echo "<tr><th>Mes</th><th>Paciente</th><th>Procedimiento</th><th>Cantidad</th><th>Pagador</th><th>Valor</th><th>Total</th></tr>";
+    echo "<tr><th>Mes</th><th>Paciente</th><th>Categoria</th><th>Procedimiento</th><th>Cantidad</th><th>Pagador</th><th>Valor</th><th>Total</th></tr>";
 
     while ($excelRow = sqlFetchArray($excelRes)) {
         $monthLabel = monthLabelEs(substr($excelRow['service_date'], 0, 10));
         if ($currentMonthLabel !== '' && $currentMonthLabel !== $monthLabel) {
-            echo "<tr class='subtotal'><td colspan='6'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
+            echo "<tr class='subtotal'><td colspan='7'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
             $monthSubtotal = 0;
         }
 
@@ -333,7 +360,7 @@ if ($form_excelexport) {
             $procedureCode .= '-' . $excelRow['modifier'];
         }
 
-        $procedureText = trim((string) $excelRow['code_text']);
+        $procedureText = trim((string) $excelRow['procedure_text']);
         if ($procedureText === '') {
             $procedureText = $procedureCode;
         }
@@ -345,6 +372,7 @@ if ($form_excelexport) {
         echo "<tr>";
         echo "<td>" . text($monthLabel) . "</td>";
         echo "<td>" . text($patientName) . "</td>";
+        echo "<td>" . text($excelRow['code_category']) . "</td>";
         echo "<td>" . text($procedureText) . "</td>";
         echo "<td>" . text($excelRow['units']) . "</td>";
         echo "<td>" . text($excelRow['payer_name']) . "</td>";
@@ -354,10 +382,10 @@ if ($form_excelexport) {
     }
 
     if ($currentMonthLabel !== '') {
-        echo "<tr class='subtotal'><td colspan='6'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
+        echo "<tr class='subtotal'><td colspan='7'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
     }
 
-    echo "<tr class='subtotal'><td colspan='6'>Total general</td><td class='money'>" . text(bucks($grandTotalExcel)) . "</td></tr>";
+    echo "<tr class='subtotal'><td colspan='7'>Total general</td><td class='money'>" . text(bucks($grandTotalExcel)) . "</td></tr>";
     echo "</table></body></html>";
     exit;
 }
@@ -477,6 +505,11 @@ if ($form_excelexport) {
         .status-pill.pending {
             background: #fee2e2;
             color: #991b1b;
+        }
+
+        .status-pill.neutral {
+            background: #e2e8f0;
+            color: #334155;
         }
 
         .col-generated,
@@ -685,6 +718,7 @@ if ($form_excelexport) {
                 <th> &nbsp;<?php echo xlt('Operador'); ?> </th>
                 <th> <?php echo xlt('Encounter'); ?>&nbsp;</th>
                 <th> <?php echo xlt('Code(s)'); ?>&nbsp;</th>
+                <th> <?php echo xlt('Category'); ?>&nbsp;</th>
                 <th> <?php echo xlt('Procedure Detail'); ?>&nbsp;</th>
                 <th> <?php echo xlt('Generated'); ?>&nbsp;</th>
                 <th> <?php echo xlt('Collected'); ?>&nbsp;</th>
@@ -722,10 +756,16 @@ if ($form_excelexport) {
                         $gcac_related_visit = false;
 
                         if ($encounter) {
-                            $queryb = "SELECT code_type, code, code_text, modifier, authorized, billed, fee, justify, provider_id " .
-                                "FROM billing WHERE " .
-                                "pid = ? AND encounter = ? AND activity = 1 " .
-                                "ORDER BY id";
+                            $queryb = "SELECT b.code_type, b.code, " .
+                                "COALESCE(NULLIF(c.superbill, ''), '') AS code_category, " .
+                                "COALESCE(NULLIF(c.code_text_short, ''), NULLIF(b.code_text, ''), b.code) AS procedure_text, " .
+                                "b.modifier, b.authorized, b.billed, b.fee, b.justify, b.provider_id " .
+                                "FROM billing AS b " .
+                                "LEFT JOIN code_types AS ct ON ct.ct_key = b.code_type " .
+                                "LEFT JOIN codes AS c ON c.code_type = ct.ct_id AND c.code = b.code AND COALESCE(c.modifier, '') = COALESCE(b.modifier, '') " .
+                                "WHERE " .
+                                "b.pid = ? AND b.encounter = ? AND b.activity = 1 " .
+                                "ORDER BY b.id";
                             $bres = sqlStatement($queryb, array($patient_id, $encounter));
                             while ($brow = sqlFetchArray($bres)) {
                                 $code_type = $brow['code_type'];
@@ -745,7 +785,9 @@ if ($form_excelexport) {
                                         'collected' => 0,
                                         'paymentMethodList' => '-',
                                         'codes' => array(),
+                                        'categories' => array(),
                                         'procedureDetails' => array(),
+                                        'hasFeeCodes' => false,
                                         'errors' => array(),
                                     );
                                 }
@@ -763,6 +805,7 @@ if ($form_excelexport) {
                                 }
 
                                 if (!empty($code_types[$code_type]['fee'])) {
+                                    $groupedRows[$effectiveProviderId]['hasFeeCodes'] = true;
                                     $groupedRows[$effectiveProviderId]['charges'] += (float) $brow['fee'];
                                     $codedLabel = $brow['code'];
                                     if (!empty($brow['modifier'])) {
@@ -770,15 +813,16 @@ if ($form_excelexport) {
                                     }
 
                                     $groupedRows[$effectiveProviderId]['codes'][$codedLabel] = true;
-                                    $procedureText = trim((string) $brow['code_text']);
+                                    $categoryLabel = trim((string) $brow['code_category']);
+                                    if ($categoryLabel !== '') {
+                                        $groupedRows[$effectiveProviderId]['categories'][$categoryLabel] = true;
+                                    }
+                                    $procedureText = trim((string) $brow['procedure_text']);
                                     if ($procedureText === '') {
                                         $procedureText = $codedLabel;
                                     }
 
                                     $groupedRows[$effectiveProviderId]['procedureDetails'][$codedLabel . '|' . $procedureText] = $codedLabel . ' - ' . $procedureText;
-                                    if ((float) $brow['fee'] == 0.0 && !$GLOBALS['ippf_specific']) {
-                                        appendError($groupedRows[$effectiveProviderId]['errors'], xl('Missing Fee'));
-                                    }
                                 } elseif ((float) $brow['fee'] != 0.0) {
                                     appendError($groupedRows[$effectiveProviderId]['errors'], xl('Fee is not allowed'));
                                 }
@@ -818,22 +862,18 @@ if ($form_excelexport) {
 
                             $payRes = sqlStatement(
                                 "SELECT COALESCE(NULLIF(s.payment_method, ''), NULLIF(a.account_code, ''), ?) AS payment_method, " .
+                                "COALESCE(MAX(NULLIF(lopm.title, '')), COALESCE(NULLIF(s.payment_method, ''), NULLIF(a.account_code, ''), ?)) AS payment_method_title, " .
                                 "COALESCE(SUM(a.pay_amount), 0) AS total_paid " .
                                 "FROM ar_activity AS a " .
                                 "LEFT JOIN ar_session AS s ON s.session_id = a.session_id " .
+                                "LEFT JOIN list_options AS lopm ON lopm.list_id = 'payment_method' " .
+                                "AND lopm.option_id = COALESCE(NULLIF(s.payment_method, ''), NULLIF(a.account_code, ''), ?) AND lopm.activity = 1 " .
                                 "WHERE a.pid = ? AND a.encounter = ? AND a.pay_amount != 0 " .
                                 "GROUP BY COALESCE(NULLIF(s.payment_method, ''), NULLIF(a.account_code, ''), ?)",
-                                array('N/A', $patient_id, $encounter, 'N/A')
+                                array('N/A', 'N/A', 'N/A', $patient_id, $encounter, 'N/A')
                             );
                             while ($payRow = sqlFetchArray($payRes)) {
-                                $methodCode = $payRow['payment_method'];
-                                $methodLabel = $methodCode;
-                                if (function_exists('getListItemTitle')) {
-                                    $listMethod = getListItemTitle('payment_method', $methodCode);
-                                    if (!empty($listMethod)) {
-                                        $methodLabel = $listMethod;
-                                    }
-                                }
+                                $methodLabel = $payRow['payment_method_title'];
 
                                 $methodAmount = (float) $payRow['total_paid'];
                                 $encounterCollected += $methodAmount;
@@ -868,7 +908,9 @@ if ($form_excelexport) {
                                 'collected' => 0,
                                 'paymentMethodList' => '-',
                                 'codes' => array(),
+                                'categories' => array(),
                                 'procedureDetails' => array(),
+                                'hasFeeCodes' => false,
                                 'errors' => array(xl('No visit')),
                             );
                         } elseif (empty($groupedRows)) {
@@ -889,7 +931,9 @@ if ($form_excelexport) {
                                 'collected' => 0,
                                 'paymentMethodList' => '-',
                                 'codes' => array(),
+                                'categories' => array(),
                                 'procedureDetails' => array(),
+                                'hasFeeCodes' => false,
                                 'errors' => array($GLOBALS['simplified_demographics'] ? xl('Not checked out') : xl('Not billed')),
                             );
                         }
@@ -919,6 +963,7 @@ if ($form_excelexport) {
                             $charges = $groupedRow['charges'];
                             $collected = $groupedRow['collected'];
                             $codeList = empty($groupedRow['codes']) ? '-' : implode(', ', array_keys($groupedRow['codes']));
+                            $categoryList = empty($groupedRow['categories']) ? '-' : implode(', ', array_keys($groupedRow['categories']));
                             $procedureDetailList = '-';
                             if (!empty($groupedRow['procedureDetails'])) {
                                 $procedureDetailList = implode("<br />", array_map(function ($detail) {
@@ -930,6 +975,7 @@ if ($form_excelexport) {
                             $paymentMethodList = $groupedRow['paymentMethodList'];
                             $errmsg = empty($groupedRow['errors']) ? '' : implode('<br />', array_map('text', $groupedRow['errors']));
                             $billed = $groupedRow['billed'] && $charges > 0;
+                            $noChargeExpected = !empty($groupedRow['hasFeeCodes']) && (float) $charges == 0.0;
 
                             $docrow['charges'] += $charges;
                             $docrow['collected'] += $collected;
@@ -950,8 +996,13 @@ if ($form_excelexport) {
                                     $rowClass .= ' row-settled';
                                 }
 
-                                $statusClass = $billed ? 'ok' : 'pending';
-                                $statusLabel = $billed ? xlt('Billed') : xlt('Pending');
+                                if ($noChargeExpected) {
+                                    $statusClass = 'neutral';
+                                    $statusLabel = xlt('No charge');
+                                } else {
+                                    $statusClass = $billed ? 'ok' : 'pending';
+                                    $statusLabel = $billed ? xlt('Billed') : xlt('Pending');
+                                }
                                 ?>
                                 <tr class='<?php echo attr($rowClass); ?>'>
                                     <td>
@@ -988,6 +1039,9 @@ if ($form_excelexport) {
                                     </td>
                                     <td class='cell-codes'>
                                         <?php echo text($codeList); ?>&nbsp;
+                                    </td>
+                                    <td class='cell-codes'>
+                                        <?php echo text($categoryList); ?>&nbsp;
                                     </td>
                                     <td class='cell-codes'>
                                         <?php echo $procedureDetailList; ?>&nbsp;
@@ -1027,6 +1081,9 @@ if ($form_excelexport) {
                     echo "  </td>\n";
                     echo "  <td >\n";
                     echo "   &nbsp;" . text($grand_total_encounters) . "&nbsp;\n";
+                    echo "  </td>\n";
+                    echo "  <td >\n";
+                    echo "   &nbsp;\n";
                     echo "  </td>\n";
                     echo "  <td >\n";
                     echo "   &nbsp;\n";
