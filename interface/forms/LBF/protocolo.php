@@ -505,7 +505,7 @@ ob_start();
             <td class="blanco" style="height: 40" colspan="5"><?php echo $providerNAME; ?></td>
             <td class="blanco" colspan="5"><?php echo getProviderEspecialidad($providerID) ?></td>
             <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"><?php echo getProviderRegistro($providerID) ?></td>
+            <td class="blanco" colspan="5"><?php echo getProviderIdentification($providerID) ?></td>
         </tr>
         <tr>
             <td class="blanco" style="height: 40"
@@ -515,7 +515,7 @@ ob_start();
             <td class="blanco"
                 colspan="5"></td>
             <td class="blanco"
-                colspan="5"><?php echo getProviderRegistro(getFieldValue($formid, "Prot_anestesiologo")) ?></td>
+                colspan="5"><?php echo getProviderIdentification(getFieldValue($formid, "Prot_anestesiologo")) ?></td>
         </tr>
         <tr>
             <td class="blanco" style="height: 40" colspan="5"></td>

@@ -559,6 +559,11 @@ ALTER TABLE `form_eye_mag_orders`
 ALTER TABLE `form_eye_mag_orders`
     ADD UNIQUE KEY `VISIT_ID` (`pid`, `ORDER_DETAILS`, `ORDER_DATE_PLACED`);
 
+#IfMissingColumn form_eye_mag_orders ORDER_EYE
+ALTER TABLE `form_eye_mag_orders`
+    ADD COLUMN `ORDER_EYE` varchar(10) NOT NULL DEFAULT '' AFTER `ORDER_DETAILS`;
+#EndIf
+
 INSERT into `form_eye_base` (`id`,`date`,`pid`,`user`,`groupname`,`authorized`, `activity`)
   select `id`,`date`,`pid`,`user`,`groupname`,`authorized`, `activity` from `form_eye_mag`;
 

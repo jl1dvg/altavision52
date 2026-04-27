@@ -571,7 +571,7 @@ foreach ($ar_desc as $key => $val) {
                 </TD>
                 <TD class="blanco">
                     <?php
-                    echo getProviderRegistro($providerID['provider_id']);
+                    echo getProviderIdentification($providerID['provider_id']);
                     ?>
                 </TD>
                 <td class="verde">FIRMA</TD>

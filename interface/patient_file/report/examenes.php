@@ -200,7 +200,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $form_encounter));
         <td colspan="30" class="verde">SELLO</td>
     </tr>
     <tr>
-        <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderRegistro(12);
+        <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderIdentification(12);
             ?></td>
         <td colspan="26" class="blanco">&nbsp;</td>
         <td colspan="30" class="blanco">&nbsp;</td>

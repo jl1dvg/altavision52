@@ -1269,7 +1269,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco" style="height: 60" colspan="5"><?php echo $providerNAME; ?></td>
             <td class="blanco" colspan="5"><?php echo getProviderEspecialidad($providerID) ?></td>
             <td class="blanco" colspan="5"></td>
-            <td class="blanco" colspan="5"><?php echo getProviderRegistro($providerID) ?></td>
+            <td class="blanco" colspan="5"><?php echo getProviderIdentification($providerID) ?></td>
         </tr>
         <tr>
             <td class="blanco" style="height: 60"
@@ -1279,7 +1279,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco"
                 colspan="5"></td>
             <td class="blanco"
-                colspan="5"><?php echo getProviderRegistro(getFieldValue($form_id, "Prot_ayudante")) ?></td>
+                colspan="5"><?php echo getProviderIdentification(getFieldValue($form_id, "Prot_ayudante")) ?></td>
         </tr>
         <tr>
             <td class="blanco" style="height: 60"
@@ -1289,7 +1289,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
             <td class="blanco"
                 colspan="5"></td>
             <td class="blanco"
-                colspan="5"><?php echo getProviderRegistro(getFieldValue($form_id, "Prot_anestesiologo")) ?></td>
+                colspan="5"><?php echo getProviderIdentification(getFieldValue($form_id, "Prot_anestesiologo")) ?></td>
         </tr>
 
     </table>

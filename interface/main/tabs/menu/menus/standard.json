@@ -1329,6 +1329,42 @@
                         ]
                     },
                     {
+                        "label": "Dashboard Particulares",
+                        "menu_id": "rep0",
+                        "target": "rep",
+                        "url": "/interface/reports/particulares_dashboard.php",
+                        "children": [],
+                        "requirement": 0,
+                        "acl_req": [
+                            "patients",
+                            "med"
+                        ]
+                    },
+                    {
+                        "label": "OR Day Sessions",
+                        "menu_id": "rep0",
+                        "target": "rep",
+                        "url": "/interface/reports/or_day_sessions.php",
+                        "children": [],
+                        "requirement": 0,
+                        "acl_req": [
+                            "patients",
+                            "med"
+                        ]
+                    },
+                    {
+                        "label": "OR Supply Catalog",
+                        "menu_id": "rep0",
+                        "target": "rep",
+                        "url": "/interface/reports/or_supply_catalog.php",
+                        "children": [],
+                        "requirement": 0,
+                        "acl_req": [
+                            "patients",
+                            "med"
+                        ]
+                    },
+                    {
                         "label": "Immunization Registry",
                         "menu_id": "rep0",
                         "target": "rep",

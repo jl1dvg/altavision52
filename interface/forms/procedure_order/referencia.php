@@ -552,7 +552,7 @@ ob_start();
 <table>
     <TR>
         <TD class="blanco" width="28%"><?php echo getProviderName($providerID); ?></TD>
-        <TD class="blanco" width="16%"><?php echo getProviderRegistro($providerID); ?></TD>
+        <TD class="blanco" width="16%"><?php echo getProviderIdentification($providerID); ?></TD>
         <TD class="blanco" width="28%"></TD>
         <TD class="blanco" width="28%"></TD>
     </TR>

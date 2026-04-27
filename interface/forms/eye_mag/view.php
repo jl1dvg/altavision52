@@ -5705,10 +5705,15 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             // Iterate through this "provider's" orders and compare to list of options.
                                                             $count = 0;
                                                             $counter = 0;
+                                                            $found = 0;
+                                                            $PLAN_arr = array();
+                                                            $PLAN_eye_map = array();
+                                                            $arrPLAN = array();
                                                             $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
                                                             $PLAN_results = sqlStatement($query, array($form_id, $pid));
                                                             while ($plan_row = sqlFetchArray($PLAN_results)) {
                                                                 $PLAN_arr[] = $plan_row;
+                                                                $PLAN_eye_map[$plan_row['ORDER_DETAILS']] = eyeMagNormalizeOrderEye($plan_row['ORDER_EYE'] ?? '');
                                                             }
                                                             $previous_subtype = '';
 
@@ -5741,11 +5746,20 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                     $checked = "checked='yes'";
                                                                     $found++;
                                                                 }
+                                                                $plan_eye = $PLAN_eye_map[$title] ?? '';
                                                                 // <!-- <i title="Build your plan." class="fa fa-mail-forward fa-flip-horizontal" id="make_blank_PLAN" name="make_blank_PLAN"></i>-->
-                                                                echo "<input type='checkbox' id='PLAN$counter' name='PLAN[]' $checked value='" . attr($row['title']) . "'> ";
+                                                                echo "<input type='checkbox' class='plan-order-checkbox' id='PLAN$counter' name='PLAN[" . attr($counter) . "]' $checked value='" . attr($row['title']) . "'> ";
                                                                 $label = text(substr($row['title'], 0, 30));
                                                                 echo "<label for='PLAN$counter' class='input-helper input-helper--checkbox' title='" . attr($row['notes']) . "'>";
-                                                                echo $label . "</label><br />";
+                                                                echo $label . "</label>";
+                                                                $eye_select_class = $plan_eye === '' ? 'plan-eye-select plan-eye-empty' : 'plan-eye-select plan-eye-selected';
+                                                                echo "<select class='" . attr($eye_select_class) . "' name='PLAN_EYE[" . attr($counter) . "]' data-plan-eye-for='PLAN$counter' title='" . xla('Eye') . "'>";
+                                                                echo "<option value=''>--</option>";
+                                                                foreach (array('OD', 'OI', 'AO') as $eye_option) {
+                                                                    $selected = ($plan_eye === $eye_option) ? " selected='selected'" : '';
+                                                                    echo "<option value='" . attr($eye_option) . "'$selected>" . text($eye_option) . "</option>";
+                                                                }
+                                                                echo "</select><br />";
                                                                 $count++;
                                                                 $counter++;
                                                                 if ($count == "3") {
@@ -5767,7 +5781,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                     </tr>
                                                     <tr>
                                                         <td colspan="3" style="padding-left:20px;padding-top:4px;">
-                                <textarea id="PLAN_free_text" name="PLAN[]"
+                                <textarea id="PLAN_free_text" name="PLAN_FREE_TEXT"
                                           style="width: 440px;height: 44px;"><?php if ($found < (empty($PLAN_arr) ? 0 : count($PLAN_arr))) {
                                         echo $PLAN_arr[count($PLAN_arr) - 1]['ORDER_DETAILS'];
                                     } ?></textarea>
@@ -6375,26 +6389,67 @@ if ($display != "fullscreen") {
     }
     var base = '<?php echo $GLOBALS['webroot']; ?>';
 
+    function getPlanEyeSelect(planCheckbox) {
+        var section = document.getElementById('plan_orders_section');
+        if (!section || !planCheckbox || !planCheckbox.id) {
+            return null;
+        }
+
+        return section.querySelector("select.plan-eye-select[data-plan-eye-for='" + planCheckbox.id + "']");
+    }
+
+    function updatePlanEyeSelectStyle(select) {
+        if (!select) {
+            return;
+        }
+
+        select.classList.toggle('plan-eye-empty', !select.value);
+        select.classList.toggle('plan-eye-selected', !!select.value);
+    }
+
+    $(function () {
+        var section = $('#plan_orders_section');
+        section.find('.plan-eye-select').each(function () {
+            updatePlanEyeSelectStyle(this);
+        });
+        section.on('change', '.plan-eye-select', function () {
+            updatePlanEyeSelectStyle(this);
+            if (!this.value) {
+                return;
+            }
+
+            var checkbox = document.getElementById(this.getAttribute('data-plan-eye-for'));
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+    });
+
     function printPlanOrders() {
         var section = document.getElementById('plan_orders_section');
         if (!section) {
             return;
         }
 
-        var checkedPlans = section.querySelectorAll("input[type='checkbox'][name='PLAN[]']:checked");
+        var checkedPlans = section.querySelectorAll('.plan-order-checkbox:checked');
         var freeTextField = document.getElementById('PLAN_free_text');
         var freeText = freeTextField ? freeTextField.value.trim() : '';
         var selectedOptions = [];
 
         checkedPlans.forEach(function (input) {
             var index = parseInt(input.id.replace('PLAN', ''), 10);
+            var eyeSelect = getPlanEyeSelect(input);
+            var orderEye = eyeSelect ? eyeSelect.value : '';
             if (Array.isArray(window.PLANoptions) && window.PLANoptions[index]) {
-                selectedOptions.push(window.PLANoptions[index]);
+                var selectedOption = window.PLANoptions[index];
+                selectedOption.eye = orderEye;
+                selectedOptions.push(selectedOption);
             } else {
                 selectedOptions.push({
                     title: input.value,
                     subtype: '',
-                    notes: ''
+                    notes: '',
+                    eye: orderEye
                 });
             }
         });
@@ -6431,6 +6486,7 @@ if ($display != "fullscreen") {
             appendField('plan_titles[]', option.title || '');
             appendField('plan_subtypes[]', option.subtype || '');
             appendField('plan_notes[]', option.notes || '');
+            appendField('plan_eyes[]', option.eye || '');
         });
 
         document.body.appendChild(form);

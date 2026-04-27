@@ -255,6 +255,24 @@ function DOBandEncounter($pc_eid)
     }
 }
 
+function EyeMagCalendarOrderDetailsWithEye($orderRow)
+{
+    $details = trim((string)($orderRow['ORDER_DETAILS'] ?? ''));
+    if ($details === '') {
+        return '';
+    }
+
+    $eye = strtoupper(trim((string)($orderRow['ORDER_EYE'] ?? '')));
+    if ($eye === 'OU') {
+        $eye = 'AO';
+    }
+    if (!in_array($eye, array('OD', 'OI', 'AO'), true)) {
+        $eye = '';
+    }
+
+    return $eye !== '' ? $details . ' (' . xl('Eye') . ': ' . $eye . ')' : $details;
+}
+
 function Cirugia_Planificada($pid, $ojo)
 {
     $queryEYE = "SELECT * FROM form_eye_base WHERE pid = ? ORDER BY id DESC LIMIT 1";
@@ -2122,13 +2140,13 @@ if ($starttimeh >= 12) { // p.m. starts at noon and not 12:01
                                            $result1 = sqlQuery($queryEYE, array($pid));
                                            $formID = $result1['id'];
                                            $queryORDER = "SELECT * FROM form_eye_mag_orders WHERE form_id = ? ORDER BY id ASC ";
-                                           $result2 = sqlStatement($queryORDER, array($formID));
-                                           if (!empty($result2)) {
-                                               while ($plan_row = sqlFetchArray($result2)) {
-                                                   echo $plan_row['ORDER_DETAILS'] . ", ";
-                                               }
-                                           }
-                                       }
+	                                           $result2 = sqlStatement($queryORDER, array($formID));
+	                                           if (!empty($result2)) {
+	                                               while ($plan_row = sqlFetchArray($result2)) {
+	                                                   echo attr(EyeMagCalendarOrderDetailsWithEye($plan_row) . ", ");
+	                                               }
+	                                           }
+	                                       }
 
                                        if ($row['pc_examenes'] == null) {
                                            echo Examenes_Planificados($patientid);

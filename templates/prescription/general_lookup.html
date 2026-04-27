@@ -16,13 +16,18 @@
 <script language="Javascript">
 {literal}
 		function my_process () {
-			// Pass the variable
-{/literal}
-			parent.iframetopardiv(document.lookup.drug.value);
-			parent.opener.document.prescribe.drug.value = document.lookup.drug.value;
-			// Close the window
-			window.self.close();
-{literal}
+			var rxText = document.lookup.drug[document.lookup.drug.selectedIndex].text;
+			var rxcode = "";
+			if (rxText.indexOf('(RxCUI:') !== -1) {
+				rxcode = rxText.split('(RxCUI:').pop().split(')')[0].trim();
+			}
+			if (parent.my_process_lookup) {
+				parent.my_process_lookup(document.lookup.drug.value, rxcode);
+			} else {
+				parent.iframetopardiv(document.lookup.drug.value);
+				parent.opener.document.prescribe.drug.value = document.lookup.drug.value;
+				window.self.close();
+			}
 		}
 {/literal}
 </script>

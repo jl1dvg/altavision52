@@ -97,6 +97,9 @@ $dateddia = $dated ? $dated->format('d') : '';
 $datedmes = $dated ? $dated->format('m') : '';
 $datedano = $dated ? $dated->format('Y') : '';
 $visit_date = $dated ? $dated->format('d/m/Y') : '';
+$referenceDate = !empty($plan['alta']) ? parseReportDateValue($plan['alta']) : $dated;
+$referenceDateDisplay = $referenceDate ? $referenceDate->format('d/m/Y') : '';
+$ageReferenceDate = $referenceDate ? $referenceDate->format('Y/m/d') : '';
 
 
 $facility = null;
@@ -404,14 +407,14 @@ ob_start();
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
             COLSPAN=8 HEIGHT=28 ALIGN=CENTER VALIGN=MIDDLE SDVAL="43056" SDNUM="1033;1033;D-MMM-YY">
             <?php
-            echo date("d/m/Y", strtotime($plan['alta']));
+            echo text($referenceDateDisplay);
             ?>
         </TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
             COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDNUM="1033;1033;H:MM AM/PM"><BR></TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
             COLSPAN=5 ALIGN=CENTER VALIGN=MIDDLE SDVAL="50"
-            SDNUM="1033;"><?php echo text(getPatientAge($titleres['DOB_TS'])); ?></TD>
+            SDNUM="1033;"><?php echo text($ageReferenceDate ? getPatientAgeFromDate($titleres['DOB_TS'], $ageReferenceDate) : getPatientAge($titleres['DOB_TS'])); ?></TD>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
             COLSPAN=2 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#FFFFCC"><B><FONT SIZE=4
                                                                             COLOR="#DD0806"><?php if ($titleres['sex'] == "Male") {
@@ -1055,7 +1058,7 @@ ob_start();
         <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 1px solid #808080"
             width="7%" ALIGN=CENTER VALIGN=MIDDLE><FONT SIZE=1>
                 <?php
-                echo getProviderRegistro($providerID);
+                echo getProviderIdentification($providerID);
                 ?>
             </FONT></TD>
         <TD STYLE="border-top: 5px solid #808080; border-bottom: 5px solid #808080; border-left: 1px solid #808080; border-right: 5px solid #808080"

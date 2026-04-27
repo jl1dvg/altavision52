@@ -488,17 +488,7 @@ function writeFSLine($category, $option, $codes)
     echo "</td>\n";
 
     echo "  <td align='left' class='optcell'>";
-    echo "   <div id='codelist_" . attr($opt_line_no) . "'>";
-    if (strlen($descs)) {
-        $arrdescs = explode('~', $descs);
-        $i = 0;
-        foreach ($arrdescs as $desc) {
-            echo "<a href='' onclick='return delete_code(" . attr($opt_line_no) . ",$i)' title='" . xla('Delete') . "'>";
-            echo "[x]&nbsp;</a>" . text($desc) . "<br />";
-            ++$i;
-        }
-    }
-    echo "</div>";
+    echo "   <div id='codelist_" . attr($opt_line_no) . "'></div>";
     echo "<a href='' onclick='return select_code(" . attr($opt_line_no) . ")'>";
     echo "[" . xlt('Add') . "]</a>";
 
@@ -506,6 +496,7 @@ function writeFSLine($category, $option, $codes)
         attr($codes) . "' />";
     echo "<input type='hidden' name='opt[" . attr($opt_line_no) . "][descs]' value='" .
         attr($descs) . "' />";
+    echo "<script>displayCodes(" . attr($opt_line_no) . ");</script>";
     echo "</td>\n";
 
     echo " </tr>\n";
@@ -764,6 +755,22 @@ function writeITLine($it_array)
         .translation {
             color: green;
         }
+
+        .feesheet-code-row {
+            align-items: center;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .feesheet-code-row .feesheet-code-desc {
+            flex: 1;
+        }
+
+        .feesheet-code-row .feesheet-code-quantity {
+            max-width: 64px;
+            text-align: right;
+        }
     </style>
     <script type="text/javascript">
         $(function () {
@@ -791,20 +798,119 @@ function writeITLine($it_array)
             }
         }
 
+        function getFeeSheetCodeGroups(lino) {
+            var f = document.forms[0];
+            var codes = f['opt[' + lino + '][codes]'].value;
+            var descs = f['opt[' + lino + '][descs]'].value;
+
+            if (!codes.length) {
+                return [];
+            }
+
+            var arrcodes = codes.split('~');
+            var arrdescs = descs.length ? descs.split('~') : [];
+            var grouped = [];
+            var groupedIndex = {};
+
+            for (var i = 0; i < arrcodes.length; ++i) {
+                if (!arrcodes[i]) {
+                    continue;
+                }
+                var desc = arrdescs[i] || arrcodes[i];
+                var key = arrcodes[i] + "\u0000" + desc;
+                if (groupedIndex[key] === undefined) {
+                    groupedIndex[key] = grouped.length;
+                    grouped.push({
+                        code: arrcodes[i],
+                        desc: desc,
+                        quantity: 0
+                    });
+                }
+                grouped[groupedIndex[key]].quantity++;
+            }
+
+            return grouped;
+        }
+
+        function writeFeeSheetCodeGroups(lino, groups) {
+            var f = document.forms[0];
+            var arrcodes = [];
+            var arrdescs = [];
+
+            for (var i = 0; i < groups.length; ++i) {
+                var quantity = Math.max(1, parseInt(groups[i].quantity, 10) || 1);
+                for (var j = 0; j < quantity; ++j) {
+                    arrcodes.push(groups[i].code);
+                    arrdescs.push(groups[i].desc);
+                }
+            }
+
+            f['opt[' + lino + '][codes]'].value = arrcodes.join('~');
+            f['opt[' + lino + '][descs]'].value = arrdescs.join('~');
+        }
+
+        function rebuildFeeSheetLine(lino) {
+            var groups = [];
+            $('#codelist_' + lino + ' .feesheet-code-quantity').each(function () {
+                groups.push({
+                    code: this.getAttribute('data-code'),
+                    desc: this.getAttribute('data-desc'),
+                    quantity: this.value
+                });
+            });
+            writeFeeSheetCodeGroups(lino, groups);
+        }
+
+        function prepareFeeSheetOptions() {
+            var f = document.forms[0];
+            for (var lino = 1; f['opt[' + lino + '][codes]']; ++lino) {
+                rebuildFeeSheetLine(lino);
+            }
+        }
+
         // Given a line number, redisplay its descriptive list of codes.
         // This is for Fee Sheet administration.
         function displayCodes(lino) {
-            var f = document.forms[0];
-            var s = '';
-            var descs = f['opt[' + lino + '][descs]'].value;
-            if (descs.length) {
-                var arrdescs = descs.split('~');
-                for (var i = 0; i < arrdescs.length; ++i) {
-                    s += "<a href='' onclick='return delete_code(" + lino + "," + i + ")' title='<?php echo xla('Delete'); ?>'>";
-                    s += "[x]&nbsp;</a>" + arrdescs[i] + "<br />";
-                }
+            var list = document.getElementById('codelist_' + lino);
+            var groups = getFeeSheetCodeGroups(lino);
+
+            list.innerHTML = '';
+            for (var i = 0; i < groups.length; ++i) {
+                var row = document.createElement('div');
+                row.className = 'feesheet-code-row';
+
+                var deleteLink = document.createElement('a');
+                deleteLink.href = '';
+                deleteLink.title = <?php echo xlj('Delete'); ?>;
+                deleteLink.appendChild(document.createTextNode('[x]'));
+                deleteLink.onclick = (function (lineNumber, groupIndex) {
+                    return function () {
+                        return delete_code(lineNumber, groupIndex);
+                    };
+                })(lino, i);
+
+                var desc = document.createElement('span');
+                desc.className = 'feesheet-code-desc';
+                desc.appendChild(document.createTextNode(groups[i].desc));
+
+                var qtyLabel = document.createElement('span');
+                qtyLabel.appendChild(document.createTextNode(<?php echo xlj('Qty'); ?>));
+
+                var qty = document.createElement('input');
+                qty.type = 'number';
+                qty.min = '1';
+                qty.step = '1';
+                qty.className = 'form-control input-sm optin feesheet-code-quantity';
+                qty.value = groups[i].quantity;
+                qty.setAttribute('data-code', groups[i].code);
+                qty.setAttribute('data-desc', groups[i].desc);
+
+                row.appendChild(deleteLink);
+                row.appendChild(desc);
+                row.appendChild(qtyLabel);
+                row.appendChild(qty);
+                list.appendChild(row);
             }
-            setDivContent('codelist_' + lino, s);
         }
 
         // Helper function to remove a Fee Sheet code.
@@ -819,19 +925,12 @@ function writeITLine($it_array)
             return r;
         }
 
-        // Remove a generated Fee Sheet code.
+        // Remove a generated Fee Sheet code group.
         function delete_code(lino, seqno) {
-            var f = document.forms[0];
-            var celem = f['opt[' + lino + '][codes]'];
-            var delem = f['opt[' + lino + '][descs]'];
-            var ci = 0;
-            var di = 0;
-            for (var i = 0; i < seqno; ++i) {
-                ci = celem.value.indexOf('~', ci) + 1;
-                di = delem.value.indexOf('~', di) + 1;
-            }
-            celem.value = dc_substring(celem.value, ci);
-            delem.value = dc_substring(delem.value, di);
+            rebuildFeeSheetLine(lino);
+            var groups = getFeeSheetCodeGroups(lino);
+            groups.splice(seqno, 1);
+            writeFeeSheetCodeGroups(lino, groups);
             displayCodes(lino);
             return false;
         }
@@ -888,6 +987,7 @@ function writeITLine($it_array)
                 e.value = s;
             } else {
                 // Coming from Fee Sheet edit
+                rebuildFeeSheetLine(current_lino);
                 var celem = f['opt[' + current_lino + '][codes]'];
                 var delem = f['opt[' + current_lino + '][descs]'];
                 var i = 0;
@@ -925,6 +1025,7 @@ function writeITLine($it_array)
                 f[current_sel_name].value = '0';
             } else {
                 // Coming from Fee Sheet edit
+                rebuildFeeSheetLine(current_lino);
                 f['opt[' + current_lino + '][codes]'].value = '';
                 f['opt[' + current_lino + '][descs]'].value = '';
                 displayCodes(current_lino);
@@ -953,6 +1054,9 @@ function writeITLine($it_array)
         // This needs more validation.
         function mysubmit() {
             var f = document.forms[0];
+            if (f.list_id.value == 'feesheet') {
+                prepareFeeSheetOptions();
+            }
             if (f.list_id.value == 'code_types') {
                 for (var i = 1; f['opt[' + i + '][ct_key]'].value; ++i) {
                     var ikey = 'opt[' + i + ']';
@@ -1133,7 +1237,7 @@ function writeITLine($it_array)
             <?php if ($list_id == 'feesheet') : ?>
                 <td><b><?php echo xlt('Group'); ?></b></td>
                 <td><b><?php echo xlt('Option'); ?></b></td>
-                <td><b><?php echo xlt('Generates'); ?></b></td>
+                <td><b><?php echo xlt('Generates'); ?> / <?php echo xlt('Qty'); ?></b></td>
             <?php elseif ($list_id == 'code_types') : ?>
                 <th><b><?php echo xlt('Active'); ?></b></th>
                 <th><b><?php echo xlt('Key'); ?></b></th>

@@ -323,7 +323,7 @@ while ($row = sqlFetchArray($encRes)) {
                                       action="<?php echo $GLOBALS['webroot']; ?>/interface/patient_file/report/custom_report.php"
                                       target="_blank" onsubmit="top.restoreSession();">
                                     <input type="hidden" name="pid" value="<?php echo attr($patient['pid']); ?>">
-                                    <input type="hidden" name="pdf" value="3">
+                                    <input type="hidden" name="debug_pdf" value="1">
                                     <input type="hidden" name="printable" value="1">
                                     <!-- Mimic patient_report defaults so contra PDF includes básicos -->
                                     <input type="hidden" name="include_demographics" value="demographics">

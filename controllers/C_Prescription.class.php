@@ -16,9 +16,12 @@
 
 require_once($GLOBALS['fileroot'] . "/library/registry.inc");
 require_once($GLOBALS['fileroot'] . "/library/amc.php");
+require_once($GLOBALS['srcdir'] . "/patient.inc");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Common\Http\oeHttp;
+use OpenEMR\Services\FacilityService;
+use Mpdf\Mpdf;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class C_Prescription extends Controller
@@ -42,6 +45,10 @@ class C_Prescription extends Controller
         $this->assign("SIMPLIFIED_PRESCRIPTIONS", $GLOBALS['simplified_prescriptions']);
         $this->pconfig = $GLOBALS['oer_config']['prescriptions'];
         $this->RxList = new RxList();
+        $rxn = sqlQuery("SELECT table_name FROM information_schema.tables WHERE table_name = 'RXNCONSO' OR table_name = 'rxconso'");
+        $rxcui = sqlQuery("SELECT ct_id FROM `code_types` WHERE `ct_key` = ? AND `ct_active` = 1", array('RXCUI'));
+        $this->assign("RXNORMS_AVAILABLE", !empty($rxn));
+        $this->assign("RXCUI_AVAILABLE", !empty($rxcui));
 
         // Assign the CSRF_TOKEN_FORM
         $this->assign("CSRF_TOKEN_FORM", CsrfUtils::collectCsrfToken());
@@ -624,6 +631,302 @@ class C_Prescription extends Controller
         return $body;
     }
 
+    function get_prescription_sheet_context($p)
+    {
+        $facilityService = new FacilityService();
+        if (!empty($_SESSION['pc_facility'])) {
+            $facility = $facilityService->getById($_SESSION['pc_facility']);
+        } else {
+            $facility = $facilityService->getPrimaryBillingLocation();
+        }
+
+        $logo = '';
+        $ma_logo_path = "sites/" . $_SESSION['site_id'] . "/images/ma_logo.png";
+        if (is_file($GLOBALS['webserver_root'] . "/" . $ma_logo_path)) {
+            $logo = $GLOBALS['webroot'] . "/" . $ma_logo_path;
+        }
+
+        $signatureWeb = '';
+        $signatureFs = $GLOBALS["webserver_root"] . "/interface/forms/eye_mag/images/sign_" . $_SESSION['authUserID'] . ".jpg";
+        if (is_file($signatureFs)) {
+            $signatureWeb = $GLOBALS['webroot'] . "/interface/forms/eye_mag/images/sign_" . $_SESSION['authUserID'] . ".jpg";
+        }
+
+        return array(
+            'facility' => $facility,
+            'logo' => $logo,
+            'signature_web' => $signatureWeb,
+            'provider_name' => getProviderName($p->provider->id),
+            'provider_specialty' => getProviderEspecialidad($p->provider->id),
+            'provider_fname' => isset($p->provider->fname) ? $p->provider->fname : '',
+            'provider_lname' => isset($p->provider->lname) ? $p->provider->lname : '',
+            'provider_suffix' => isset($p->provider->suffix) ? $p->provider->suffix : '',
+            'patient_name' => $p->patient->get_name_display(),
+            'patient_pubpid' => str_pad($p->patient->get_pubpid(), 10, "0", STR_PAD_LEFT),
+            'patient_dob' => $p->patient->date_of_birth,
+            'today' => date('Y-m-d')
+        );
+    }
+
+    function render_prescription_sheet_document($prescriptions, $autoPrint = false)
+    {
+        $pages = array();
+        $currentPage = array();
+        $currentProvider = null;
+        foreach ($prescriptions as $prescription) {
+            $providerId = isset($prescription->provider->id) ? $prescription->provider->id : null;
+            if (!empty($currentPage) && (count($currentPage) >= 3 || $currentProvider !== $providerId)) {
+                $pages[] = $currentPage;
+                $currentPage = array();
+            }
+            $currentPage[] = $prescription;
+            $currentProvider = $providerId;
+        }
+        if (!empty($currentPage)) {
+            $pages[] = $currentPage;
+        }
+
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title><?php echo xlt('Prescription'); ?></title>
+            <style>
+                @page { margin: 14mm 14mm 16mm 14mm; }
+                body {
+                    font-family: Arial, Helvetica, sans-serif;
+                    color: #111;
+                    font-size: 12px;
+                    margin: 0;
+                }
+                .rx-sheet {
+                    page-break-after: always;
+                    min-height: 250mm;
+                }
+                .rx-sheet:last-child {
+                    page-break-after: auto;
+                }
+                .rx-header {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 8px;
+                }
+                .rx-header td {
+                    vertical-align: top;
+                }
+                .rx-logo {
+                    width: 150px;
+                }
+                .rx-logo img {
+                    max-width: 130px;
+                    max-height: 82px;
+                }
+                .rx-facility h2 {
+                    font-size: 22px;
+                    margin: 0 0 4px;
+                    line-height: 1.1;
+                }
+                .rx-facility p {
+                    margin: 0;
+                    line-height: 1.4;
+                }
+                .rx-header-line {
+                    border: 0;
+                    border-top: 1px solid #222;
+                    margin: 6px 0 14px;
+                }
+                .rx-title {
+                    text-align: center;
+                    font-size: 18px;
+                    font-weight: bold;
+                    font-style: italic;
+                    margin: 0 0 10px;
+                    text-transform: uppercase;
+                }
+                .rx-intro {
+                    margin: 0 0 12px;
+                    line-height: 1.5;
+                }
+                .rx-box {
+                    border: 1px solid #333;
+                    padding: 10px 12px;
+                    margin-bottom: 12px;
+                }
+                .rx-box-title {
+                    font-size: 13px;
+                    font-weight: bold;
+                    margin-bottom: 8px;
+                    text-transform: uppercase;
+                }
+                .rx-grid {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                .rx-grid td {
+                    padding: 4px 0;
+                    vertical-align: top;
+                }
+                .rx-label {
+                    width: 170px;
+                    font-weight: bold;
+                }
+                .rx-script {
+                    border: 1px solid #333;
+                    padding: 16px 18px;
+                    min-height: 120px;
+                    margin-top: 10px;
+                }
+                .rx-line {
+                    margin-bottom: 8px;
+                    line-height: 1.5;
+                }
+                .rx-line strong {
+                    display: inline-block;
+                    min-width: 105px;
+                }
+                .rx-sign-wrap {
+                    margin-top: 36px;
+                    text-align: center;
+                }
+                .rx-signature {
+                    width: 240px;
+                    height: 85px;
+                    margin: 0 auto 6px;
+                    display: block;
+                    border-bottom: 1px solid #222;
+                }
+                .rx-sign-line {
+                    width: 50%;
+                    border-top: 1px solid #222;
+                    margin: 0 auto 8px;
+                }
+                .rx-footer-text {
+                    font-size: 11px;
+                    line-height: 1.4;
+                }
+                .rx-esigned {
+                    margin-top: 4px;
+                    font-size: 11px;
+                }
+                .rx-esigned input {
+                    vertical-align: middle;
+                }
+            </style>
+        </head>
+        <body>
+        <?php foreach ($pages as $pagePrescriptions) :
+            $pagePrescription = $pagePrescriptions[0];
+            $ctx = $this->get_prescription_sheet_context($pagePrescription);
+            $facility = $ctx['facility'];
+            ?>
+            <div class="rx-sheet">
+                <table class="rx-header">
+                    <tr>
+                        <td class="rx-logo">
+                            <?php if (!empty($ctx['logo'])) { ?>
+                                <img src="<?php echo attr($ctx['logo']); ?>" alt="logo">
+                            <?php } ?>
+                        </td>
+                        <td class="rx-facility">
+                            <h2><?php echo text(isset($facility['name']) ? $facility['name'] : ''); ?></h2>
+                            <p>
+                                <?php echo text(isset($facility['street']) ? $facility['street'] : ''); ?><br>
+                                <?php echo text(isset($facility['city']) ? $facility['city'] : ''); ?><?php if (!empty($facility['country_code'])) { ?>, <?php echo text($facility['country_code']); ?><?php } ?> <?php echo text(isset($facility['postal_code']) ? $facility['postal_code'] : ''); ?><br>
+                                <b><?php echo xlt('Tel'); ?>:</b> <?php echo text(isset($facility['phone']) ? $facility['phone'] : ''); ?><br>
+                            <?php if (!empty($facility['email'])) { ?>
+                                <b>E-mail:</b> <?php echo text(isset($facility['email']) ? $facility['email'] : ''); ?>
+                            <?php } ?>
+                            </p>
+                       </td>
+                    </tr>
+                </table>
+                <hr class="rx-header-line">
+                <div class="rx-title"><?php echo xlt('Medical Prescription'); ?></div>
+                <p class="rx-intro">
+                    <?php echo xlt('Patient'); ?>: <b><?php echo text($ctx['patient_name']); ?></b>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    C.I.: <b><?php echo text($ctx['patient_pubpid']); ?></b>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <?php echo xlt('Date of Birth'); ?>: <b><?php echo text($ctx['patient_dob']); ?></b>
+                    &nbsp;&nbsp;|&nbsp;&nbsp;
+                    <?php echo xlt('Date'); ?>: <b><?php echo text($ctx['today']); ?></b>
+                </p>
+
+                <?php foreach ($pagePrescriptions as $index => $p) { ?>
+                <div class="rx-box">
+                    <div class="rx-box-title">
+                        <?php echo xlt('Prescription'); ?>
+                        <?php if (count($pagePrescriptions) > 1) { ?>
+                            <?php echo ' ' . ($index + 1); ?>
+                        <?php } ?>
+                    </div>
+                    <div class="rx-script">
+                        <div class="rx-line"><strong><?php echo xlt('Medication'); ?>:</strong> <?php echo text($p->get_drug()); ?> # <?php echo text($p->get_quantity()); ?></div>
+                        <div class="rx-line"><strong><?php echo xlt('Directions'); ?>:</strong> <?php echo text($p->get_dosage()); ?> <?php echo text(isset($p->form_array[$p->get_form()]) ? $p->form_array[$p->get_form()] : ''); ?> <?php echo text(isset($p->route_array[$p->get_route()]) ? $p->route_array[$p->get_route()] : ''); ?> <?php echo text(isset($p->interval_array[$p->get_interval()]) ? $p->interval_array[$p->get_interval()] : ''); ?></div>
+                        <?php if ($p->get_note()) { ?>
+                            <div class="rx-line"><strong><?php echo xlt('Notes'); ?>:</strong> <?php echo nl2br(text($p->get_note())); ?></div>
+                        <?php } ?>
+                    </div>
+                </div>
+                <?php } ?>
+
+                <div class="rx-sign-wrap">
+                    <?php if (!empty($ctx['signature_web'])) { ?>
+                        <img class="rx-signature" src="<?php echo attr($ctx['signature_web']); ?>" alt="signature">
+                    <?php } ?>
+                        <div class="rx-sign-line"></div>
+                    <div class="rx-footer-text"><b><?php echo text($ctx['provider_name']); ?></b></div>
+                    <?php if (!empty($ctx['provider_specialty'])) { ?>
+                        <div class="rx-footer-text"><?php echo text($ctx['provider_specialty']); ?></div>
+                    <?php } ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+        <?php if ($autoPrint) { ?>
+            <script>
+                if (window.opener && window.opener.top && window.opener.top.printLogPrint) {
+                    window.opener.top.printLogPrint(window);
+                }
+                window.print();
+            </script>
+        <?php } ?>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
+    }
+
+    function stream_prescription_pdf_from_html($html, $filename, &$toFile = null)
+    {
+        $config_mpdf = array(
+            'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
+            'mode' => $GLOBALS['pdf_language'],
+            'format' => 'A4-P',
+            'margin_left' => $GLOBALS['pdf_left_margin'],
+            'margin_right' => $GLOBALS['pdf_right_margin'],
+            'margin_top' => $GLOBALS['pdf_top_margin'],
+            'margin_bottom' => $GLOBALS['pdf_bottom_margin'],
+            'orientation' => 'P',
+            'shrink_tables_to_fit' => 1,
+            'use_kwt' => true,
+            'autoScriptToLang' => true,
+            'keep_table_proportions' => true
+        );
+        $pdf = new mPDF($config_mpdf);
+        $pdf->SetDisplayMode('real');
+        if ($_SESSION['language_direction'] == 'rtl') {
+            $pdf->SetDirectionality('rtl');
+        }
+        $pdf->writeHTML($html);
+        if ($toFile !== null) {
+            $toFile = $pdf->Output('', 'S');
+            return;
+        }
+        $pdf->Output($filename, 'I');
+    }
+
     function multiprintfax_body(& $pdf, $p)
     {
         return $this->multiprint_body($pdf, $p);
@@ -683,41 +986,20 @@ class C_Prescription extends Controller
             $this->function_argument_error();
         }
 
-        $pdf = new Cezpdf($GLOBALS['rx_paper_size']);
-        $pdf->ezSetMargins($GLOBALS['rx_top_margin'], $GLOBALS['rx_bottom_margin'], $GLOBALS['rx_left_margin'], $GLOBALS['rx_right_margin']);
-        $pdf->selectFont('Helvetica');
-
-        // $print_header = true;
-        $on_this_page = 0;
-
         //print prescriptions body
         $this->_state = false; // Added by Rod - see Controller.class.php
         $ids = preg_split('/::/', substr($id, 1, strlen($id) - 2), -1, PREG_SPLIT_NO_EMPTY);
+        $prescriptions = array();
         foreach ($ids as $id) {
-            $p = new Prescription($id);
-            // if ($print_header == true) {
-            if ($on_this_page == 0) {
-                $this->multiprint_header($pdf, $p);
-            }
-
-            if (++$on_this_page > 3 || $p->provider->id != $this->providerid) {
-                $this->multiprint_footer($pdf);
-                $pdf->ezNewPage();
-                $this->multiprint_header($pdf, $p);
-                // $print_header = false;
-                $on_this_page = 1;
-            }
-
-            $this->multiprint_body($pdf, $p);
+            $prescriptions[] = new Prescription($id);
         }
-
-        $this->multiprint_footer($pdf);
-
-            $pFirstName = $p->patient->fname; //modified by epsdky for prescription title change to include patient name and ID
-            $pFName = convert_safe_file_dir_name($pFirstName);
-            $modedFileName = "Rx_{$pFName}_{$p->patient->id}.pdf";
-
-        $pdf->ezStream(array('Content-Disposition' => $modedFileName));
+        $lastPrescription = end($prescriptions);
+        $pFirstName = $lastPrescription->patient->fname;
+        $pFName = convert_safe_file_dir_name($pFirstName);
+        $modedFileName = "Rx_{$pFName}_{$lastPrescription->patient->id}.pdf";
+        $html = $this->render_prescription_sheet_document($prescriptions, false);
+        $dummy = null;
+        $this->stream_prescription_pdf_from_html($html, $modedFileName, $dummy);
         return;
     }
 
@@ -727,30 +1009,13 @@ class C_Prescription extends Controller
         if (empty($id)) {
             $this->function_argument_error();
         }
-
-        $this->multiprintcss_preheader();
-
         $this->_state = false; // Added by Rod - see Controller.class.php
         $ids = preg_split('/::/', substr($id, 1, strlen($id) - 2), -1, PREG_SPLIT_NO_EMPTY);
-
-        $on_this_page = 0;
+        $prescriptions = array();
         foreach ($ids as $id) {
-            $p = new Prescription($id);
-            if ($on_this_page == 0) {
-                $this->multiprintcss_header($p);
-            }
-
-            if (++$on_this_page > 3 || $p->provider->id != $this->providerid) {
-                $this->multiprintcss_footer();
-                $this->multiprintcss_header($p);
-                $on_this_page = 1;
-            }
-
-            $this->multiprintcss_body($p);
+            $prescriptions[] = new Prescription($id);
         }
-
-        $this->multiprintcss_footer();
-        $this->multiprintcss_postfooter();
+        echo $this->render_prescription_sheet_document($prescriptions, true);
         return;
     }
 
@@ -825,38 +1090,15 @@ class C_Prescription extends Controller
 
     function _print_prescription($p, & $toFile)
     {
-        $pdf = new Cezpdf($GLOBALS['rx_paper_size']);
-        $pdf->ezSetMargins($GLOBALS['rx_top_margin'], $GLOBALS['rx_bottom_margin'], $GLOBALS['rx_left_margin'], $GLOBALS['rx_right_margin']);
-
-        $pdf->selectFont('Helvetica');
-
-        // Signature images are to be used only when faxing.
-        if (!empty($toFile)) {
-            $this->is_faxing = true;
-        }
-
-        $this->multiprint_header($pdf, $p);
-        $this->multiprint_body($pdf, $p);
-        $this->multiprint_footer($pdf);
-
-        if (!empty($toFile)) {
-            $toFile = $pdf->ezOutput();
-        } else {
-            $pdf->ezStream();
-            // $pdf->ezStream(array('compress' => 0)); // for testing with uncompressed output
-        }
-
+        $html = $this->render_prescription_sheet_document(array($p), false);
+        $filename = "Rx_" . convert_safe_file_dir_name($p->patient->fname) . "_" . $p->patient->id . ".pdf";
+        $this->stream_prescription_pdf_from_html($html, $filename, $toFile);
         return;
     }
 
     function _print_prescription_css($p, & $toFile)
     {
-
-        $this->multiprintcss_preheader();
-        $this->multiprintcss_header($p);
-        $this->multiprintcss_body($p);
-        $this->multiprintcss_footer();
-        $this->multiprintcss_postfooter();
+        echo $this->render_prescription_sheet_document(array($p), true);
     }
 
     function _print_prescription_old($p, & $toFile)

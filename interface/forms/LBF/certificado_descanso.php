@@ -61,6 +61,27 @@ function getLbfValue($formId, array $fieldIds, array $titlePatterns)
     ));
 }
 
+function getLatestProtocolFormId($pid, $encounter, $currentFormName = '', $currentFormId = 0)
+{
+    if ($currentFormName === 'LBFprotocolo') {
+        return intval($currentFormId);
+    }
+
+    $row = sqlQuery(
+        "SELECT form_id
+           FROM forms
+          WHERE pid = ?
+            AND formdir = 'LBFprotocolo'
+            AND deleted = 0
+            AND encounter <= ?
+          ORDER BY date DESC, id DESC
+          LIMIT 1",
+        array($pid, $encounter)
+    );
+
+    return intval($row['form_id'] ?? 0);
+}
+
 function normalizeDateValue($value, $fallback)
 {
     $value = trim((string) $value);
@@ -108,6 +129,111 @@ function eyeLabel($eyeCode)
     return '';
 }
 
+function monthNameUpper($month)
+{
+    static $months = array(
+        1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
+        5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
+        9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
+    );
+
+    return $months[intval($month)] ?? '';
+}
+
+function numberToSpanishWords($number)
+{
+    $number = intval($number);
+    if ($number < 0) {
+        return '';
+    }
+
+    $units = array(
+        0 => 'cero', 1 => 'uno', 2 => 'dos', 3 => 'tres', 4 => 'cuatro', 5 => 'cinco',
+        6 => 'seis', 7 => 'siete', 8 => 'ocho', 9 => 'nueve', 10 => 'diez',
+        11 => 'once', 12 => 'doce', 13 => 'trece', 14 => 'catorce', 15 => 'quince',
+        16 => 'dieciseis', 17 => 'diecisiete', 18 => 'dieciocho', 19 => 'diecinueve',
+        20 => 'veinte', 21 => 'veintiuno', 22 => 'veintidos', 23 => 'veintitres',
+        24 => 'veinticuatro', 25 => 'veinticinco', 26 => 'veintiseis', 27 => 'veintisiete',
+        28 => 'veintiocho', 29 => 'veintinueve'
+    );
+    $tens = array(
+        30 => 'treinta', 40 => 'cuarenta', 50 => 'cincuenta', 60 => 'sesenta',
+        70 => 'setenta', 80 => 'ochenta', 90 => 'noventa'
+    );
+    $hundreds = array(
+        100 => 'cien', 200 => 'doscientos', 300 => 'trescientos', 400 => 'cuatrocientos',
+        500 => 'quinientos', 600 => 'seiscientos', 700 => 'setecientos',
+        800 => 'ochocientos', 900 => 'novecientos'
+    );
+
+    if ($number <= 29) {
+        return $units[$number];
+    }
+
+    if ($number < 100) {
+        $base = intval(floor($number / 10) * 10);
+        $rest = $number % 10;
+        return $rest ? $tens[$base] . ' y ' . $units[$rest] : $tens[$base];
+    }
+
+    if ($number === 100) {
+        return 'cien';
+    }
+
+    if ($number < 200) {
+        return 'ciento ' . numberToSpanishWords($number - 100);
+    }
+
+    if ($number < 1000) {
+        $base = intval(floor($number / 100) * 100);
+        $rest = $number % 100;
+        return $rest ? $hundreds[$base] . ' ' . numberToSpanishWords($rest) : $hundreds[$base];
+    }
+
+    if ($number === 1000) {
+        return 'mil';
+    }
+
+    if ($number < 2000) {
+        return 'mil ' . numberToSpanishWords($number - 1000);
+    }
+
+    if ($number < 1000000) {
+        $base = intval(floor($number / 1000));
+        $rest = $number % 1000;
+        $prefix = numberToSpanishWords($base) . ' mil';
+        return $rest ? $prefix . ' ' . numberToSpanishWords($rest) : $prefix;
+    }
+
+    return (string) $number;
+}
+
+function numberToSpanishWordsUpper($number)
+{
+    return strtoupper(numberToSpanishWords($number));
+}
+
+function formatDateLine(DateTime $date, $city)
+{
+    return strtoupper(trim((string) $city)) . ', ' . monthNameUpper($date->format('n')) . ' ' . $date->format('d') . ' DE ' . $date->format('Y');
+}
+
+function formatDateWordsRange(DateTime $startDate, DateTime $endDate)
+{
+    $startDay = ltrim($startDate->format('d'), '0');
+    $endDay = ltrim($endDate->format('d'), '0');
+
+    return sprintf(
+        '(DESDE %s de %s del %s HASTA %s de %s del %s)',
+        numberToSpanishWords((int) $startDay),
+        strtolower(monthNameUpper($startDate->format('n'))),
+        numberToSpanishWords((int) $startDate->format('Y')),
+        numberToSpanishWords((int) $endDay),
+        strtolower(monthNameUpper($endDate->format('n'))),
+        numberToSpanishWords((int) $endDate->format('Y'))
+    );
+}
+
 $pid = isset($_GET['patientid']) ? intval($_GET['patientid']) : 0;
 $encounter = isset($_GET['visitid']) ? intval($_GET['visitid']) : 0;
 $formId = isset($_GET['formid']) ? intval($_GET['formid']) : 0;
@@ -136,9 +262,11 @@ $restEndDate->modify('+' . ($restDays - 1) . ' day');
 $facilityService = new FacilityService();
 $facility = $_SESSION['pc_facility'] ? $facilityService->getById($_SESSION['pc_facility']) : $facilityService->getPrimaryBillingLocation();
 
-$patient = getPatientData($pid, "pubpid,fname,mname,lname,lname2,street,city,phone_home,phone_biz");
+$patient = getPatientData($pid, "pubpid,fname,mname,lname,lname2,street,city,phone_home,phone_biz,occupation");
+$employer = getEmployerData($pid, "name");
 $providerId = getProviderIdOfEncounter($encounter);
 $providerName = getProviderName($providerId);
+$protocolFormId = getLatestProtocolFormId($pid, $encounter, $formName, $formId);
 
 $nombrePaciente = trim(
     firstValue(array($patient['lname'] ?? '')) . ' ' .
@@ -151,8 +279,8 @@ $cedula = firstValue(array($patient['pubpid'] ?? ''));
 $domicilio = trim(firstValue(array($patient['street'] ?? '')) . ' ' . firstValue(array($patient['city'] ?? '')));
 $telefono = firstValue(array($patient['phone_home'] ?? '', $patient['phone_biz'] ?? ''));
 
-$empresa = getLbfValue($formId, array('empresa', 'empresa_lab', 'empresa_trabajo', 'Prot_empresa'), array('EMPRESA'));
-$puestoTrabajo = getLbfValue($formId, array('puesto_trabajo', 'puesto', 'ocupacion', 'Prot_puesto'), array('PUESTO'));
+$empresa = firstValue(array($employer['name'] ?? ''));
+$puestoTrabajo = firstValue(array($patient['occupation'] ?? ''));
 $tipoContingencia = getLbfValue($formId, array('tipo_contingencia', 'contingencia', 'Prot_contingencia'), array('CONTINGENCIA'));
 $fechaIngreso = getLbfValue($formId, array('fecha_ingreso', 'f_ingreso', 'Prot_fecha_ingreso'), array('FECHA DE INGRESO'));
 $fechaEgreso = getLbfValue($formId, array('fecha_egreso', 'f_egreso', 'Prot_fecha_egreso'), array('FECHA DE EGRESO'));
@@ -161,9 +289,17 @@ $procedimientoLbf = getLbfValue($formId, array('procedimiento', 'Prot_proced'), 
 $diagnosticoIngresoLbf = getLbfValue($formId, array('diagnostico_ingreso', 'dx_ingreso', 'Prot_dxpre'), array('DIAGNOSTICO DE INGRESO'));
 $diagnosticoEgresoLbf = getLbfValue($formId, array('diagnostico_egreso', 'dx_egreso', 'Prot_dxpost'), array('DIAGNOSTICO DE EGRESO'));
 
-$diagnosticoIngresoProt = parseDiagnosis(getFieldValue($formId, 'Prot_dxpre'));
-$diagnosticoEgresoProt = parseDiagnosis(getFieldValue($formId, 'Prot_dxpost'));
-$procedimientoProt = trim(obtenerIntervencionesPropuestas(getFieldValue($formId, 'Prot_opr')) . ' ' . eyeLabel(getFieldValue($formId, 'Prot_ojo')));
+$diagnosticoIngresoProt = '';
+$diagnosticoEgresoProt = '';
+$procedimientoProt = '';
+if ($protocolFormId > 0) {
+    $diagnosticoIngresoProt = parseDiagnosis(getFieldValue($protocolFormId, 'Prot_dxpre'));
+    $diagnosticoEgresoProt = parseDiagnosis(getFieldValue($protocolFormId, 'Prot_dxpost'));
+    $procedimientoProt = trim(
+        obtenerIntervencionesPropuestas(getFieldValue($protocolFormId, 'Prot_opr')) . ' ' .
+        eyeLabel(getFieldValue($protocolFormId, 'Prot_ojo'))
+    );
+}
 
 $diagnosticoIngreso = firstValue(array($diagnosticoIngresoLbf, $diagnosticoIngresoProt));
 $diagnosticoEgreso = firstValue(array($diagnosticoEgresoLbf, $diagnosticoEgresoProt));
@@ -181,13 +317,15 @@ $diagnosticoIngreso = firstValue(array($diagnosticoIngreso, '-'));
 $diagnosticoEgreso = firstValue(array($diagnosticoEgreso, '-'));
 $procedimiento = firstValue(array($procedimiento, '-'));
 
-$meses = array(
-    1 => 'ENERO', 2 => 'FEBRERO', 3 => 'MARZO', 4 => 'ABRIL',
-    5 => 'MAYO', 6 => 'JUNIO', 7 => 'JULIO', 8 => 'AGOSTO',
-    9 => 'SEPTIEMBRE', 10 => 'OCTUBRE', 11 => 'NOVIEMBRE', 12 => 'DICIEMBRE'
-);
 $facilityCity = strtoupper(firstValue(array($facility['city'] ?? '', 'GUAYAQUIL')));
-$fechaLinea = $facilityCity . ', ' . $meses[intval($restStartDate->format('n'))] . ' ' . $restStartDate->format('d') . ' DEL ' . $restStartDate->format('Y');
+$fechaLinea = formatDateLine($restStartDate, $facilityCity);
+$descansoTexto = numberToSpanishWordsUpper($restDays) . ' (' . $restDays . ')';
+$descansoEtiqueta = $restDays === 1 ? 'DIA DE REPOSO ABSOLUTO:' : 'DIAS DE REPOSO ABSOLUTO:';
+$descansoRangoTexto = formatDateWordsRange($restStartDate, $restEndDate);
+$providerSpecialty = trim((string) getProviderEspecialidad($providerId));
+$providerSpecialty = $providerSpecialty !== '' ? strtoupper($providerSpecialty) : strtoupper((string) ($facility['name'] ?? ''));
+$providerRegistro = trim((string) getProviderRegistro($providerId));
+$providerIdentification = trim((string) getProviderIdentification($providerId));
 
 $logo = '';
 $maLogoPath = "sites/" . $_SESSION['site_id'] . "/images/ma_logo.png";
@@ -217,22 +355,36 @@ ob_start();
 <html>
 <head>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 11px; }
-        .top { width: 100%; margin-bottom: 6px; }
-        .title { font-size: 18px; font-weight: bold; text-align: center; margin: 6px 0 12px 0; }
-        .date-line { font-size: 12px; margin-bottom: 8px; }
-        .grid { width: 100%; border-collapse: collapse; }
-        .grid td { padding: 4px 6px; vertical-align: top; border-bottom: 1px solid #ddd; }
-        .label { width: 30%; font-weight: bold; }
-        .rest-line { margin-top: 14px; font-size: 12px; }
-        .sign { margin-top: 40px; }
+        body { font-family: Arial, sans-serif; font-size: 11px; color: #000; }
+        .sheet { width: 100%; }
+        .brand { width: 100%; margin-bottom: 4px; }
+        .brand-left { width: 45%; font-size: 12px; font-weight: bold; vertical-align: middle; }
+        .brand-right { width: 55%; text-align: right; vertical-align: top; font-size: 10px; line-height: 1.35; }
+        .title { font-size: 16px; font-weight: bold; text-align: left; margin: 6px 0 4px 0; }
+        .date-line { font-size: 12px; margin: 0 0 8px 0; }
+        .grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .grid td { padding: 3px 0; vertical-align: top; font-size: 11px; }
+        .label { width: 31%; font-weight: bold; }
+        .value { width: 69%; }
+        .spacer td { padding: 6px 0; font-size: 4px; }
+        .rest-line { margin-top: 12px; font-size: 11px; }
+        .rest-line strong { font-weight: bold; }
+        .rest-range { margin-top: 4px; font-size: 11px; }
+        .signature { margin-top: 42px; width: 100%; }
+        .signature-line { width: 44%; border-top: 1px solid #000; margin-bottom: 6px; }
+        .signature-name { font-size: 11px; font-weight: bold; }
+        .signature-role { font-size: 11px; }
+        .signature-meta { font-size: 10px; }
     </style>
 </head>
 <body>
-<table class="top">
+<div class="sheet">
+<table class="brand">
     <tr>
-        <td style="width: 35%;"><?php echo $logo; ?></td>
-        <td style="width: 65%; text-align: right;">
+        <td class="brand-left">
+            <?php echo $logo ? $logo : h(strtoupper((string) ($facility['name'] ?? ''))); ?>
+        </td>
+        <td class="brand-right">
             <strong><?php echo h($facility['name'] ?? ''); ?></strong><br>
             <?php echo h($facility['street'] ?? ''); ?><br>
             <?php echo h($facility['city'] ?? ''); ?> <?php echo h($facility['postal_code'] ?? ''); ?><br>
@@ -245,31 +397,46 @@ ob_start();
 <div class="date-line"><?php echo h($fechaLinea); ?></div>
 
 <table class="grid">
-    <tr><td class="label">HISTORIA CLINICA:</td><td><?php echo h($historiaClinica); ?></td></tr>
-    <tr><td class="label">NOMBRE DEL PACIENTE:</td><td><?php echo h($nombrePaciente); ?></td></tr>
-    <tr><td class="label">DOMICILIO:</td><td><?php echo h($domicilio); ?></td></tr>
-    <tr><td class="label">TELEFONO DE CONTACTO:</td><td><?php echo h($telefono); ?></td></tr>
-    <tr><td class="label">CEDULA DEL PACIENTE:</td><td><?php echo h($cedula); ?></td></tr>
-    <tr><td class="label">EMPRESA:</td><td><?php echo h($empresa); ?></td></tr>
-    <tr><td class="label">PUESTO DE TRABAJO:</td><td><?php echo h($puestoTrabajo); ?></td></tr>
-    <tr><td class="label">FECHA DE INGRESO:</td><td><?php echo h($fechaIngreso); ?></td></tr>
-    <tr><td class="label">TIPO CONTINGENCIA:</td><td><?php echo h($tipoContingencia); ?></td></tr>
-    <tr><td class="label">DIAGNOSTICO DE INGRESO:</td><td><?php echo h($diagnosticoIngreso); ?></td></tr>
-    <tr><td class="label">TRATAMIENTO:</td><td><?php echo h($tratamiento); ?></td></tr>
-    <tr><td class="label">PROCEDIMIENTO:</td><td><?php echo h($procedimiento); ?></td></tr>
-    <tr><td class="label">FECHA DE EGRESO:</td><td><?php echo h($fechaEgreso); ?></td></tr>
-    <tr><td class="label">DIAGNOSTICO DE EGRESO:</td><td><?php echo h($diagnosticoEgreso); ?></td></tr>
+    <tr><td class="label">HISTORIA CLINICA:</td><td class="value"><?php echo h($historiaClinica); ?></td></tr>
+    <tr><td class="label">NOMBRE DEL PACIENTE:</td><td class="value"><?php echo h($nombrePaciente); ?></td></tr>
+    <tr><td class="label">DOMICILIO:</td><td class="value"><?php echo h($domicilio); ?></td></tr>
+    <tr><td class="label">TELEFONO DE CONTACTO:</td><td class="value"><?php echo h($telefono); ?></td></tr>
+    <tr><td class="label">CEDULA DEL PACIENTE:</td><td class="value"><?php echo h($cedula); ?></td></tr>
+    <tr><td class="label">EMPRESA:</td><td class="value"><?php echo h($empresa); ?></td></tr>
+    <tr><td class="label">PUESTO DE TRABAJO:</td><td class="value"><?php echo h($puestoTrabajo); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">TIPO CONTINGENCIA:</td><td class="value"><?php echo h($tipoContingencia); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">DIAGNOSTICO DE INGRESO:</td><td class="value"><?php echo h($diagnosticoIngreso); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">TRATAMIENTO:</td><td class="value"><?php echo h($tratamiento); ?></td></tr>
+    <tr><td class="label">FECHA DE INGRESO:</td><td class="value"><?php echo h($fechaIngreso); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">PROCEDIMIENTO:</td><td class="value"><?php echo h($procedimiento); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">FECHA DE EGRESO:</td><td class="value"><?php echo h($fechaEgreso); ?></td></tr>
+    <tr class="spacer"><td colspan="2">&nbsp;</td></tr>
+    <tr><td class="label">DIAGNOSTICO DE EGRESO:</td><td class="value"><?php echo h($diagnosticoEgreso); ?></td></tr>
 </table>
 
 <p class="rest-line">
-    <strong>DIAS DE DESCANSO:</strong> <?php echo h($restDays); ?>
+    <strong><?php echo h($descansoEtiqueta); ?></strong> <?php echo h($descansoTexto); ?>
     <strong>DESDE</strong> <?php echo h($restStartDate->format('d/m/Y')); ?>
     <strong>HASTA</strong> <?php echo h($restEndDate->format('d/m/Y')); ?>
 </p>
+<p class="rest-range"><?php echo h($descansoRangoTexto); ?></p>
 
-<div class="sign">
-    <strong><?php echo h($providerName); ?></strong><br>
-    <?php echo h($facility['name'] ?? ''); ?>
+<div class="signature">
+    <div class="signature-line"></div>
+    <div class="signature-name"><?php echo h(strtoupper($providerName)); ?></div>
+    <div class="signature-role"><?php echo h($providerSpecialty); ?></div>
+    <?php if ($providerRegistro !== '') { ?>
+        <div class="signature-meta">REGISTRO MEDICO: <?php echo h($providerRegistro); ?></div>
+    <?php } ?>
+    <?php if ($providerIdentification !== '') { ?>
+        <div class="signature-meta">IDENTIFICACION: <?php echo h($providerIdentification); ?></div>
+    <?php } ?>
+</div>
 </div>
 </body>
 </html>
@@ -277,4 +444,3 @@ ob_start();
 $html = ob_get_clean();
 $pdf->WriteHTML($html);
 $pdf->Output('certificado_descanso_' . preg_replace('/\s+/', '_', $nombrePaciente) . '.pdf', 'I');
-

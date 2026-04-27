@@ -1355,12 +1355,19 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                             //
                             if ($_POST['newcodes'] && !$alertmsg) {
                                 $arrcodes = explode('~', $_POST['newcodes']);
-
-                                // A first pass here checks for any sex restriction errors.
+                                $arrcodecounts = array();
                                 foreach ($arrcodes as $codestring) {
                                     if ($codestring === '') {
                                         continue;
                                     }
+                                    if (empty($arrcodecounts[$codestring])) {
+                                        $arrcodecounts[$codestring] = 0;
+                                    }
+                                    ++$arrcodecounts[$codestring];
+                                }
+
+                                // A first pass here checks for any sex restriction errors.
+                                foreach ($arrcodecounts as $codestring => $quantity) {
                                     list($newtype, $newcode) = explode('|', $codestring);
                                     if ($newtype == 'MA') {
                                         list($code, $modifier) = explode(":", $newcode);
@@ -1375,10 +1382,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                 }
 
                                 if (!$alertmsg) {
-                                    foreach ($arrcodes as $codestring) {
-                                        if ($codestring === '') {
-                                            continue;
-                                        }
+                                    foreach ($arrcodecounts as $codestring => $quantity) {
                                         $arrcode = explode('|', $codestring);
                                         $newtype = $arrcode[0];
                                         $newcode = $arrcode[1];
@@ -1387,13 +1391,14 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                             $tmp = sqlQuery("SELECT copay FROM insurance_data WHERE pid = ? " .
                                                 "AND type = 'primary' ORDER BY date DESC LIMIT 1", array($fs->pid));
                                             $code = formatMoneyNumber(0 + $tmp['copay']);
+                                            $units = max(1, intval($quantity));
                                             $fs->addServiceLineItem(array(
                                                 'codetype' => $newtype,
                                                 'code' => $code,
                                                 'ndc_info' => date('Y-m-d'),
                                                 'auth' => '1',
-                                                'units' => '1',
-                                                'fee' => formatMoneyNumber(0 - $code),
+                                                'units' => $units,
+                                                'fee' => formatMoneyNumber(0 - ($code * $units)),
                                             ));
                                         } elseif ($newtype == 'PROD') {
                                             $result = sqlQuery("SELECT dt.quantity, d.route " .
@@ -1407,7 +1412,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                 'drug_id' => $newcode,
                                                 'selector' => $newsel,
                                                 'rx' => $rx,
-                                                'units' => $units,
+                                                'units' => $units * max(1, intval($quantity)),
                                             ));
                                         } else {
                                             list($code, $modifier) = explode(":", $newcode);
@@ -1426,6 +1431,7 @@ $oemr_ui = new OemrUI($arrOeUiSettings);
                                                 'code' => $code,
                                                 'modifier' => trim($modifier),
                                                 'ndc_info' => $ndc_info,
+                                                'units' => max(1, intval($quantity)),
                                             ));
                                         }
                                     }

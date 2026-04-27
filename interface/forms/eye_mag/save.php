@@ -983,17 +983,33 @@ if ($requestMode == "new") {
     $dated = new DateTime($encounter_data['encounter_date']);
     $visit_date = $dated->format('Y-m-d');
 
-    $N = count($_POST['PLAN']);
+    $planOrders = is_array($_POST['PLAN'] ?? null) ? $_POST['PLAN'] : array();
+    $planFreeText = trim((string)($_POST['PLAN_FREE_TEXT'] ?? ''));
+    if ($planFreeText !== '') {
+        $planOrders['free_text'] = $planFreeText;
+    }
+    $planOrderEyes = is_array($_POST['PLAN_EYE'] ?? null) ? $_POST['PLAN_EYE'] : array();
+    $planOrdersHaveEyeColumn = eyeMagOrdersHaveEyeColumn();
+    $N = count($planOrders);
     $sql_clear = "DELETE from form_eye_mag_orders where pid =? and ORDER_PLACED_BYWHOM=? and ORDER_DATE_PLACED=? and ORDER_STATUS ='pending'";
     sqlQuery($sql_clear, array($pid, $providerID, $visit_date));
     if ($N > '0') {
-        for ($i = 0; $i < $N; $i++) {
-            if ($_POST['PLAN'][$i] =='') {
+        $orderPriority = 0;
+        foreach ($planOrders as $i => $planOrder) {
+            $planOrder = trim((string)$planOrder);
+            if ($planOrder == '') {
                 continue;
             }
-            $fields['PLAN'] .= $_POST['PLAN'][$i] . "|"; //this makes an entry for form_eyemag: PLAN
-            $ORDERS_sql = "INSERT INTO form_eye_mag_orders (form_id,pid,ORDER_DETAILS,ORDER_PRIORITY,ORDER_STATUS,ORDER_DATE_PLACED,ORDER_PLACED_BYWHOM) VALUES (?,?,?,?,?,?,?)";
-            $okthen = sqlQuery($ORDERS_sql, array($form_id, $pid, $_POST['PLAN'][$i], $i, 'pending', $visit_date, $providerID));
+            $fields['PLAN'] .= $planOrder . "|"; //this makes an entry for form_eyemag: PLAN
+            if ($planOrdersHaveEyeColumn) {
+                $planEye = eyeMagNormalizeOrderEye($planOrderEyes[$i] ?? '');
+                $ORDERS_sql = "INSERT INTO form_eye_mag_orders (form_id,pid,ORDER_DETAILS,ORDER_EYE,ORDER_PRIORITY,ORDER_STATUS,ORDER_DATE_PLACED,ORDER_PLACED_BYWHOM) VALUES (?,?,?,?,?,?,?,?)";
+                $okthen = sqlQuery($ORDERS_sql, array($form_id, $pid, $planOrder, $planEye, $orderPriority, 'pending', $visit_date, $providerID));
+            } else {
+                $ORDERS_sql = "INSERT INTO form_eye_mag_orders (form_id,pid,ORDER_DETAILS,ORDER_PRIORITY,ORDER_STATUS,ORDER_DATE_PLACED,ORDER_PLACED_BYWHOM) VALUES (?,?,?,?,?,?,?)";
+                $okthen = sqlQuery($ORDERS_sql, array($form_id, $pid, $planOrder, $orderPriority, 'pending', $visit_date, $providerID));
+            }
+            $orderPriority++;
         }
 
         $_POST['PLAN'] = mb_substr($fields['PLAN'], 0, -1); //get rid of trailing "|"

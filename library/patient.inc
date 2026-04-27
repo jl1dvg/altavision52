@@ -339,7 +339,7 @@ function getProviderInfo($providerID = "%", $providers_only = true, $facility = 
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
+    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, federaltaxid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1 . $param2;
     // sort by last name -- JRM June 2008
@@ -546,6 +546,17 @@ function getProviderRegistro($providerID)
     if (strlen($pi[0]["fname"]) > 0) {
 
         return $pi[0]['federaldrugid'];
+    }
+
+    return "";
+}
+
+function getProviderIdentification($providerID)
+{
+    $pi = getProviderInfo($providerID, 'any');
+    if (strlen($pi[0]["fname"]) > 0) {
+
+        return $pi[0]['federaltaxid'];
     }
 
     return "";

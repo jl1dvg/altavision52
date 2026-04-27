@@ -2047,7 +2047,6 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
         </table>
         <?php
     }
-}
     //end choice !== 'TEXT' -- include this in summary mouseover report.
     ?>
         <!-- start of IMPPLAN exam -->
@@ -2055,145 +2054,137 @@ function narrative($pid, $encounter, $cols, $form_id, $choice = 'full')
             <tr>
                 <td style="text-align:left;padding:1px;vertical-align:top;width:480px;">
                     <b><u><?php echo xlt('Impression/Plan'); ?>:</u></b>
-          <table style="">
-            <tr>
-              <td style="padding:5px;text-align: left;text-align:justify;width:475px;">
-                <?php
-    /**
-     *  Retrieve and Display the IMPPLAN_items for the Impression/Plan zone.
-     */
-    $query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? order by IMPPLAN_order ASC";
-    $result = sqlStatement($query, array($form_id, $pid));
-    $IMPPLAN_items = array();
-    $i = 0;
-    while ($ip_list = sqlFetchArray($result)) {
-        $IMPPLAN_items[$i] = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => $ip_list['plan'],
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $i++;
-    }
-
-    if (!empty($IMPPLAN_items)) {
-        foreach ($IMPPLAN_items as $item) {
-            echo (intval($item['IMPPLAN_order']) + 1) . '. <b>' . text($item['title']) . '</b><br />';
-            echo '<div style="padding-left:15px;padding-bottom:10px;">';
-
-            $displayCode = trim((string) $item['code']);
-            if ($displayCode !== '' && preg_match('/Code/', $displayCode)) {
-                $displayCode = '';
-            }
-            if ($displayCode !== '' && !empty($item['codetype'])) {
-                $displayCode = $item['codetype'] . ': ' . $displayCode;
-            }
-
-            if (!empty($item['codetext'])) {
-                echo text($item['codetext']) . '<br />';
-            } elseif (!empty($item['codedesc'])) {
-                $diagnosisLine = trim(($displayCode !== '' ? $displayCode . ' ' : '') . $item['codedesc']);
-                echo text($diagnosisLine) . '<br />';
-            } elseif ($displayCode !== '') {
-                echo text($displayCode) . '<br />';
-            }
-
-            if (!empty($item['plan'])) {
-                echo nl2br(text($item['plan'])) . '<br />';
-            }
-
-            echo '</div>';
-        }
-
-        $planSections = array(
-            array(
-                'title' => xlt('Orders') . '/' . xlt('Next Visit'),
-                'table' => 'form_eye_mag_orders',
-                'underlined' => false
-            ),
-            array(
-                'title' => xlt('Procedimiento propuesto OD'),
-                'table' => 'form_eye_mag_ordenqxod',
-                'underlined' => true
-            ),
-            array(
-                'title' => xlt('Procedimiento propuesto OI'),
-                'table' => 'form_eye_mag_ordenqxoi',
-                'underlined' => true
-            )
-        );
-
-        foreach ($planSections as $section) {
-            $query = "SELECT ORDER_DETAILS FROM " . $section['table'] . " WHERE form_id=? AND pid=? ORDER BY id ASC";
-            $planResults = sqlStatement($query, array($form_id, $pid));
-            $details = array();
-            while ($planRow = sqlFetchArray($planResults)) {
-                if (!empty(trim((string) $planRow['ORDER_DETAILS']))) {
-                    $details[] = $planRow['ORDER_DETAILS'];
-                }
-            }
-
-            if (empty($details)) {
-                continue;
-            }
-
-            if ($section['underlined']) {
-                echo '<b><u>' . text($section['title']) . ':</u></b><br />';
-            } else {
-                echo '<b>' . text($section['title']) . ':</b><br />';
-            }
-
-            echo '<div style="padding-left:15px;padding-bottom:10px;width:400px;">';
-            foreach ($details as $detail) {
-                echo text($detail) . '<br />';
-            }
-            echo '</div><br />';
-        }
-
-                    display_draw_image("IMPPLAN", $encounter, $pid);
-
-                    if ($PDF_OUTPUT) {
-                        //display a stored optional electronic sig for this providerID, ie the patient's Doc not the tech
-                        //Isn't there a place in sites/..default../images for a jpg signature file for Rx printing or some other openEMR task?
-                        $from_file = $GLOBALS["webserver_root"] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg";
-                        if (file_exists($from_file)) {
-                            echo "<img style='width:50mm;' src='$from_file'><hr style='width:40mm;' />";
-                            text($providerNAME) . "<br />
-                <i style='font-size:9px;'>" . xlt('electronically signed on') . " " . oeFormatShortDate() . "</i>";
-                        }
-                        ?>
-                            <br/>
-                            <span
-                                style="border-top:1pt solid black;padding-left:50px;"><?php echo text($providerNAME); ?></span>
-                            <?php
-                            } else {
-                                $signature = $GLOBALS["webserver_root"] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg";
-                                if (file_exists($signature)) {
-                                    echo "<img src='" . $GLOBALS['web_root'] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg'  style='width:30mm; height:6mm;bottom:1px;' height='10' />";
+                    <table>
+                        <tr>
+                            <td style="padding:5px;text-align:left;text-align:justify;width:475px;">
+                                <?php
+                                /**
+                                 * Retrieve and display the IMPPLAN items for the Impression/Plan zone.
+                                 */
+                                $query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? order by IMPPLAN_order ASC";
+                                $result = sqlStatement($query, array($form_id, $pid));
+                                $IMPPLAN_items = array();
+                                $i = 0;
+                                while ($ip_list = sqlFetchArray($result)) {
+                                    $IMPPLAN_items[$i] = array(
+                                        'form_id' => $ip_list['form_id'],
+                                        'pid' => $ip_list['pid'],
+                                        'title' => $ip_list['title'],
+                                        'code' => $ip_list['code'],
+                                        'codetype' => $ip_list['codetype'],
+                                        'codetext' => $ip_list['codetext'],
+                                        'codedesc' => $ip_list['codedesc'],
+                                        'plan' => $ip_list['plan'],
+                                        'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+                                    );
+                                    $i++;
                                 }
-                            }
 
-    ?>
+                                if (!empty($IMPPLAN_items)) {
+                                    foreach ($IMPPLAN_items as $item) {
+                                        echo (intval($item['IMPPLAN_order']) + 1) . '. <b>' . text($item['title']) . '</b><br />';
+                                        echo '<div style="padding-left:15px;padding-bottom:10px;">';
 
+                                        $displayCode = trim((string) $item['code']);
+                                        if ($displayCode !== '' && preg_match('/Code/', $displayCode)) {
+                                            $displayCode = '';
+                                        }
+                                        if ($displayCode !== '' && !empty($item['codetype'])) {
+                                            $displayCode = $item['codetype'] . ': ' . $displayCode;
+                                        }
+
+                                        if (!empty($item['codetext'])) {
+                                            echo text($item['codetext']) . '<br />';
+                                        } elseif (!empty($item['codedesc'])) {
+                                            $diagnosisLine = trim(($displayCode !== '' ? $displayCode . ' ' : '') . $item['codedesc']);
+                                            echo text($diagnosisLine) . '<br />';
+                                        } elseif ($displayCode !== '') {
+                                            echo text($displayCode) . '<br />';
+                                        }
+
+                                        if (!empty($item['plan'])) {
+                                            echo nl2br(text($item['plan'])) . '<br />';
+                                        }
+
+                                        echo '</div>';
+                                    }
+                                }
+
+                                $planSections = array(
+                                    array(
+                                        'title' => xlt('Orders') . '/' . xlt('Next Visit'),
+                                        'table' => 'form_eye_mag_orders',
+                                        'underlined' => false,
+                                        'has_eye' => true
+                                    ),
+                                    array(
+                                        'title' => xlt('Procedimiento propuesto OD'),
+                                        'table' => 'form_eye_mag_ordenqxod',
+                                        'underlined' => true,
+                                        'has_eye' => false
+                                    ),
+                                    array(
+                                        'title' => xlt('Procedimiento propuesto OI'),
+                                        'table' => 'form_eye_mag_ordenqxoi',
+                                        'underlined' => true,
+                                        'has_eye' => false
+                                    )
+                                );
+
+                                foreach ($planSections as $section) {
+                                    $query = "SELECT * FROM " . $section['table'] . " WHERE form_id=? AND pid=? ORDER BY id ASC";
+                                    $planResults = sqlStatement($query, array($form_id, $pid));
+                                    $details = array();
+                                    while ($planRow = sqlFetchArray($planResults)) {
+                                        $detail = !empty($section['has_eye']) ? eyeMagOrderDetailsWithEye($planRow) : trim((string) $planRow['ORDER_DETAILS']);
+                                        if ($detail !== '') {
+                                            $details[] = $detail;
+                                        }
+                                    }
+
+                                    if (empty($details)) {
+                                        continue;
+                                    }
+
+                                    if ($section['underlined']) {
+                                        echo '<b><u>' . text($section['title']) . ':</u></b><br />';
+                                    } else {
+                                        echo '<b>' . text($section['title']) . ':</b><br />';
+                                    }
+
+                                    echo '<div style="padding-left:15px;padding-bottom:10px;width:400px;">';
+                                    foreach ($details as $detail) {
+                                        echo text($detail) . '<br />';
+                                    }
+                                    echo '</div><br />';
+                                }
+
+                                display_draw_image("IMPPLAN", $encounter, $pid);
+
+                                if ($PDF_OUTPUT) {
+                                    $from_file = $GLOBALS["webserver_root"] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg";
+                                    if (file_exists($from_file)) {
+                                        echo "<img style='width:50mm;' src='$from_file'><hr style='width:40mm;' />";
+                                    }
+                                    echo "<br/>";
+                                    echo "<span style='border-top:1pt solid black;padding-left:50px;'>" . text($providerNAME) . "</span>";
+                                } else {
+                                    $signature = $GLOBALS["webserver_root"] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg";
+                                    if (file_exists($signature)) {
+                                        echo "<img src='" . $GLOBALS['web_root'] . "/interface/forms/" . $form_folder . "/images/sign_" . $providerID . ".jpg' style='width:30mm; height:6mm;bottom:1px;' height='10' />";
+                                    }
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
         </table>
-    </table>
-    </div>
         <?php
     return;
 }
     ?>
-    <table class="report_exam_group">
-    <tr>
-    <td style="text-align:left;padding:1px;vertical-align:top;width:480px;">
-    <table style="">
-    <tr>
-    <td style="padding:5px;text-align: left;text-align:justify;width:475px;">
    <?php
 function display_draw_image($zone, $encounter, $pid)
 {

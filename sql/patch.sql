@@ -48,6 +48,11 @@
 --  #EndIf
 --    all blocks are terminated with and #EndIf statement.
 
+#IfMissingColumn form_eye_mag_orders ORDER_EYE
+ALTER TABLE `form_eye_mag_orders`
+  ADD COLUMN `ORDER_EYE` varchar(10) NOT NULL DEFAULT '' AFTER `ORDER_DETAILS`;
+#EndIf
+
 #IfNotRow2D list_options list_id apps option_id oeSignerRemote
 INSERT INTO list_options (list_id,option_id,title,seq,is_default,activity) VALUES ('apps','oeSignerRemote','./../portal/sign/assets/signit.php',30,0,0);
 #EndIf

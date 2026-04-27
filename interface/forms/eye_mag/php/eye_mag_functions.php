@@ -4423,7 +4423,7 @@ if ($number_rows == 22) { ?>
                                     <?php
                                     $j = 1;
                                     foreach ($priors[0]['TODO'] as $plan) {
-                                        echo "<span class='button'>" . $j++ . "</span> " . text($plan['ORDER_DETAILS']) . "<br />";
+                                        echo "<span class='button'>" . $j++ . "</span> " . text(eyeMagOrderDetailsWithEye($plan)) . "<br />";
                                     }
                                     ?>
                                 </td>
@@ -7005,6 +7005,45 @@ function in_array_r($needle, $haystack, $strict = false)
         }
     }
     return false;
+}
+
+function eyeMagNormalizeOrderEye($eye)
+{
+    $eye = strtoupper(trim((string)$eye));
+    if ($eye === 'OU') {
+        $eye = 'AO';
+    }
+
+    return in_array($eye, array('OD', 'OI', 'AO'), true) ? $eye : '';
+}
+
+function eyeMagFormatOrderEye($eye)
+{
+    return eyeMagNormalizeOrderEye($eye);
+}
+
+function eyeMagOrderDetailsWithEye($orderRow)
+{
+    $details = trim((string)($orderRow['ORDER_DETAILS'] ?? ''));
+    if ($details === '') {
+        return '';
+    }
+
+    $eye = eyeMagFormatOrderEye($orderRow['ORDER_EYE'] ?? '');
+    return $eye !== '' ? $details . ' (' . xlt('Eye') . ': ' . $eye . ')' : $details;
+}
+
+function eyeMagOrdersHaveEyeColumn()
+{
+    static $hasEyeColumn = null;
+
+    if ($hasEyeColumn !== null) {
+        return $hasEyeColumn;
+    }
+
+    $row = sqlQuery("SHOW COLUMNS FROM form_eye_mag_orders LIKE 'ORDER_EYE'");
+    $hasEyeColumn = !empty($row);
+    return $hasEyeColumn;
 }
 
 /**

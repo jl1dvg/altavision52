@@ -16,6 +16,7 @@ $postedProviderSuffix = trim($_POST['provider_suffix'] ?? $_GET['provider_suffix
 $planTitles = $_POST['plan_titles'] ?? array();
 $planSubtypes = $_POST['plan_subtypes'] ?? array();
 $planNotes = $_POST['plan_notes'] ?? array();
+$planEyes = $_POST['plan_eyes'] ?? array();
 $freeText = trim($_POST['free_text'] ?? $_GET['free_text'] ?? '');
 
 if (!$pid || !$encounter) {
@@ -58,6 +59,7 @@ foreach ($planTitles as $index => $planTitle) {
 
     $subtype = trim($planSubtypes[$index] ?? '');
     $notes = trim($planNotes[$index] ?? '');
+    $eye = eyeMagNormalizeOrderEye($planEyes[$index] ?? '');
     $bucket = $subtype ?: xlt('General');
 
     if (empty($groupedPlans[$bucket])) {
@@ -66,7 +68,8 @@ foreach ($planTitles as $index => $planTitle) {
 
     $groupedPlans[$bucket][] = array(
         'title' => $planTitle,
-        'notes' => $notes
+        'notes' => $notes,
+        'eye' => $eye
     );
 }
 ?>
@@ -157,6 +160,9 @@ foreach ($planTitles as $index => $planTitle) {
         <?php foreach ($items as $item) { ?>
             <li>
                 <?php echo text($item['title']); ?>
+                <?php if (!empty($item['eye'])) { ?>
+                    <strong><?php echo ' (' . xlt('Eye') . ': ' . text($item['eye']) . ')'; ?></strong>
+                <?php } ?>
                 <?php if (!empty($item['notes']) && mb_strtolower($item['notes']) !== mb_strtolower($item['title'])) { ?>
                     <span class="plan-note"><?php echo text($item['notes']); ?></span>
                 <?php } ?>

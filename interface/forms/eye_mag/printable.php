@@ -634,7 +634,7 @@ if ($OSVITREOUS) {
 <p class="texto"><b>RECOMENDACIÓN: </b>
     <?php
     while ($plan_row = sqlFetchArray($PLAN_results)) {
-        echo $plan_row['ORDER_DETAILS'] . ", ";
+        echo text(eyeMagOrderDetailsWithEye($plan_row)) . ", ";
     }
     echo "<br>";
     }

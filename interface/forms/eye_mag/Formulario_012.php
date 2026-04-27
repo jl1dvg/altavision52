@@ -107,6 +107,10 @@ function fetchEyeMagOrders($form_id, $pid)
             $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
             if ($code_item['codes']) {
                 echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
+                $orderEye = eyeMagFormatOrderEye($plan_row['ORDER_EYE'] ?? '');
+                if ($orderEye !== '') {
+                    echo " - " . xlt('Eye') . ": " . text($orderEye);
+                }
                 echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
             }
         }
@@ -645,7 +649,7 @@ ob_start();
         <td colspan="30" class="verde">SELLO</td>
     </tr>
     <tr>
-        <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderRegistro($providerID); ?></td>
+        <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderIdentification($providerID); ?></td>
         <td colspan="26" class="blanco">&nbsp;</td>
         <td colspan="30" class="blanco">&nbsp;</td>
     </tr>

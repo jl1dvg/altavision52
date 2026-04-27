@@ -692,7 +692,7 @@ renderPatientInfoTable($titleres, $encounter);
             <td colspan="30" class="verde">SELLO</td>
         </tr>
         <tr>
-            <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderRegistro($providerID); ?></td>
+            <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderIdentification($providerID); ?></td>
             <td colspan="26" class="blanco">&nbsp;</td>
             <td colspan="30" class="blanco">&nbsp;</td>
         </tr>
@@ -893,7 +893,7 @@ renderPatientInfoTable($titleres, $encounter);
             </tr>
             <tr>
                 <td colspan="15" class="blanco"
-                    style="height: 40px"><?php echo getProviderRegistro($providerID); ?></td>
+                    style="height: 40px"><?php echo getProviderIdentification($providerID); ?></td>
                 <td colspan="26" class="blanco">&nbsp;</td>
                 <td colspan="30" class="blanco">&nbsp;</td>
             </tr>
@@ -1154,7 +1154,7 @@ renderPatientInfoTable($titleres, $encounter);
                     </tr>
                     <tr>
                         <td colspan="15" class="blanco"
-                            style="height: 40px"><?php echo getProviderRegistro($providerID); ?></td>
+                            style="height: 40px"><?php echo getProviderIdentification($providerID); ?></td>
                         <td colspan="26" class="blanco">&nbsp;</td>
                         <td colspan="30" class="blanco">&nbsp;</td>
                     </tr>

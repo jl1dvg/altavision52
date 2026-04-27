@@ -1627,6 +1627,15 @@ if ($GLOBALS['gbl_portal_cms_enable'] && acl_check('patientportal', 'portal')) {
             genMiscLink('RTop', 'rep', '0', xl('Referrals'), 'reports/referrals_report.php');
         } ?>
         <?php if (acl_check('patients', 'med')) {
+            genMiscLink('RTop', 'rep', '0', xl('Dashboard Particulares'), 'reports/particulares_dashboard.php');
+        } ?>
+        <?php if (acl_check('patients', 'med')) {
+            genMiscLink('RTop', 'rep', '0', xl('OR Day Sessions'), 'reports/or_day_sessions.php');
+        } ?>
+        <?php if (acl_check('patients', 'med')) {
+            genMiscLink('RTop', 'rep', '0', xl('OR Supply Catalog'), 'reports/or_supply_catalog.php');
+        } ?>
+        <?php if (acl_check('patients', 'med')) {
             genMiscLink('RTop', 'rep', '0', xl('Immunization Registry'), 'reports/immunization_report.php');
         } ?>
         </ul>

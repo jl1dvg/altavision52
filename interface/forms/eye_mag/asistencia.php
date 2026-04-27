@@ -190,7 +190,7 @@ ob_start();
     if (sqlNumRows($PLAN_results) > 0) {
         echo "<b>RECOMENDACIÓN: </b>";
         while ($plan_row = sqlFetchArray($PLAN_results)) {
-            echo htmlspecialchars($plan_row['ORDER_DETAILS']) . ", ";
+            echo htmlspecialchars(eyeMagOrderDetailsWithEye($plan_row)) . ", ";
         }
     }
     ?>

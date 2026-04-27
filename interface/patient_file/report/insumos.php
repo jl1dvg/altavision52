@@ -48,5 +48,5 @@ include("common_header.php");
 <?php
 echo $providerNAME;
 echo "<br>";
-echo getProviderRegistro($providerID);
+echo getProviderIdentification($providerID);
 ?>

@@ -41,6 +41,7 @@ $GLOBALS['PATIENT_REPORT_ACTIVE'] = true;
 
 // Permitir activar PDF/PDF_CONTRA vía GET o POST (ej. links generados por reportes).
 $pdfParam = $_POST['pdf'] ?? $_GET['pdf'] ?? null;
+$PDF_CONTRA = 0;
 if ($pdfParam == 1) {
     $PDF_OUTPUT = 1;
 } elseif ($pdfParam == 3) {
@@ -138,6 +139,50 @@ function postToGet($arin)
     }
 
     return $getstring;
+}
+
+function contraPdfDebugEnabled()
+{
+    return !empty($_REQUEST['debug_pdf']);
+}
+
+function contraPdfDebugLog($message, $context = array())
+{
+    global $contraPdfTrace;
+
+    if (!contraPdfDebugEnabled()) {
+        return;
+    }
+
+    if (!is_array($contraPdfTrace)) {
+        $contraPdfTrace = array();
+    }
+
+    $timestamp = date('Y-m-d H:i:s');
+    $payload = $context ? ' ' . json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : '';
+    $line = "[$timestamp] $message$payload";
+
+    $contraPdfTrace[] = $line;
+    error_log("[CONTRA_PDF_DEBUG] $line");
+}
+
+function contraPdfDebugHtml($title = 'DEBUG PDF')
+{
+    global $contraPdfTrace;
+
+    $html = "<div style='font-family: monospace; font-size: 10px; white-space: pre-wrap; border: 1px solid #900; padding: 10px; background: #fff8f8;'>";
+    $html .= "<strong>" . text($title) . "</strong>\n\n";
+
+    if (!empty($contraPdfTrace) && is_array($contraPdfTrace)) {
+        foreach ($contraPdfTrace as $line) {
+            $html .= text($line) . "\n";
+        }
+    } else {
+        $html .= "Sin trazas";
+    }
+
+    $html .= "</div>";
+    return $html;
 }
 
 ?>
@@ -922,16 +967,37 @@ function postToGet($arin)
                 $pdf->SetDirectionality('rtl');
             }
 
+            contraPdfDebugLog('PDF_CONTRA start', array(
+                'pid' => $pid ?? null,
+                'request_keys' => array_keys($_REQUEST),
+                'selected_forms' => array_keys(array_filter($ar, function ($value, $key) {
+                    return $key !== 'pdf' && strpos((string)$key, 'include_') !== 0;
+                }, ARRAY_FILTER_USE_BOTH))
+            ));
+
             // Incluir el contenido de contra_template.php en el PDF
             include("contra_template.php");
             $contra_content = ob_get_clean();
+            contraPdfDebugLog('contra_template rendered', array('bytes' => strlen((string)$contra_content)));
 
             // Imprimir el contenido de contra_template.php
-            $pdf->WriteHTML($contra_content);
+            try {
+                $pdf->WriteHTML($contra_content);
+            } catch (Throwable $throwable) {
+                contraPdfDebugLog('contra_template WriteHTML failed', array('error' => $throwable->getMessage()));
+                $pdf->AddPage();
+                $pdf->WriteHTML(contraPdfDebugHtml('ERROR EN contra_template'));
+                $pdf->Output();
+                return;
+            }
 
             // Recorrer el array $ar ordenado por fecha del encounter (ascendente)
             foreach ($ar as $key => $value) {
                 $form_encounter = $value;
+                contraPdfDebugLog('processing form selection', array(
+                    'key' => $key,
+                    'encounter' => $form_encounter
+                ));
 
                 // Verificar si se debe agregar una nueva página
                 if (strpos($key, 'eye_mag') === 0 ||
@@ -939,6 +1005,7 @@ function postToGet($arin)
                     strpos($key, 'LBFprotocolo') === 0 ||
                     strpos($key, 'care_plan') === 0) {
                     $pdf->AddPage(); // Crear una nueva página en el PDF
+                    contraPdfDebugLog('page added', array('key' => $key));
                 }
 
                 if (strpos($key, 'eye_mag') === 0) {
@@ -968,17 +1035,45 @@ function postToGet($arin)
                         ob_start();
                         include($file);
                         $content = ob_get_clean();
+                        contraPdfDebugLog('embedded protocol file rendered', array(
+                            'file' => $file,
+                            'bytes' => strlen((string)$content)
+                        ));
 
                         if ($file == "postanestesico_anverso.php") {
                             $pdf->AddPage('L');
-                            $pdf->WriteHTML($content);
+                            try {
+                                $pdf->WriteHTML($content);
+                            } catch (Throwable $throwable) {
+                                contraPdfDebugLog('WriteHTML failed', array('file' => $file, 'error' => $throwable->getMessage()));
+                                $pdf->AddPage();
+                                $pdf->WriteHTML(contraPdfDebugHtml('ERROR EN ' . $file));
+                                $pdf->Output();
+                                return;
+                            }
                             $pdf->AddPage('P');
                         } elseif ($file == "transanestesico.php") {
                             $pdf->AddPage('L');
-                            $pdf->WriteHTML($content);
+                            try {
+                                $pdf->WriteHTML($content);
+                            } catch (Throwable $throwable) {
+                                contraPdfDebugLog('WriteHTML failed', array('file' => $file, 'error' => $throwable->getMessage()));
+                                $pdf->AddPage();
+                                $pdf->WriteHTML(contraPdfDebugHtml('ERROR EN ' . $file));
+                                $pdf->Output();
+                                return;
+                            }
                             $pdf->AddPage('P');
                         } else {
-                            $pdf->WriteHTML($content);
+                            try {
+                                $pdf->WriteHTML($content);
+                            } catch (Throwable $throwable) {
+                                contraPdfDebugLog('WriteHTML failed', array('file' => $file, 'error' => $throwable->getMessage()));
+                                $pdf->AddPage();
+                                $pdf->WriteHTML(contraPdfDebugHtml('ERROR EN ' . $file));
+                                $pdf->Output();
+                                return;
+                            }
                             if ($index !== $lastIndex) {
                                 $pdf->AddPage(); // Solo añade página si no es el último archivo
                             }
@@ -996,13 +1091,37 @@ function postToGet($arin)
                     ob_start();
                     include($contentFile);
                     $content = ob_get_clean();
-                    $pdf->WriteHTML($content);
+                    contraPdfDebugLog('content file rendered', array(
+                        'file' => $contentFile,
+                        'key' => $key,
+                        'bytes' => strlen((string)$content)
+                    ));
+                    try {
+                        $pdf->WriteHTML($content);
+                    } catch (Throwable $throwable) {
+                        contraPdfDebugLog('WriteHTML failed', array(
+                            'file' => $contentFile,
+                            'key' => $key,
+                            'error' => $throwable->getMessage()
+                        ));
+                        $pdf->AddPage();
+                        $pdf->WriteHTML(contraPdfDebugHtml('ERROR EN ' . $contentFile));
+                        $pdf->Output();
+                        return;
+                    }
                     unset($contentFile);
                 }
             } // Fin foreach
 
             // Salida del PDF
+            contraPdfDebugLog('PDF_CONTRA output start');
+            if (contraPdfDebugEnabled()) {
+                $pdf->AddPage();
+                $pdf->WriteHTML(contraPdfDebugHtml('TRAZA PDF_CONTRA'));
+            }
             $pdf->Output();
+            contraPdfDebugLog('PDF_CONTRA output complete');
+            return;
         }
 
     if ($printable && !$PDF_OUTPUT) {// Patched out of pdf 04/20/2017 sjpadgett

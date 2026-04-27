@@ -9548,6 +9548,7 @@ CREATE TABLE `form_eye_mag_orders` (
   `form_id` int(20) NOT NULL,
   `pid` bigint(20) NOT NULL,
   `ORDER_DETAILS` varchar(255) NOT NULL,
+  `ORDER_EYE` varchar(10) NOT NULL DEFAULT '',
   `ORDER_STATUS` varchar(50) DEFAULT NULL,
   `ORDER_PRIORITY` varchar(50) DEFAULT NULL,
   `ORDER_DATE_PLACED` date NOT NULL,

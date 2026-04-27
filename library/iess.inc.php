@@ -15,6 +15,16 @@ $facilityService = new FacilityService();
 $date_init = "";
 $membership_group_number = 0;
 
+function iessFormatEyeMagOrderEye($eye)
+{
+    $eye = strtoupper(trim((string)$eye));
+    if ($eye === 'OU') {
+        $eye = 'AO';
+    }
+
+    return in_array($eye, array('OD', 'OI', 'AO'), true) ? $eye : '';
+}
+
 function lookup_lbf_desc($desc_lbf)
 {
     $querylbf = "select field_value from lbf_data WHERE form_id=? AND field_id=? ";
@@ -590,6 +600,10 @@ function fetchEyeMagOrders($form_id, $pid, $providerID)
             $code_item = sqlQuery($IMAGENPropuesta, array($plan_row['ORDER_DETAILS']));
             if ($code_item['codes']) {
                 echo $code_item['notes'] . " (" . substr($code_item['codes'], 5) . ")";
+                $orderEye = iessFormatEyeMagOrderEye($plan_row['ORDER_EYE'] ?? '');
+                if ($orderEye !== '') {
+                    echo " - " . xlt('Eye') . ": " . text($orderEye);
+                }
                 echo "</td></tr><tr><td colspan=\"71\" class=\"blanco\" style=\"border-right: none; text-align: left\">";
             }
         }
