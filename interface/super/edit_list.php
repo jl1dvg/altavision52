@@ -489,8 +489,8 @@ function writeFSLine($category, $option, $codes)
 
     echo "  <td align='left' class='optcell'>";
     echo "   <div id='codelist_" . attr($opt_line_no) . "'></div>";
-    echo "<a href='' onclick='return select_code(" . attr($opt_line_no) . ")'>";
-    echo "[" . xlt('Add') . "]</a>";
+    echo "<a href='' class='btn btn-default btn-xs feesheet-add-code' onclick='return select_code(" . attr($opt_line_no) . ")'>";
+    echo "<i class='fa fa-plus' aria-hidden='true'></i> " . xlt('Add') . "</a>";
 
     echo "<input type='hidden' name='opt[" . attr($opt_line_no) . "][codes]' value='" .
         attr($codes) . "' />";
@@ -756,20 +756,152 @@ function writeITLine($it_array)
             color: green;
         }
 
+        .feesheet-code-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 360px;
+        }
+
         .feesheet-code-row {
             align-items: center;
+            background: #f8fafc;
+            border: 1px solid #d8e0e8;
+            border-left: 5px solid #7b8794;
+            border-radius: 6px;
             display: flex;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 8px;
+            padding: 7px 8px;
         }
 
-        .feesheet-code-row .feesheet-code-desc {
-            flex: 1;
+        .feesheet-code-row:hover {
+            background: #ffffff;
+            border-color: #b8c5d1;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
         }
 
-        .feesheet-code-row .feesheet-code-quantity {
-            max-width: 64px;
-            text-align: right;
+        .feesheet-code-type-cpt4 {
+            border-left-color: #2f80ed;
+        }
+
+        .feesheet-code-type-hcpcs {
+            border-left-color: #00a878;
+        }
+
+        .feesheet-code-type-prod {
+            border-left-color: #d98324;
+        }
+
+        .feesheet-code-type-icd,
+        .feesheet-code-type-icd9,
+        .feesheet-code-type-icd10 {
+            border-left-color: #8e44ad;
+        }
+
+        .feesheet-code-type-ma {
+            border-left-color: #c0392b;
+        }
+
+        .feesheet-code-badge {
+            border-radius: 4px;
+            color: #fff;
+            flex: 0 0 auto;
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1;
+            min-width: 50px;
+            padding: 5px 7px;
+            text-align: center;
+        }
+
+        .feesheet-code-type-cpt4 .feesheet-code-badge {
+            background: #2f80ed;
+        }
+
+        .feesheet-code-type-hcpcs .feesheet-code-badge {
+            background: #00a878;
+        }
+
+        .feesheet-code-type-prod .feesheet-code-badge {
+            background: #d98324;
+        }
+
+        .feesheet-code-type-icd .feesheet-code-badge,
+        .feesheet-code-type-icd9 .feesheet-code-badge,
+        .feesheet-code-type-icd10 .feesheet-code-badge {
+            background: #8e44ad;
+        }
+
+        .feesheet-code-type-ma .feesheet-code-badge {
+            background: #c0392b;
+        }
+
+        .feesheet-code-type-other .feesheet-code-badge {
+            background: #7b8794;
+        }
+
+        .feesheet-code-main {
+            flex: 1 1 auto;
+            min-width: 140px;
+        }
+
+        .feesheet-code-desc {
+            color: #22303c;
+            display: block;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .feesheet-code-value {
+            color: #66788a;
+            display: block;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .feesheet-code-qty-group {
+            align-items: center;
+            display: flex;
+            flex: 0 0 auto;
+            gap: 3px;
+        }
+
+        .feesheet-code-qty-label {
+            color: #536271;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 3px;
+        }
+
+        .feesheet-code-quantity {
+            max-width: 58px;
+            min-width: 58px;
+            text-align: center;
+        }
+
+        .feesheet-code-step,
+        .feesheet-code-edit,
+        .feesheet-code-delete {
+            align-items: center;
+            border-radius: 4px;
+            display: inline-flex;
+            height: 28px;
+            justify-content: center;
+            padding: 0;
+            width: 28px;
+        }
+
+        .feesheet-code-edit {
+            color: #2f6fa7;
+        }
+
+        .feesheet-code-delete {
+            color: #a42c2c;
+        }
+
+        .feesheet-add-code {
+            display: inline-block;
+            margin-top: 6px;
         }
     </style>
     <script type="text/javascript">
@@ -784,6 +916,7 @@ function writeITLine($it_array)
         var current_lino = 0;
         var current_sel_name = '';
         var current_sel_clin_term = '';
+        var current_replace_index = null;
 
         // Helper function to set the contents of a div.
         // This is for Fee Sheet administration.
@@ -832,6 +965,37 @@ function writeITLine($it_array)
             return grouped;
         }
 
+        function getFeeSheetCodeType(code) {
+            return (code.split('|')[0] || '').toUpperCase();
+        }
+
+        function getFeeSheetCodeValue(code) {
+            var parts = code.split('|');
+            return parts.length > 1 ? parts[1] : code;
+        }
+
+        function getFeeSheetFinderValue(code) {
+            var parts = code.split('|');
+            if (parts.length < 2) {
+                return code;
+            }
+            return parts[0] + ':' + parts[1];
+        }
+
+        function getFeeSheetCodeTypeClass(codeType) {
+            var normalized = codeType.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (normalized == 'icd9' || normalized == 'icd10') {
+                return 'feesheet-code-type-' + normalized;
+            }
+            if (normalized == 'cpt4' || normalized == 'hcpcs' || normalized == 'prod' || normalized == 'ma') {
+                return 'feesheet-code-type-' + normalized;
+            }
+            if (normalized.indexOf('icd') === 0) {
+                return 'feesheet-code-type-icd';
+            }
+            return 'feesheet-code-type-other';
+        }
+
         function writeFeeSheetCodeGroups(lino, groups) {
             var f = document.forms[0];
             var arrcodes = [];
@@ -861,6 +1025,13 @@ function writeITLine($it_array)
             writeFeeSheetCodeGroups(lino, groups);
         }
 
+        function changeFeeSheetQuantity(lino, input, amount) {
+            var current = parseInt(input.value, 10) || 1;
+            input.value = Math.max(1, current + amount);
+            rebuildFeeSheetLine(lino);
+            displayCodes(lino);
+        }
+
         function prepareFeeSheetOptions() {
             var f = document.forms[0];
             for (var lino = 1; f['opt[' + lino + '][codes]']; ++lino) {
@@ -874,27 +1045,44 @@ function writeITLine($it_array)
             var list = document.getElementById('codelist_' + lino);
             var groups = getFeeSheetCodeGroups(lino);
 
+            list.className = 'feesheet-code-list';
             list.innerHTML = '';
             for (var i = 0; i < groups.length; ++i) {
+                var codeType = getFeeSheetCodeType(groups[i].code);
+                var codeValue = getFeeSheetCodeValue(groups[i].code);
                 var row = document.createElement('div');
-                row.className = 'feesheet-code-row';
+                row.className = 'feesheet-code-row ' + getFeeSheetCodeTypeClass(codeType);
 
-                var deleteLink = document.createElement('a');
-                deleteLink.href = '';
-                deleteLink.title = <?php echo xlj('Delete'); ?>;
-                deleteLink.appendChild(document.createTextNode('[x]'));
-                deleteLink.onclick = (function (lineNumber, groupIndex) {
-                    return function () {
-                        return delete_code(lineNumber, groupIndex);
-                    };
-                })(lino, i);
+                var badge = document.createElement('span');
+                badge.className = 'feesheet-code-badge';
+                badge.appendChild(document.createTextNode(codeType || <?php echo xlj('Code'); ?>));
 
-                var desc = document.createElement('span');
+                var main = document.createElement('div');
+                main.className = 'feesheet-code-main';
+
+                var desc = document.createElement('strong');
                 desc.className = 'feesheet-code-desc';
                 desc.appendChild(document.createTextNode(groups[i].desc));
 
-                var qtyLabel = document.createElement('span');
+                var value = document.createElement('span');
+                value.className = 'feesheet-code-value';
+                value.appendChild(document.createTextNode(codeValue));
+
+                main.appendChild(desc);
+                main.appendChild(value);
+
+                var qtyGroup = document.createElement('div');
+                qtyGroup.className = 'feesheet-code-qty-group';
+
+                var qtyLabel = document.createElement('label');
+                qtyLabel.className = 'feesheet-code-qty-label';
                 qtyLabel.appendChild(document.createTextNode(<?php echo xlj('Qty'); ?>));
+
+                var minus = document.createElement('button');
+                minus.type = 'button';
+                minus.className = 'btn btn-default btn-xs feesheet-code-step';
+                minus.title = <?php echo xlj('Decrease quantity'); ?>;
+                minus.appendChild(document.createTextNode('-'));
 
                 var qty = document.createElement('input');
                 qty.type = 'number';
@@ -904,11 +1092,64 @@ function writeITLine($it_array)
                 qty.value = groups[i].quantity;
                 qty.setAttribute('data-code', groups[i].code);
                 qty.setAttribute('data-desc', groups[i].desc);
+                qty.onchange = (function (lineNumber, input) {
+                    return function () {
+                        input.value = Math.max(1, parseInt(input.value, 10) || 1);
+                        rebuildFeeSheetLine(lineNumber);
+                        displayCodes(lineNumber);
+                    };
+                })(lino, qty);
 
-                row.appendChild(deleteLink);
-                row.appendChild(desc);
-                row.appendChild(qtyLabel);
-                row.appendChild(qty);
+                var plus = document.createElement('button');
+                plus.type = 'button';
+                plus.className = 'btn btn-default btn-xs feesheet-code-step';
+                plus.title = <?php echo xlj('Increase quantity'); ?>;
+                plus.appendChild(document.createTextNode('+'));
+
+                minus.onclick = (function (lineNumber, input) {
+                    return function () {
+                        changeFeeSheetQuantity(lineNumber, input, -1);
+                    };
+                })(lino, qty);
+
+                plus.onclick = (function (lineNumber, input) {
+                    return function () {
+                        changeFeeSheetQuantity(lineNumber, input, 1);
+                    };
+                })(lino, qty);
+
+                var editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.className = 'btn btn-link btn-xs feesheet-code-edit';
+                editButton.title = <?php echo xlj('Change code'); ?>;
+                editButton.innerHTML = '<i class="fa fa-pencil" aria-hidden="true"></i>';
+                editButton.onclick = (function (lineNumber, groupIndex) {
+                    return function () {
+                        return replace_code(lineNumber, groupIndex);
+                    };
+                })(lino, i);
+
+                var deleteButton = document.createElement('button');
+                deleteButton.type = 'button';
+                deleteButton.className = 'btn btn-link btn-xs feesheet-code-delete';
+                deleteButton.title = <?php echo xlj('Delete'); ?>;
+                deleteButton.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+                deleteButton.onclick = (function (lineNumber, groupIndex) {
+                    return function () {
+                        return delete_code(lineNumber, groupIndex);
+                    };
+                })(lino, i);
+
+                qtyGroup.appendChild(qtyLabel);
+                qtyGroup.appendChild(minus);
+                qtyGroup.appendChild(qty);
+                qtyGroup.appendChild(plus);
+
+                row.appendChild(badge);
+                row.appendChild(main);
+                row.appendChild(qtyGroup);
+                row.appendChild(editButton);
+                row.appendChild(deleteButton);
                 list.appendChild(row);
             }
         }
@@ -935,12 +1176,24 @@ function writeITLine($it_array)
             return false;
         }
 
+        // Replace a generated Fee Sheet code while preserving its quantity.
+        function replace_code(lino, seqno) {
+            rebuildFeeSheetLine(lino);
+            current_sel_name = '';
+            current_sel_clin_term = '';
+            current_lino = lino;
+            current_replace_index = seqno;
+            dlgopen('../patient_file/encounter/find_code_dynamic.php', '_blank', 900, 600);
+            return false;
+        }
+
         // This invokes the find-code popup.
         // For Fee Sheet administration.
         function select_code(lino) {
             current_sel_name = '';
             current_sel_clin_term = '';
             current_lino = lino;
+            current_replace_index = null;
             dlgopen('../patient_file/encounter/find_code_dynamic.php', '_blank', 900, 600);
             return false;
         }
@@ -995,21 +1248,36 @@ function writeITLine($it_array)
                     codedesc = codedesc.substring(0, i) + ' ' + codedesc.substring(i + 1);
                 }
                 if (code) {
-                    if (celem.value) {
-                        celem.value += '~';
-                        delem.value += '~';
-                    }
-                    celem.value += codetype + '|' + code + '|' + selector;
+                    var newCode = codetype + '|' + code + '|' + selector;
+                    var newDesc = '';
                     if (codetype == 'PROD') {
-                        delem.value += code + ':' + selector + ' ' + codedesc;
+                        newDesc = code + ':' + selector + ' ' + codedesc;
                     } else {
-                        delem.value += codetype + ':' + code + ' ' + codedesc;
+                        newDesc = codetype + ':' + code + ' ' + codedesc;
+                    }
+                    if (current_replace_index !== null) {
+                        var groups = getFeeSheetCodeGroups(current_lino);
+                        if (groups[current_replace_index]) {
+                            groups[current_replace_index].code = newCode;
+                            groups[current_replace_index].desc = newDesc;
+                            writeFeeSheetCodeGroups(current_lino, groups);
+                        }
+                    } else {
+                        if (celem.value) {
+                            celem.value += '~';
+                            delem.value += '~';
+                        }
+                        celem.value += newCode;
+                        delem.value += newDesc;
                     }
                 } else {
-                    celem.value = '';
-                    delem.value = '';
+                    if (current_replace_index === null) {
+                        celem.value = '';
+                        delem.value = '';
+                    }
                 }
                 displayCodes(current_lino);
+                current_replace_index = null;
             }
         }
 
@@ -1026,9 +1294,16 @@ function writeITLine($it_array)
             } else {
                 // Coming from Fee Sheet edit
                 rebuildFeeSheetLine(current_lino);
-                f['opt[' + current_lino + '][codes]'].value = '';
-                f['opt[' + current_lino + '][descs]'].value = '';
+                if (current_replace_index !== null) {
+                    var groups = getFeeSheetCodeGroups(current_lino);
+                    groups.splice(current_replace_index, 1);
+                    writeFeeSheetCodeGroups(current_lino, groups);
+                } else {
+                    f['opt[' + current_lino + '][codes]'].value = '';
+                    f['opt[' + current_lino + '][descs]'].value = '';
+                }
                 displayCodes(current_lino);
+                current_replace_index = null;
             }
         }
 
@@ -1038,6 +1313,12 @@ function writeITLine($it_array)
             var f = document.forms[0];
             if (current_sel_clin_term) {
                 return f[current_sel_clin_term].value.split(';');
+            }
+            if (current_replace_index !== null) {
+                var groups = getFeeSheetCodeGroups(current_lino);
+                if (groups[current_replace_index]) {
+                    return [getFeeSheetFinderValue(groups[current_replace_index].code)];
+                }
             }
             return [];
         }

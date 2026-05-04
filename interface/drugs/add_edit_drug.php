@@ -15,9 +15,11 @@ use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 
 $alertmsg = '';
-$drug_id = $_REQUEST['drug'];
+$drug_id = empty($_REQUEST['drug']) ? 0 : $_REQUEST['drug'];
 $info_msg = "";
 $tmpl_line_no = 0;
+$form_save = !empty($_POST['form_save']);
+$form_delete = !empty($_POST['form_delete']);
 
 if (!acl_check('admin', 'drugs')) {
     die(xlt('Not authorized'));
@@ -30,7 +32,7 @@ function writeTemplateLine($selector, $dosage, $period, $quantity, $refills, $pr
     global $tmpl_line_no;
     ++$tmpl_line_no;
 
-    echo " <tr>\n";
+    echo " <tr class='drug-template-row'>\n";
     echo "  <td class='tmplcell drugsonly'>";
     echo "<input class='form-control' name='form_tmpl[" . attr($tmpl_line_no) . "][selector]' value='" . attr($selector) . "' size='8' maxlength='100'>";
     echo "</td>\n";
@@ -74,12 +76,275 @@ function writeTemplateLine($selector, $dosage, $period, $quantity, $refills, $pr
 ?>
 <html>
 <head>
-<title><?php echo $drug_id ? xlt("Edit") : xlt("Add New");
-echo ' ' . xlt('Drug'); ?></title>
+<title><?php echo $drug_id ? xlt('Actualizar medicamento') : xlt('Agregar medicamento'); ?></title>
 <link rel="stylesheet" href='<?php echo $css_header ?>' type='text/css'>
 
 <style>
-td { font-size:10pt; }
+body.body_top {
+ background: #f4f7fb;
+ color: #1f2937;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: 13px;
+ margin: 0;
+}
+
+.drug-modal {
+ padding: 14px;
+}
+
+.drug-card {
+ background: #ffffff;
+ border: 1px solid #d8e1ec;
+ border-radius: 8px;
+ box-shadow: 0 2px 10px rgba(31, 41, 55, 0.12);
+ overflow: hidden;
+}
+
+.drug-card-header {
+ align-items: center;
+ background: #eef4fb;
+ border-bottom: 1px solid #d8e1ec;
+ display: flex;
+ justify-content: space-between;
+ padding: 14px 16px;
+}
+
+.drug-card-title {
+ color: #172033;
+ font-size: 20px;
+ font-weight: 700;
+ margin: 0;
+}
+
+.drug-card-subtitle {
+ color: #64748b;
+ font-size: 12px;
+ margin-top: 3px;
+}
+
+.drug-status {
+ border-radius: 999px;
+ display: inline-block;
+ font-size: 11px;
+ font-weight: 700;
+ line-height: 1;
+ padding: 6px 9px;
+}
+
+.drug-status-active {
+ background: #dcfce7;
+ color: #166534;
+}
+
+.drug-status-inactive {
+ background: #fee2e2;
+ color: #991b1b;
+}
+
+.drug-card-body {
+ padding: 16px;
+}
+
+.drug-section {
+ border: 1px solid #e5edf6;
+ border-radius: 8px;
+ margin-bottom: 14px;
+ overflow: hidden;
+}
+
+.drug-section-title {
+ background: #f8fbff;
+ border-bottom: 1px solid #e5edf6;
+ color: #334155;
+ font-size: 13px;
+ font-weight: 700;
+ margin: 0;
+ padding: 9px 12px;
+}
+
+.drug-form-table {
+ margin: 0;
+ width: 100%;
+}
+
+.drug-form-table > tbody > tr > td {
+ border-top: 0;
+ padding: 9px 12px;
+ vertical-align: top;
+}
+
+.drug-form-table > tbody > tr > td:first-child {
+ color: #475569;
+ font-weight: 700;
+ padding-top: 16px;
+ width: 165px;
+ white-space: nowrap;
+}
+
+.drug-form-table .form-control {
+ border-color: #cbd5e1;
+ border-radius: 6px;
+ box-shadow: none;
+ max-width: 100%;
+ min-height: 34px;
+}
+
+.drug-form-table .form-control:focus {
+ border-color: #2563eb;
+ box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+}
+
+.drug-inline-options {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 12px;
+ padding-top: 7px;
+}
+
+.drug-check {
+ align-items: center;
+ display: inline-flex;
+ gap: 6px;
+ margin: 0;
+}
+
+.drug-check input {
+ margin: 0;
+}
+
+.drug-limits-wrap,
+.drug-templates-wrap {
+ overflow-x: auto;
+ width: 100%;
+}
+
+.drug-templates-wrap {
+ border: 1px solid #d8e1ec;
+ border-radius: 8px;
+ max-width: calc(100vw - 62px);
+ padding-bottom: 6px;
+}
+
+.drug-templates-help {
+ color: #64748b;
+ font-size: 12px;
+ margin: 10px 12px 8px;
+}
+
+.drug-limits-table {
+ min-width: 360px;
+}
+
+.drug-limits-table td {
+ padding: 4px 6px;
+ white-space: nowrap;
+}
+
+.drug-limits-table .form-control {
+ min-width: 74px;
+}
+
+.drug-templates-table {
+ border-collapse: separate;
+ border-spacing: 0;
+ min-width: 2360px;
+ width: max-content;
+}
+
+.drug-templates-table th,
+.drug-templates-table td {
+ border-bottom: 1px solid #e5edf6;
+ padding: 7px 6px;
+ vertical-align: middle;
+ white-space: nowrap;
+}
+
+.drug-templates-table th {
+ background: #f1f5f9;
+ color: #475569;
+ font-size: 11px;
+ font-weight: 700;
+ position: sticky;
+ text-align: left;
+ text-transform: uppercase;
+ top: 0;
+ z-index: 1;
+}
+
+.drug-templates-table th:first-child,
+.drug-templates-table td:first-child {
+ background: #ffffff;
+ left: 0;
+ position: sticky;
+ z-index: 2;
+}
+
+.drug-templates-table th:first-child {
+ background: #f1f5f9;
+ z-index: 3;
+}
+
+.drug-template-row:hover td {
+ background: #f8fbff;
+}
+
+.tmplcell .form-control {
+ min-width: 78px;
+}
+
+.tmplcell.drugsonly:first-child .form-control {
+ min-width: 150px;
+}
+
+.drug-actions {
+ align-items: center;
+ background: #ffffff;
+ border-top: 1px solid #d8e1ec;
+ bottom: 0;
+ display: flex;
+ gap: 8px;
+ justify-content: flex-end;
+ padding: 12px 16px;
+ position: sticky;
+}
+
+.drug-actions .btn {
+ border-radius: 6px;
+ font-weight: 700;
+ min-width: 96px;
+}
+
+.drug-danger {
+ margin-right: auto;
+}
+
+@media (max-width: 720px) {
+ .drug-card-header {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+ }
+
+ .drug-form-table > tbody > tr > td {
+  display: block;
+  padding: 5px 10px;
+  width: 100%;
+ }
+
+ .drug-form-table > tbody > tr > td:first-child {
+  padding-top: 10px;
+  width: 100%;
+ }
+
+ .drug-actions {
+  flex-wrap: wrap;
+  justify-content: stretch;
+ }
+
+ .drug-actions .btn {
+  flex: 1 1 120px;
+ }
+}
 
 <?php if ($GLOBALS['sell_non_drug_products'] == 2) { ?>
 .drugsonly { display:none; }
@@ -140,7 +405,7 @@ function sel_related() {
 // If we are saving, then save and close the window.
 // First check for duplicates.
 //
-if ($_POST['form_save']) {
+if ($form_save) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
@@ -167,14 +432,14 @@ if ($_POST['form_save']) {
     }
 }
 
-if (($_POST['form_save'] || $_POST['form_delete']) && !$alertmsg) {
+if (($form_save || $form_delete) && !$alertmsg) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
         CsrfUtils::csrfNotVerified();
     }
 
     $new_drug = false;
     if ($drug_id) {
-        if ($_POST['form_save']) { // updating an existing drug
+        if ($form_save) { // updating an existing drug
             sqlStatement(
                 "UPDATE drugs SET " .
                 "name = ?, " .
@@ -221,7 +486,7 @@ if (($_POST['form_save'] || $_POST['form_delete']) && !$alertmsg) {
                 sqlStatement("DELETE FROM prices WHERE pr_id = ? AND pr_selector != ''", array($drug_id));
             }
         }
-    } else if ($_POST['form_save']) { // saving a new drug
+    } else if ($form_save) { // saving a new drug
         $new_drug = true;
         $drug_id = sqlInsert(
             "INSERT INTO drugs ( " .
@@ -264,7 +529,7 @@ if (($_POST['form_save'] || $_POST['form_delete']) && !$alertmsg) {
         );
     }
 
-    if ($_POST['form_save'] && $drug_id) {
+    if ($form_save && $drug_id) {
         $tmpl = $_POST['form_tmpl'];
        // If using the simplified drug form, then force the one and only
        // selector name to be the same as the product name.
@@ -365,55 +630,67 @@ if ($drug_id) {
 
 <form class="form" method='post' name='theform' action='add_edit_drug.php?drug=<?php echo attr_url($drug_id); ?>'>
 <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
-<center>
+<div class="drug-modal">
+<div class="drug-card">
+<div class="drug-card-header">
+ <div>
+  <h3 class="drug-card-title"><?php echo $drug_id ? xlt('Actualizar medicamento') : xlt('Agregar medicamento'); ?></h3>
+  <div class="drug-card-subtitle"><?php echo xlt('Datos generales, limites de inventario, receta y precios.'); ?></div>
+ </div>
+ <span class="drug-status <?php echo !empty($row['active']) ? 'drug-status-active' : 'drug-status-inactive'; ?>"><?php echo !empty($row['active']) ? xlt('Activo') : xlt('Inactivo'); ?></span>
+</div>
+<div class="drug-card-body">
 
-<table class="table" border='0' width='100%'>
+<div class="drug-section">
+<h4 class="drug-section-title"><?php echo xlt('Informacion general'); ?></h4>
+<table class="table table-borderless drug-form-table">
+<tbody>
 
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Name'); ?>:</b></td>
+  <td><?php echo xlt('Nombre'); ?>:</td>
   <td>
-   <input class="form-control" size='40' name='form_name' maxlength='80' value='<?php echo attr($row['name']) ?>' style='width:100%' />
+   <input class="form-control" size='40' name='form_name' maxlength='80' value='<?php echo attr($row['name']) ?>' />
   </td>
  </tr>
 
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Active'); ?>:</b></td>
+  <td><?php echo xlt('Estado'); ?>:</td>
   <td>
-   <input type='checkbox' name='form_active' value='1'<?php
+   <label class="drug-check"><input type='checkbox' name='form_active' value='1'<?php
     if ($row['active']) {
             echo ' checked';
-    } ?> />
+    } ?> /> <?php echo xlt('Activo'); ?></label>
   </td>
  </tr>
 
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Allow'); ?>:</b></td>
+  <td><?php echo xlt('Permitir'); ?>:</td>
   <td>
-   <input type='checkbox' name='form_allow_multiple' value='1'<?php
+   <div class="drug-inline-options">
+   <label class="drug-check"><input type='checkbox' name='form_allow_multiple' value='1'<?php
     if ($row['allow_multiple']) {
         echo ' checked';
-    } ?> />
-    <?php echo xlt('Multiple Lots'); ?> &nbsp;
-   <input type='checkbox' name='form_allow_combining' value='1'<?php
+    } ?> /> <?php echo xlt('Lotes multiples'); ?></label>
+   <label class="drug-check"><input type='checkbox' name='form_allow_combining' value='1'<?php
     if ($row['allow_combining']) {
         echo ' checked';
-    } ?> />
-    <?php echo xlt('Combining Lots'); ?>
+    } ?> /> <?php echo xlt('Combinar lotes'); ?></label>
+   </div>
   </td>
  </tr>
 
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('NDC Number'); ?>:</b></td>
+  <td><?php echo xlt('Numero NDC'); ?>:</td>
   <td>
    <input class="form-control" size='40' name='form_ndc_number' maxlength='20'
-    value='<?php echo attr($row['ndc_number']) ?>' style='width:100%'
+    value='<?php echo attr($row['ndc_number']) ?>'
     onkeyup='maskkeyup(this,"<?php echo attr(addslashes($GLOBALS['gbl_mask_product_id'])); ?>")'
     onblur='maskblur(this,"<?php echo attr(addslashes($GLOBALS['gbl_mask_product_id'])); ?>")'
     />
   </td>
  </tr>
 <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Drug Code'); ?>:</b></td>
+  <td><?php echo xlt('Codigo'); ?>:</td>
   <td>
    <input class="form-control" size='5' name='form_drug_code' maxlength='10'
     value='<?php echo attr($row['drug_code']) ?>'
@@ -421,19 +698,27 @@ if ($drug_id) {
   </td>
 </tr>
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('On Order'); ?>:</b></td>
+  <td><?php echo xlt('En orden'); ?>:</td>
   <td>
    <input class="form-control" size='5' name='form_on_order' maxlength='7' value='<?php echo attr($row['on_order']) ?>' />
   </td>
  </tr>
+</tbody>
+</table>
+</div>
 
+<div class="drug-section">
+<h4 class="drug-section-title"><?php echo xlt('Inventario'); ?></h4>
+<table class="table table-borderless drug-form-table">
+<tbody>
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Limits'); ?>:</b></td>
+  <td><?php echo xlt('Limites'); ?>:</td>
   <td>
-   <table>
+   <div class="drug-limits-wrap">
+   <table class="drug-limits-table">
     <tr>
-     <td valign='top' nowrap>&nbsp;</td>
-     <td valign='top' nowrap><?php echo xlt('Global'); ?></td>
+     <td>&nbsp;</td>
+     <td><?php echo xlt('Global'); ?></td>
 <?php
 // One column header per warehouse title.
 $pwarr = array();
@@ -449,14 +734,14 @@ $pwres = sqlStatement(
 );
 while ($pwrow = sqlFetchArray($pwres)) {
     $pwarr[] = $pwrow;
-    echo "     <td valign='top' nowrap>" .
+    echo "     <td>" .
     text($pwrow['title']) . "</td>\n";
 }
 ?>
     </tr>
     <tr>
-     <td valign='top' nowrap><?php echo xlt('Min'); ?>&nbsp;</td>
-     <td valign='top'>
+     <td><?php echo xlt('Min'); ?>&nbsp;</td>
+     <td>
       <input class="form-control" size='5' name='form_reorder_point' maxlength='7'
        value='<?php echo attr($row['reorder_point']) ?>'
        title='<?php echo xla('Reorder point, 0 if not applicable'); ?>'
@@ -464,7 +749,7 @@ while ($pwrow = sqlFetchArray($pwres)) {
      </td>
 <?php
 foreach ($pwarr as $pwrow) {
-    echo "     <td valign='top'>";
+    echo "     <td>";
     echo "<input class='form-control' name='form_wh_min[" .
     attr($pwrow['option_id']) .
     "]' value='" . attr(0 + $pwrow['pw_min_level']) . "' size='5' " .
@@ -474,7 +759,7 @@ foreach ($pwarr as $pwrow) {
 ?>
     </tr>
     <tr>
-     <td valign='top' nowrap><?php echo xlt('Max'); ?>&nbsp;</td>
+     <td><?php echo xlt('Max'); ?>&nbsp;</td>
      <td>
       <input class='form-control' size='5' name='form_max_level' maxlength='7'
        value='<?php echo attr($row['max_level']) ?>'
@@ -483,7 +768,7 @@ foreach ($pwarr as $pwrow) {
      </td>
 <?php
 foreach ($pwarr as $pwrow) {
-    echo "     <td valign='top'>";
+    echo "     <td>";
     echo "<input class='form-control' name='form_wh_max[" .
     attr($pwrow['option_id']) .
     "]' value='" . attr(0 + $pwrow['pw_max_level']) . "' size='5' " .
@@ -493,11 +778,19 @@ foreach ($pwarr as $pwrow) {
 ?>
     </tr>
    </table>
+   </div>
   </td>
  </tr>
+</tbody>
+</table>
+</div>
 
+<div class="drug-section">
+<h4 class="drug-section-title"><?php echo xlt('Presentacion y receta'); ?></h4>
+<table class="table table-borderless drug-form-table">
+<tbody>
  <tr class='drugsonly'>
-  <td valign='top' nowrap><b><?php echo xlt('Form'); ?>:</b></td>
+  <td><?php echo xlt('Formulario'); ?>:</td>
   <td>
 <?php
  generate_form_field(array('data_type'=>1,'field_id'=>'form','list_id'=>'drug_form','empty_title'=>'SKIP'), $row['form']);
@@ -506,14 +799,14 @@ foreach ($pwarr as $pwrow) {
  </tr>
 
  <tr class='drugsonly'>
-  <td valign='top' nowrap><b><?php echo xlt('Pill Size'); ?>:</b></td>
+  <td><?php echo xlt('Tamano'); ?>:</td>
   <td>
    <input class="form-control" size='5' name='form_size' maxlength='7' value='<?php echo attr($row['size']) ?>' />
   </td>
  </tr>
 
  <tr class='drugsonly'>
-  <td valign='top' nowrap><b><?php echo xlt('Units'); ?>:</b></td>
+  <td><?php echo xlt('Unidades'); ?>:</td>
   <td>
 <?php
  generate_form_field(array('data_type'=>1,'field_id'=>'unit','list_id'=>'drug_units','empty_title'=>'SKIP'), $row['unit']);
@@ -522,7 +815,7 @@ foreach ($pwarr as $pwrow) {
  </tr>
 
  <tr class='drugsonly'>
-  <td valign='top' nowrap><b><?php echo xlt('Route'); ?>:</b></td>
+  <td><?php echo xlt('Ruta'); ?>:</td>
   <td>
 <?php
  generate_form_field(array('data_type'=>1,'field_id'=>'route','list_id'=>'drug_route','empty_title'=>'SKIP'), $row['route']);
@@ -531,34 +824,36 @@ foreach ($pwarr as $pwrow) {
  </tr>
 
  <tr class='ippfonly'>
-  <td valign='top' nowrap><b><?php echo xlt('CYP Factor'); ?>:</b></td>
+  <td><?php echo xlt('Factor CYP'); ?>:</td>
   <td>
    <input class="form-control" size='10' name='form_cyp_factor' maxlength='20' value='<?php echo attr($row['cyp_factor']) ?>' />
   </td>
  </tr>
 
  <tr>
-  <td valign='top' nowrap><b><?php echo xlt('Relate To'); ?>:</b></td>
+  <td><?php echo xlt('Relacionado con'); ?>:</td>
   <td>
    <input class="form-control" type='text' size='50' name='form_related_code'
     value='<?php echo attr($row['related_code']) ?>' onclick='sel_related()'
     title='<?php echo xla('Click to select related code'); ?>'
-    style='width:100%' readonly />
+    readonly />
   </td>
  </tr>
+</tbody>
+</table>
+</div>
 
- <tr>
-  <td valign='top' nowrap>
-   <b><?php echo $GLOBALS['sell_non_drug_products'] == 2 ? xlt('Fees') : xlt('Templates'); ?>:</b>
-  </td>
-  <td>
-   <table border='0' width='100%'>
+<div class="drug-section">
+<h4 class="drug-section-title"><?php echo $GLOBALS['sell_non_drug_products'] == 2 ? xlt('Tarifas') : xlt('Plantillas y precios'); ?></h4>
+<div class="drug-templates-help"><?php echo xlt('Desplace horizontalmente para ver todos los precios.'); ?></div>
+<div class="drug-templates-wrap">
+   <table class="drug-templates-table">
     <tr>
-     <td class='drugsonly'><b><?php echo xlt('Name'); ?></b></td>
-     <td class='drugsonly'><b><?php echo xlt('Schedule'); ?></b></td>
-     <td class='drugsonly'><b><?php echo xlt('Interval'); ?></b></td>
-     <td class='drugsonly'><b><?php echo xlt('Qty'); ?></b></td>
-     <td class='drugsonly'><b><?php echo xlt('Refills'); ?></b></td>
+     <th class='drugsonly'><?php echo xlt('Nombre'); ?></th>
+     <th class='drugsonly'><?php echo xlt('Horario'); ?></th>
+     <th class='drugsonly'><?php echo xlt('Intervalo'); ?></th>
+     <th class='drugsonly'><?php echo xlt('Cantidad'); ?></th>
+     <th class='drugsonly'><?php echo xlt('Recargas'); ?></th>
 <?php
 // Show a heading for each price level.  Also create an array of prices
 // for new template lines.
@@ -567,18 +862,18 @@ $pres = sqlStatement("SELECT option_id, title FROM list_options " .
     "WHERE list_id = 'pricelevel' AND activity = 1 ORDER BY seq");
 while ($prow = sqlFetchArray($pres)) {
     $emptyPrices[$prow['option_id']] = '';
-    echo "     <td><b>" .
+    echo "     <th>" .
     generate_display_field(array('data_type'=>'1','list_id'=>'pricelevel'), $prow['option_id']) .
-    "</b></td>\n";
+    "</th>\n";
 }
 
 // Show a heading for each tax rate.
 $pres = sqlStatement("SELECT option_id, title FROM list_options " .
     "WHERE list_id = 'taxrate' AND activity = 1 ORDER BY seq");
 while ($prow = sqlFetchArray($pres)) {
-    echo "     <td><b>" .
+    echo "     <th>" .
         generate_display_field(array('data_type'=>'1','list_id'=>'taxrate'), $prow['option_id']) .
-        "</b></td>\n";
+        "</th>\n";
 }
 ?>
     </tr>
@@ -620,25 +915,21 @@ for ($i = 0; $i < $blank_lines; ++$i) {
 }
 ?>
    </table>
-  </td>
- </tr>
+</div>
+</div>
+</div>
 
-</table>
-
-<p>
-<input type='submit' name='form_save' value='<?php echo xla('Save'); ?>' />
+<div class="drug-actions">
+<input type='submit' class='btn btn-primary' name='form_save' value='<?php echo $drug_id ? xla('Actualizar') : xla('Guardar'); ?>' />
 
 <?php if (acl_check('admin', 'super')) { ?>
-&nbsp;
-<input type='submit' name='form_delete' value='<?php echo xla('Delete'); ?>' style='color:red' />
+<input type='submit' class='btn btn-danger drug-danger' name='form_delete' value='<?php echo xla('Eliminar'); ?>' />
 <?php } ?>
 
-&nbsp;
-<input type='button' value='<?php echo xla('Cancel'); ?>' onclick='window.close()' />
-
-</p>
-
-</center>
+<input type='button' class='btn btn-default' value='<?php echo xla('Cancelar'); ?>' onclick='window.close()' />
+</div>
+</div>
+</div>
 </form>
 
 <script language="JavaScript">

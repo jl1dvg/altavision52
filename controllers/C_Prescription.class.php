@@ -38,8 +38,8 @@ class C_Prescription extends Controller
         parent::__construct();
 
         $this->template_mod = $template_mod;
-        $this->assign("FORM_ACTION", $GLOBALS['webroot']."/controller.php?" . attr($_SERVER['QUERY_STRING']));
-        $this->assign("TOP_ACTION", $GLOBALS['webroot']."/controller.php?" . "prescription" . "&");
+        $this->assign("FORM_ACTION", $GLOBALS['webroot'] . "/controller.php?" . attr($_SERVER['QUERY_STRING']));
+        $this->assign("TOP_ACTION", $GLOBALS['webroot'] . "/controller.php?" . "prescription" . "&");
         $this->assign("STYLE", $GLOBALS['style']);
         $this->assign("WEIGHT_LOSS_CLINIC", $GLOBALS['weight_loss_clinic']);
         $this->assign("SIMPLIFIED_PRESCRIPTIONS", $GLOBALS['simplified_prescriptions']);
@@ -56,7 +56,7 @@ class C_Prescription extends Controller
         if ($GLOBALS['inhouse_pharmacy']) {
             // Make an array of drug IDs and selectors for the template.
             $drug_array_values = array(0);
-            $drug_array_output = array("-- " . xl('or select from inventory') ." --");
+            $drug_array_output = array("-- " . xl('or select from inventory') . " --");
             $drug_attributes = '';
 
             // $res = sqlStatement("SELECT * FROM drugs ORDER BY selector");
@@ -79,19 +79,19 @@ class C_Prescription extends Controller
                     $drug_attributes .= ',';
                 }
 
-                $drug_attributes .=    "["  .
-                    js_escape($row['name'])       . ","  . //  0
-                    js_escape($row['form'])       . ","  . //  1
-                    js_escape($row['dosage'])     . "," . //  2
-                    js_escape($row['size'])       . ","  . //  3
-                    js_escape($row['unit'])       . ","   . //  4
-                    js_escape($row['route'])      . ","   . //  5
-                    js_escape($row['period'])     . ","   . //  6
-                    js_escape($row['substitute']) . ","   . //  7
-                    js_escape($row['quantity'])   . ","   . //  8
-                    js_escape($row['refills'])    . ","   . //  9
-                    js_escape($row['quantity'])   . ","   . //  10 quantity per_refill
-                    js_escape($row['drug_code'])  . "]";    //  11 rxnorm drug code
+                $drug_attributes .= "[" .
+                    js_escape($row['name']) . "," . //  0
+                    js_escape($row['form']) . "," . //  1
+                    js_escape($row['dosage']) . "," . //  2
+                    js_escape($row['size']) . "," . //  3
+                    js_escape($row['unit']) . "," . //  4
+                    js_escape($row['route']) . "," . //  5
+                    js_escape($row['period']) . "," . //  6
+                    js_escape($row['substitute']) . "," . //  7
+                    js_escape($row['quantity']) . "," . //  8
+                    js_escape($row['refills']) . "," . //  9
+                    js_escape($row['quantity']) . "," . //  10 quantity per_refill
+                    js_escape($row['drug_code']) . "]";    //  11 rxnorm drug code
             }
 
             $this->assign("DRUG_ARRAY_VALUES", $drug_array_values);
@@ -123,7 +123,7 @@ class C_Prescription extends Controller
 
         // If quantity to dispense is not already set from a POST, set its
         // default value.
-        if (! $this->get_template_vars('DISP_QUANTITY')) {
+        if (!$this->get_template_vars('DISP_QUANTITY')) {
             $this->assign('DISP_QUANTITY', $this->prescriptions[0]->quantity);
         }
 
@@ -242,8 +242,8 @@ class C_Prescription extends Controller
 
         //print_r($_POST);
 
-    // Stupid Smarty code treats empty values as not specified values.
-    // Since active is a checkbox, represent the unchecked state as -1.
+        // Stupid Smarty code treats empty values as not specified values.
+        // Since active is a checkbox, represent the unchecked state as -1.
         if (empty($_POST['active'])) {
             $_POST['active'] = '-1';
         }
@@ -271,32 +271,32 @@ class C_Prescription extends Controller
             return $this->edit_action($this->prescriptions[0]->id);
         }
 
-    // Set the AMC reporting flag (to record percentage of prescriptions that
-    // are set as e-prescriptions)
+        // Set the AMC reporting flag (to record percentage of prescriptions that
+        // are set as e-prescriptions)
         if (!(empty($_POST['escribe_flag']))) {
-              // add the e-prescribe flag
-              processAmcCall('e_prescribe_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // add the e-prescribe flag
+            processAmcCall('e_prescribe_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         } else {
-              // remove the e-prescribe flag
-              processAmcCall('e_prescribe_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // remove the e-prescribe flag
+            processAmcCall('e_prescribe_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         }
 
-    // Set the AMC reporting flag (to record prescriptions that checked drug formulary)
+        // Set the AMC reporting flag (to record prescriptions that checked drug formulary)
         if (!(empty($_POST['checked_formulary_flag']))) {
-              // add the e-prescribe flag
-              processAmcCall('e_prescribe_chk_formulary_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // add the e-prescribe flag
+            processAmcCall('e_prescribe_chk_formulary_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         } else {
-              // remove the e-prescribe flag
-              processAmcCall('e_prescribe_chk_formulary_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // remove the e-prescribe flag
+            processAmcCall('e_prescribe_chk_formulary_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         }
 
-    // Set the AMC reporting flag (to record prescriptions that are controlled substances)
+        // Set the AMC reporting flag (to record prescriptions that are controlled substances)
         if (!(empty($_POST['controlled_substance_flag']))) {
-              // add the e-prescribe flag
-              processAmcCall('e_prescribe_cont_subst_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // add the e-prescribe flag
+            processAmcCall('e_prescribe_cont_subst_amc', true, 'add', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         } else {
-              // remove the e-prescribe flag
-              processAmcCall('e_prescribe_cont_subst_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
+            // remove the e-prescribe flag
+            processAmcCall('e_prescribe_cont_subst_amc', true, 'remove', $this->prescriptions[0]->get_patient_id(), 'prescriptions', $this->prescriptions[0]->id);
         }
 
 // TajEmo Work by CB 2012/05/29 02:58:29 PM to stop from going to send screen. Improves Work Flow
@@ -332,29 +332,29 @@ class C_Prescription extends Controller
             $this->template_mod . "_send.html");
     }
 
-    function multiprintfax_header(& $pdf, $p)
+    function multiprintfax_header(&$pdf, $p)
     {
         return $this->multiprint_header($pdf, $p);
     }
 
-    function multiprint_header(& $pdf, $p)
+    function multiprint_header(&$pdf, $p)
     {
         $this->providerid = $p->provider->id;
         //print header
         $pdf->ezImage($GLOBALS['oer_config']['prescriptions']['logo'], '', '50', '', 'center', '');
-        $pdf->ezColumnsStart(array('num'=>2, 'gap'=>10));
+        $pdf->ezColumnsStart(array('num' => 2, 'gap' => 10));
         $res = sqlQuery("SELECT concat('<b>',f.name,'</b>\n',f.street,'\n',f.city,', ',f.state,' ',f.postal_code,'\nTel:',f.phone,if(f.fax != '',concat('\nFax: ',f.fax),'')) addr FROM users JOIN facility AS f ON f.name = users.facility where users.id ='" .
             add_escape_custom($p->provider->id) . "'");
         $pdf->ezText($res['addr'], 12);
         $my_y = $pdf->y;
         $pdf->ezNewPage();
         $pdf->ezText('<b>' . $p->provider->get_name_display() . '</b>', 12);
-    // A client had a bad experience with a patient misusing a DEA number, so
-    // now the doctors write those in on printed prescriptions and only when
-    // necessary.  If you need to change this back, then please make it a
-    // configurable option.  Faxed prescriptions were not changed.  -- Rod
-    // Now it is configureable. Change value in
-    //     Administration->Globals->Rx
+        // A client had a bad experience with a patient misusing a DEA number, so
+        // now the doctors write those in on printed prescriptions and only when
+        // necessary.  If you need to change this back, then please make it a
+        // configurable option.  Faxed prescriptions were not changed.  -- Rod
+        // Now it is configureable. Change value in
+        //     Administration->Globals->Rx
         if ($GLOBALS['rx_enable_DEA']) {
             if ($this->is_faxing || $GLOBALS['rx_show_DEA']) {
                 $pdf->ezText('<b>' . xl('DEA') . ':</b>' . $p->provider->federal_drug_id, 12);
@@ -365,7 +365,7 @@ class C_Prescription extends Controller
 
         if ($GLOBALS['rx_enable_NPI']) {
             if ($this->is_faxing || $GLOBALS['rx_show_NPI']) {
-                    $pdf->ezText('<b>' . xl('NPI') . ':</b>' . $p->provider->npi, 12);
+                $pdf->ezText('<b>' . xl('NPI') . ':</b>' . $p->provider->npi, 12);
             } else {
                 $pdf->ezText('<b>' . xl('NPI') . ':</b> _________________________', 12);
             }
@@ -386,19 +386,19 @@ class C_Prescription extends Controller
 
         $pdf->ezText('', 10);
         $pdf->setLineStyle(1);
-        $pdf->ezColumnsStart(array('num'=>2));
-        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin'], $pdf->y);
+        $pdf->ezColumnsStart(array('num' => 2));
+        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'], $pdf->y);
         $pdf->ezText('<b>' . xl('Patient Name & Address') . '</b>', 6);
         $pdf->ezText($p->patient->get_name_display(), 10);
-        $res = sqlQuery("SELECT  concat(street,'\n',city,', ',state,' ',postal_code,'\n',if(phone_home!='',phone_home,if(phone_cell!='',phone_cell,if(phone_biz!='',phone_biz,'')))) addr from patient_data where pid =". add_escape_custom($p->patient->id));
+        $res = sqlQuery("SELECT  concat(street,'\n',city,', ',state,' ',postal_code,'\n',if(phone_home!='',phone_home,if(phone_cell!='',phone_cell,if(phone_biz!='',phone_biz,'')))) addr from patient_data where pid =" . add_escape_custom($p->patient->id));
         $pdf->ezText($res['addr']);
         $my_y = $pdf->y;
         $pdf->ezNewPage();
-        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin'], $pdf->y);
+        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'], $pdf->y);
         $pdf->ezText('<b>' . xl('Date of Birth') . '</b>', 6);
         $pdf->ezText($p->patient->date_of_birth, 10);
         $pdf->ezText('');
-        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin'], $pdf->y);
+        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'], $pdf->y);
         $pdf->ezText('<b>' . xl('Medical Record #') . '</b>', 6);
         $pdf->ezText(str_pad($p->patient->get_pubpid(), 10, "0", STR_PAD_LEFT), 10);
         $pdf->ezColumnsStop();
@@ -407,7 +407,7 @@ class C_Prescription extends Controller
         }
 
         $pdf->ezText('');
-        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin'], $pdf->y);
+        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'], $pdf->y);
         $pdf->ezText('<b>' . xl('Prescriptions') . '</b>', 6);
         $pdf->ezText('', 10);
     }
@@ -416,146 +416,146 @@ class C_Prescription extends Controller
     {
         echo("<div class='paddingdiv'>\n");
         $this->providerid = $p->provider->id;
-        echo ("<table cellspacing='0' cellpadding='0' width='100%'>\n");
-        echo ("<tr>\n");
-        echo ("<td></td>\n");
-        echo ("<td>\n");
-        echo ("<img WIDTH='68pt' src='./interface/pic/" . $GLOBALS['oer_config']['prescriptions']['logo_pic'] . "' />");
-        echo ("</td>\n");
-        echo ("</tr>\n");
-        echo ("<tr>\n");
-        echo ("<td>\n");
+        echo("<table cellspacing='0' cellpadding='0' width='100%'>\n");
+        echo("<tr>\n");
+        echo("<td></td>\n");
+        echo("<td>\n");
+        echo("<img WIDTH='68pt' src='./interface/pic/" . $GLOBALS['oer_config']['prescriptions']['logo_pic'] . "' />");
+        echo("</td>\n");
+        echo("</tr>\n");
+        echo("<tr>\n");
+        echo("<td>\n");
         $res = sqlQuery("SELECT concat('<b>',f.name,'</b>\n',f.street,'\n',f.city,', ',f.state,' ',f.postal_code,'\nTel:',f.phone,if(f.fax != '',concat('\nFax: ',f.fax),'')) addr FROM users JOIN facility AS f ON f.name = users.facility where users.id ='" . add_escape_custom($p->provider->id) . "'");
         if (!empty($res)) {
-            $patterns = array ('/\n/','/Tel:/','/Fax:/');
-            $replace = array ('<br>', xl('Tel').':', xl('Fax').':');
+            $patterns = array('/\n/', '/Tel:/', '/Fax:/');
+            $replace = array('<br>', xl('Tel') . ':', xl('Fax') . ':');
             $res = preg_replace($patterns, $replace, $res);
         }
 
-        echo ('<span class="large">' . $res['addr'] . '</span>');
-        echo ("</td>\n");
-        echo ("<td>\n");
-        echo ('<b><span class="large">' .  $p->provider->get_name_display() . '</span></b>'. '<br>');
+        echo('<span class="large">' . $res['addr'] . '</span>');
+        echo("</td>\n");
+        echo("<td>\n");
+        echo('<b><span class="large">' . $p->provider->get_name_display() . '</span></b>' . '<br>');
 
         if ($GLOBALS['rx_enable_DEA']) {
             if ($GLOBALS['rx_show_DEA']) {
-                echo ('<span class="large"><b>' . xl('DEA') . ':</b>' . $p->provider->federal_drug_id . '</span><br>');
+                echo('<span class="large"><b>' . xl('DEA') . ':</b>' . $p->provider->federal_drug_id . '</span><br>');
             } else {
-                echo ('<b><span class="large">' . xl('DEA') . ':</span></b> ________________________<br>' );
+                echo('<b><span class="large">' . xl('DEA') . ':</span></b> ________________________<br>');
             }
         }
 
         if ($GLOBALS['rx_enable_NPI']) {
             if ($GLOBALS['rx_show_NPI']) {
-                echo ('<span class="large"><b>' . xl('NPI') . ':</b>' . $p->provider->npi . '</span><br>');
+                echo('<span class="large"><b>' . xl('NPI') . ':</b>' . $p->provider->npi . '</span><br>');
             } else {
-                echo ('<b><span class="large">' . xl('NPI') . ':</span></b> ________________________<br>');
+                echo('<b><span class="large">' . xl('NPI') . ':</span></b> ________________________<br>');
             }
         }
 
         if ($GLOBALS['rx_enable_SLN']) {
             if ($GLOBALS['rx_show_SLN']) {
-                echo ('<span class="large"><b>' . xl('State Lic. #') . ':</b>' . $p->provider->state_license_number . '</span><br>');
+                echo('<span class="large"><b>' . xl('State Lic. #') . ':</b>' . $p->provider->state_license_number . '</span><br>');
             } else {
-                echo ('<b><span class="large">' . xl('State Lic. #') . ':</span></b> ________________________<br>');
+                echo('<b><span class="large">' . xl('State Lic. #') . ':</span></b> ________________________<br>');
             }
         }
 
-        echo ("</td>\n");
-        echo ("</tr>\n");
-        echo ("<tr>\n");
-        echo ("<td rowspan='2' class='bordered'>\n");
-        echo ('<b><span class="small">' . xl('Patient Name & Address') . '</span></b>'. '<br>');
-        echo ($p->patient->get_name_display() . '<br>');
-        $res = sqlQuery("SELECT  concat(street,'\n',city,', ',state,' ',postal_code,'\n',if(phone_home!='',phone_home,if(phone_cell!='',phone_cell,if(phone_biz!='',phone_biz,'')))) addr from patient_data where pid =". add_escape_custom($p->patient->id));
+        echo("</td>\n");
+        echo("</tr>\n");
+        echo("<tr>\n");
+        echo("<td rowspan='2' class='bordered'>\n");
+        echo('<b><span class="small">' . xl('Patient Name & Address') . '</span></b>' . '<br>');
+        echo($p->patient->get_name_display() . '<br>');
+        $res = sqlQuery("SELECT  concat(street,'\n',city,', ',state,' ',postal_code,'\n',if(phone_home!='',phone_home,if(phone_cell!='',phone_cell,if(phone_biz!='',phone_biz,'')))) addr from patient_data where pid =" . add_escape_custom($p->patient->id));
         if (!empty($res)) {
-            $patterns = array ('/\n/');
-            $replace = array ('<br>');
+            $patterns = array('/\n/');
+            $replace = array('<br>');
             $res = preg_replace($patterns, $replace, $res);
         }
 
-        echo ($res['addr']);
-        echo ("</td>\n");
-        echo ("<td class='bordered'>\n");
-        echo ('<b><span class="small">' . xl('Date of Birth') . '</span></b>' . '<br>');
-        echo ($p->patient->date_of_birth );
-        echo ("</td>\n");
-        echo ("</tr>\n");
-        echo ("<tr>\n");
-        echo ("<td class='bordered'>\n");
-        echo ('<b><span class="small">' . xl('Medical Record #') . '</span></b>' . '<br>');
-        echo (str_pad($p->patient->get_pubpid(), 10, "0", STR_PAD_LEFT));
-        echo ("</td>\n");
-        echo ("</tr>\n");
-        echo ("<tr>\n");
-        echo ("<td colspan='2' class='bordered'>\n");
-        echo ('<b><span class="small">' . xl('Prescriptions') . '</span></b>');
-        echo ("</td>\n");
-        echo ("</tr>\n");
-        echo ("</table>\n");
+        echo($res['addr']);
+        echo("</td>\n");
+        echo("<td class='bordered'>\n");
+        echo('<b><span class="small">' . xl('Date of Birth') . '</span></b>' . '<br>');
+        echo($p->patient->date_of_birth);
+        echo("</td>\n");
+        echo("</tr>\n");
+        echo("<tr>\n");
+        echo("<td class='bordered'>\n");
+        echo('<b><span class="small">' . xl('Medical Record #') . '</span></b>' . '<br>');
+        echo(str_pad($p->patient->get_pubpid(), 10, "0", STR_PAD_LEFT));
+        echo("</td>\n");
+        echo("</tr>\n");
+        echo("<tr>\n");
+        echo("<td colspan='2' class='bordered'>\n");
+        echo('<b><span class="small">' . xl('Prescriptions') . '</span></b>');
+        echo("</td>\n");
+        echo("</tr>\n");
+        echo("</table>\n");
     }
 
     function multiprintcss_preheader()
     {
         // this sets styling and other header information of the multiprint css sheet
-        echo ("<html>\n");
-        echo ("<head>\n");
-        echo ("<style>\n");
-        echo ("div {\n");
-        echo (" padding: 0;\n");
-        echo (" margin: 0;\n");
-        echo ("}\n");
-        echo ("body {\n");
-        echo (" font-family: sans-serif;\n");
-        echo (" font-weight: normal;\n");
-        echo (" font-size: 10pt;\n");
-        echo (" background: white;\n");
-        echo (" color: black;\n");
-        echo ("}\n");
-        echo ("span.large {\n");
-        echo (" font-size: 12pt;\n");
-        echo ("}\n");
-        echo ("span.small {\n");
-        echo (" font-size: 6pt;\n");
-        echo ("}\n");
-        echo ("td {\n");
-        echo (" vertical-align: top;\n");
-        echo (" width: 50%;\n");
-        echo (" font-size: 10pt;\n");
-        echo (" padding-bottom: 8pt;\n");
-        echo ("}\n");
-        echo ("td.bordered {\n");
-        echo (" border-top:1pt solid black;\n");
-        echo ("}\n");
-        echo ("div.paddingdiv {\n");
-        echo (" width: 524pt;\n");
-        echo (" height: 668pt;\n");
-        echo ("}\n");
-        echo ("div.scriptdiv {\n");
-        echo (" padding-top: 12pt;\n");
-        echo (" padding-bottom: 22pt;\n");
-        echo (" padding-left: 35pt;\n");
-        echo (" border-bottom:1pt solid black;\n");
-        echo ("}\n");
-        echo ("div.signdiv {\n");
-        echo (" margin-top: 40pt;\n");
-        echo (" font-size: 12pt;\n");
-        echo ("}\n");
-        echo ("</style>\n");
+        echo("<html>\n");
+        echo("<head>\n");
+        echo("<style>\n");
+        echo("div {\n");
+        echo(" padding: 0;\n");
+        echo(" margin: 0;\n");
+        echo("}\n");
+        echo("body {\n");
+        echo(" font-family: sans-serif;\n");
+        echo(" font-weight: normal;\n");
+        echo(" font-size: 10pt;\n");
+        echo(" background: white;\n");
+        echo(" color: black;\n");
+        echo("}\n");
+        echo("span.large {\n");
+        echo(" font-size: 12pt;\n");
+        echo("}\n");
+        echo("span.small {\n");
+        echo(" font-size: 6pt;\n");
+        echo("}\n");
+        echo("td {\n");
+        echo(" vertical-align: top;\n");
+        echo(" width: 50%;\n");
+        echo(" font-size: 10pt;\n");
+        echo(" padding-bottom: 8pt;\n");
+        echo("}\n");
+        echo("td.bordered {\n");
+        echo(" border-top:1pt solid black;\n");
+        echo("}\n");
+        echo("div.paddingdiv {\n");
+        echo(" width: 524pt;\n");
+        echo(" height: 668pt;\n");
+        echo("}\n");
+        echo("div.scriptdiv {\n");
+        echo(" padding-top: 12pt;\n");
+        echo(" padding-bottom: 22pt;\n");
+        echo(" padding-left: 35pt;\n");
+        echo(" border-bottom:1pt solid black;\n");
+        echo("}\n");
+        echo("div.signdiv {\n");
+        echo(" margin-top: 40pt;\n");
+        echo(" font-size: 12pt;\n");
+        echo("}\n");
+        echo("</style>\n");
 
-        echo ("<title>" . xl('Prescription') . "</title>\n");
-        echo ("</head>\n");
-        echo ("<body>\n");
+        echo("<title>" . xl('Prescription') . "</title>\n");
+        echo("</head>\n");
+        echo("<body>\n");
     }
 
-    function multiprintfax_footer(& $pdf)
+    function multiprintfax_footer(&$pdf)
     {
         return $this->multiprint_footer($pdf);
     }
 
-    function multiprint_footer(& $pdf)
+    function multiprint_footer(&$pdf)
     {
-        if ($this->pconfig['use_signature'] && ( $this->is_faxing || $this->is_print_to_fax )) {
+        if ($this->pconfig['use_signature'] && ($this->is_faxing || $this->is_print_to_fax)) {
             $sigfile = str_replace('{userid}', $_SESSION{"authUser"}, $this->pconfig['signature']);
             if (file_exists($sigfile)) {
                 $pdf->ezText(xl('Signature') . ": ", 12);
@@ -584,11 +584,11 @@ class C_Prescription extends Controller
 
     function multiprintcss_footer()
     {
-        echo ("<div class='signdiv'>\n");
-        echo (xl('Signature') . ":________________________________<br>");
-        echo (xl('Date') . ": " . date('Y-m-d'));
-        echo ("</div>\n");
-        echo ("</div>\n");
+        echo("<div class='signdiv'>\n");
+        echo(xl('Signature') . ":________________________________<br>");
+        echo(xl('Date') . ": " . date('Y-m-d'));
+        echo("</div>\n");
+        echo("</div>\n");
     }
 
     function multiprintcss_postfooter()
@@ -613,7 +613,7 @@ class C_Prescription extends Controller
             '<b>' . xlt('Sig') . ':</b> ' . text($p->get_dosage()) . ' ' . text($p->form_array[$p->get_form()]) . ' ' .
             text($p->route_array[$p->get_route()]) . ' ' . text($p->interval_array[$p->get_interval()]) . "\n";
         if ($p->get_refills() > 0) {
-            $body .= "\n<b>" . xlt('Refills') . ":</b> <u>" .  text($p->get_refills());
+            $body .= "\n<b>" . xlt('Refills') . ":</b> <u>" . text($p->get_refills());
             if ($p->get_per_refill()) {
                 $body .= " " . xlt('of quantity') . " " . text($p->get_per_refill());
             }
@@ -664,26 +664,170 @@ class C_Prescription extends Controller
             'patient_name' => $p->patient->get_name_display(),
             'patient_pubpid' => str_pad($p->patient->get_pubpid(), 10, "0", STR_PAD_LEFT),
             'patient_dob' => $p->patient->date_of_birth,
-            'today' => date('Y-m-d')
+            'today' => date('Y-m-d'),
+            'eye_mag_diagnoses' => $this->get_current_eye_mag_diagnoses($p)
         );
+    }
+
+    function get_current_eye_mag_diagnoses($p)
+    {
+        $pid = isset($p->patient->id) ? $p->patient->id : 0;
+        if (empty($pid)) {
+            return array();
+        }
+
+        $encounter = '';
+        if (!empty($p->encounter)) {
+            $encounter = $p->encounter;
+        } elseif (!empty($_SESSION['encounter'])) {
+            $encounter = $_SESSION['encounter'];
+        }
+
+        $form = false;
+        if (!empty($encounter)) {
+            $form = sqlQuery(
+                "SELECT form_id FROM forms " .
+                "WHERE pid = ? AND encounter = ? AND formdir = 'eye_mag' AND deleted = 0 " .
+                "ORDER BY date DESC, id DESC LIMIT 1",
+                array($pid, $encounter)
+            );
+        }
+
+        if (empty($form)) {
+            $form = sqlQuery(
+                "SELECT form_id FROM forms " .
+                "WHERE pid = ? AND formdir = 'eye_mag' AND deleted = 0 " .
+                "ORDER BY date DESC, id DESC LIMIT 1",
+                array($pid)
+            );
+        }
+
+        if (empty($form['form_id'])) {
+            return array();
+        }
+
+        $diagnoses = array();
+        $seen = array();
+        $res = sqlStatement(
+            "SELECT code, codetype, codedesc, codetext " .
+            "FROM form_eye_mag_impplan " .
+            "WHERE form_id = ? AND pid = ? " .
+            "ORDER BY IMPPLAN_order ASC",
+            array($form['form_id'], $pid)
+        );
+
+        while ($row = sqlFetchArray($res)) {
+            $code = trim((string) $row['code']);
+            $codetype = trim((string) $row['codetype']);
+            $description = trim((string) $row['codedesc']);
+
+            if ($codetype !== '' && strtoupper($codetype) !== 'ICD10') {
+                continue;
+            }
+            if ($code !== '' && preg_match('/Code/i', $code)) {
+                $code = '';
+            }
+            if ($code === '' && empty($row['codetext'])) {
+                continue;
+            }
+            if ($code !== '' && stripos($code, ':') === false && $codetype !== '') {
+                $code = $codetype . ': ' . $code;
+            }
+
+            $line = trim($code . ($description !== '' ? ' ' . $description : ''));
+            if ($line === '' && !empty($row['codetext'])) {
+                $line = trim((string) $row['codetext']);
+            }
+            if ($line === '') {
+                continue;
+            }
+
+            $key = strtoupper($line);
+            if (!isset($seen[$key])) {
+                $diagnoses[] = $line;
+                $seen[$key] = true;
+            }
+        }
+
+        return $diagnoses;
+    }
+
+    function ensure_prescription_print_sequence_table()
+    {
+        sqlStatement(
+            "CREATE TABLE IF NOT EXISTS `prescription_print_sequence` (" .
+            "`id` int(11) NOT NULL AUTO_INCREMENT, " .
+            "`patient_id` bigint(20) NOT NULL DEFAULT 0, " .
+            "`provider_id` bigint(20) NOT NULL DEFAULT 0, " .
+            "`prescription_ids` varchar(255) NOT NULL DEFAULT '', " .
+            "`printed_by` varchar(255) NOT NULL DEFAULT '', " .
+            "`created_at` datetime NOT NULL, " .
+            "PRIMARY KEY (`id`), " .
+            "KEY `patient_id` (`patient_id`), " .
+            "KEY `provider_id` (`provider_id`)" .
+            ") ENGINE=InnoDB"
+        );
+    }
+
+    function next_prescription_print_number($prescriptions)
+    {
+        $this->ensure_prescription_print_sequence_table();
+
+        $patientId = 0;
+        $providerId = 0;
+        $prescriptionIds = array();
+
+        if (!empty($prescriptions)) {
+            $firstPrescription = $prescriptions[0];
+            $patientId = isset($firstPrescription->patient->id) ? $firstPrescription->patient->id : 0;
+            $providerId = isset($firstPrescription->provider->id) ? $firstPrescription->provider->id : 0;
+        }
+
+        foreach ($prescriptions as $prescription) {
+            if (method_exists($prescription, 'get_id') && $prescription->get_id()) {
+                $prescriptionIds[] = $prescription->get_id();
+            } elseif (!empty($prescription->id)) {
+                $prescriptionIds[] = $prescription->id;
+            }
+        }
+
+        return sqlInsert(
+            "INSERT INTO `prescription_print_sequence` " .
+            "(`patient_id`, `provider_id`, `prescription_ids`, `printed_by`, `created_at`) " .
+            "VALUES (?, ?, ?, ?, ?)",
+            array(
+                $patientId,
+                $providerId,
+                implode(',', $prescriptionIds),
+                isset($_SESSION['authUser']) ? $_SESSION['authUser'] : '',
+                date('Y-m-d H:i:s')
+            )
+        );
+    }
+
+    function format_prescription_print_number($number)
+    {
+        return str_pad($number, 8, '0', STR_PAD_LEFT);
     }
 
     function render_prescription_sheet_document($prescriptions, $autoPrint = false)
     {
         $pages = array();
         $currentPage = array();
-        $currentProvider = null;
         foreach ($prescriptions as $prescription) {
-            $providerId = isset($prescription->provider->id) ? $prescription->provider->id : null;
-            if (!empty($currentPage) && (count($currentPage) >= 3 || $currentProvider !== $providerId)) {
+            if (!empty($currentPage) && count($currentPage) >= 8) {
                 $pages[] = $currentPage;
                 $currentPage = array();
             }
             $currentPage[] = $prescription;
-            $currentProvider = $providerId;
         }
         if (!empty($currentPage)) {
             $pages[] = $currentPage;
+        }
+
+        $printNumbers = array();
+        foreach ($pages as $pageIndex => $pagePrescriptions) {
+            $printNumbers[$pageIndex] = $this->next_prescription_print_number($pagePrescriptions);
         }
 
         ob_start();
@@ -694,132 +838,176 @@ class C_Prescription extends Controller
             <meta charset="utf-8">
             <title><?php echo xlt('Prescription'); ?></title>
             <style>
-                @page { margin: 14mm 14mm 16mm 14mm; }
+                @page {
+                    margin: 12mm 14mm 12mm 14mm;
+                }
+
                 body {
                     font-family: Arial, Helvetica, sans-serif;
                     color: #111;
                     font-size: 12px;
                     margin: 0;
                 }
+
                 .rx-sheet {
                     page-break-after: always;
-                    min-height: 250mm;
                 }
+
                 .rx-sheet:last-child {
                     page-break-after: auto;
                 }
+
                 .rx-header {
                     width: 100%;
                     border-collapse: collapse;
                     margin-bottom: 8px;
                 }
+
                 .rx-header td {
                     vertical-align: top;
                 }
+
                 .rx-logo {
                     width: 150px;
                 }
+
                 .rx-logo img {
                     max-width: 130px;
                     max-height: 82px;
                 }
+
                 .rx-facility h2 {
                     font-size: 22px;
                     margin: 0 0 4px;
                     line-height: 1.1;
                 }
+
                 .rx-facility p {
                     margin: 0;
                     line-height: 1.4;
                 }
+
                 .rx-header-line {
                     border: 0;
                     border-top: 1px solid #222;
-                    margin: 6px 0 14px;
+                    margin: 5px 0 9px;
                 }
+
                 .rx-title {
                     text-align: center;
-                    font-size: 18px;
+                    font-size: 17px;
                     font-weight: bold;
                     font-style: italic;
-                    margin: 0 0 10px;
+                    margin: 0 0 6px;
                     text-transform: uppercase;
                 }
+
+                .rx-meta {
+                    text-align: right;
+                    font-size: 11px;
+                    font-weight: bold;
+                    margin: 0 0 6px;
+                }
+
                 .rx-intro {
-                    margin: 0 0 12px;
+                    margin: 0 0 9px;
                     line-height: 1.5;
                 }
-                .rx-box {
-                    border: 1px solid #333;
-                    padding: 10px 12px;
-                    margin-bottom: 12px;
+
+                .rx-diagnoses {
+                    margin: 0 0 9px;
+                    line-height: 1.35;
                 }
+
+                .rx-diagnoses strong {
+                    display: inline-block;
+                    min-width: 56px;
+                }
+
+                .rx-box {
+                    border: 0;
+                    padding: 0;
+                    margin: 0 0 9px;
+                }
+
                 .rx-box-title {
-                    font-size: 13px;
+                    font-size: 12px;
                     font-weight: bold;
-                    margin-bottom: 8px;
+                    margin: 0 0 3px;
                     text-transform: uppercase;
                 }
+
                 .rx-grid {
                     width: 100%;
                     border-collapse: collapse;
                 }
+
                 .rx-grid td {
                     padding: 4px 0;
                     vertical-align: top;
                 }
+
                 .rx-label {
                     width: 170px;
                     font-weight: bold;
                 }
+
                 .rx-script {
-                    border: 1px solid #333;
-                    padding: 16px 18px;
-                    min-height: 120px;
-                    margin-top: 10px;
+                    border: 0;
+                    padding: 0;
+                    margin: 0;
                 }
+
                 .rx-line {
-                    margin-bottom: 8px;
-                    line-height: 1.5;
+                    margin-bottom: 4px;
+                    line-height: 1.35;
                 }
+
                 .rx-line strong {
                     display: inline-block;
                     min-width: 105px;
                 }
+
                 .rx-sign-wrap {
-                    margin-top: 36px;
+                    margin-top: 18px;
                     text-align: center;
                 }
+
                 .rx-signature {
                     width: 240px;
                     height: 85px;
-                    margin: 0 auto 6px;
+                    margin: 0 auto 4px;
                     display: block;
                     border-bottom: 1px solid #222;
                 }
+
                 .rx-sign-line {
                     width: 50%;
                     border-top: 1px solid #222;
                     margin: 0 auto 8px;
                 }
+
                 .rx-footer-text {
                     font-size: 11px;
                     line-height: 1.4;
                 }
+
                 .rx-esigned {
                     margin-top: 4px;
                     font-size: 11px;
                 }
+
                 .rx-esigned input {
                     vertical-align: middle;
                 }
             </style>
         </head>
         <body>
-        <?php foreach ($pages as $pagePrescriptions) :
+        <?php foreach ($pages as $pageIndex => $pagePrescriptions) :
             $pagePrescription = $pagePrescriptions[0];
             $ctx = $this->get_prescription_sheet_context($pagePrescription);
             $facility = $ctx['facility'];
+            $printNumber = $this->format_prescription_print_number($printNumbers[$pageIndex]);
             ?>
             <div class="rx-sheet">
                 <table class="rx-header">
@@ -833,17 +1021,19 @@ class C_Prescription extends Controller
                             <h2><?php echo text(isset($facility['name']) ? $facility['name'] : ''); ?></h2>
                             <p>
                                 <?php echo text(isset($facility['street']) ? $facility['street'] : ''); ?><br>
-                                <?php echo text(isset($facility['city']) ? $facility['city'] : ''); ?><?php if (!empty($facility['country_code'])) { ?>, <?php echo text($facility['country_code']); ?><?php } ?> <?php echo text(isset($facility['postal_code']) ? $facility['postal_code'] : ''); ?><br>
+                                <?php echo text(isset($facility['city']) ? $facility['city'] : ''); ?><?php if (!empty($facility['country_code'])) { ?>, <?php echo text($facility['country_code']); ?><?php } ?> <?php echo text(isset($facility['postal_code']) ? $facility['postal_code'] : ''); ?>
+                                <br>
                                 <b><?php echo xlt('Tel'); ?>:</b> <?php echo text(isset($facility['phone']) ? $facility['phone'] : ''); ?><br>
-                            <?php if (!empty($facility['email'])) { ?>
-                                <b>E-mail:</b> <?php echo text(isset($facility['email']) ? $facility['email'] : ''); ?>
-                            <?php } ?>
+                                <?php if (!empty($facility['email'])) { ?>
+                                    <b>E-mail:</b> <?php echo text(isset($facility['email']) ? $facility['email'] : ''); ?>
+                                <?php } ?>
                             </p>
-                       </td>
+                        </td>
                     </tr>
                 </table>
                 <hr class="rx-header-line">
                 <div class="rx-title"><?php echo xlt('Medical Prescription'); ?></div>
+                <div class="rx-meta"><?php echo xlt('Prescription'); ?> No. <?php echo text($printNumber); ?></div>
                 <p class="rx-intro">
                     <?php echo xlt('Patient'); ?>: <b><?php echo text($ctx['patient_name']); ?></b>
                     &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -853,30 +1043,36 @@ class C_Prescription extends Controller
                     &nbsp;&nbsp;|&nbsp;&nbsp;
                     <?php echo xlt('Date'); ?>: <b><?php echo text($ctx['today']); ?></b>
                 </p>
+                <?php if (!empty($ctx['eye_mag_diagnoses'])) { ?>
+                    <div class="rx-diagnoses">
+                        <strong>CIE10:</strong> <?php echo text(implode('; ', $ctx['eye_mag_diagnoses'])); ?>
+                    </div>
+                <?php } ?>
 
                 <?php foreach ($pagePrescriptions as $index => $p) { ?>
-                <div class="rx-box">
-                    <div class="rx-box-title">
-                        <?php echo xlt('Prescription'); ?>
+                    <div class="rx-box">
                         <?php if (count($pagePrescriptions) > 1) { ?>
-                            <?php echo ' ' . ($index + 1); ?>
+                            <div class="rx-box-title">
+                                <?php echo xlt('Medication'); ?> <?php echo($index + 1); ?>
+                            </div>
                         <?php } ?>
+                        <div class="rx-script">
+                            <div class="rx-line"><strong><?php echo xlt('Medication'); ?>:</strong> <?php echo text($p->get_drug()); ?>
+                                # <?php echo text($p->get_quantity()); ?></div>
+                            <div class="rx-line"><strong><?php echo xlt('Directions'); ?>:</strong> <?php echo text($p->get_dosage()); ?> <?php echo text(isset($p->form_array[$p->get_form()]) ? $p->form_array[$p->get_form()] : ''); ?> <?php echo text(isset($p->route_array[$p->get_route()]) ? $p->route_array[$p->get_route()] : ''); ?> <?php echo text(isset($p->interval_array[$p->get_interval()]) ? $p->interval_array[$p->get_interval()] : ''); ?>
+                            </div>
+                            <?php if ($p->get_note()) { ?>
+                                <div class="rx-line"><strong><?php echo xlt('Notes'); ?>:</strong> <?php echo nl2br(text($p->get_note())); ?></div>
+                            <?php } ?>
+                        </div>
                     </div>
-                    <div class="rx-script">
-                        <div class="rx-line"><strong><?php echo xlt('Medication'); ?>:</strong> <?php echo text($p->get_drug()); ?> # <?php echo text($p->get_quantity()); ?></div>
-                        <div class="rx-line"><strong><?php echo xlt('Directions'); ?>:</strong> <?php echo text($p->get_dosage()); ?> <?php echo text(isset($p->form_array[$p->get_form()]) ? $p->form_array[$p->get_form()] : ''); ?> <?php echo text(isset($p->route_array[$p->get_route()]) ? $p->route_array[$p->get_route()] : ''); ?> <?php echo text(isset($p->interval_array[$p->get_interval()]) ? $p->interval_array[$p->get_interval()] : ''); ?></div>
-                        <?php if ($p->get_note()) { ?>
-                            <div class="rx-line"><strong><?php echo xlt('Notes'); ?>:</strong> <?php echo nl2br(text($p->get_note())); ?></div>
-                        <?php } ?>
-                    </div>
-                </div>
                 <?php } ?>
 
                 <div class="rx-sign-wrap">
                     <?php if (!empty($ctx['signature_web'])) { ?>
                         <img class="rx-signature" src="<?php echo attr($ctx['signature_web']); ?>" alt="signature">
                     <?php } ?>
-                        <div class="rx-sign-line"></div>
+                    <div class="rx-sign-line"></div>
                     <div class="rx-footer-text"><b><?php echo text($ctx['provider_name']); ?></b></div>
                     <?php if (!empty($ctx['provider_specialty'])) { ?>
                         <div class="rx-footer-text"><?php echo text($ctx['provider_specialty']); ?></div>
@@ -927,12 +1123,12 @@ class C_Prescription extends Controller
         $pdf->Output($filename, 'I');
     }
 
-    function multiprintfax_body(& $pdf, $p)
+    function multiprintfax_body(&$pdf, $p)
     {
         return $this->multiprint_body($pdf, $p);
     }
 
-    function multiprint_body(& $pdf, $p)
+    function multiprint_body(&$pdf, $p)
     {
         $pdf->ez['leftMargin'] += $pdf->ez['leftMargin'];
         $pdf->ez['rightMargin'] += $pdf->ez['rightMargin'];
@@ -951,7 +1147,7 @@ class C_Prescription extends Controller
         $pdf->ezText($d, 10);
         if ($this->pconfig['shading']) {
             $pdf->setColor(.9, .9, .9);
-            $pdf->filledRectangle($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin']-$pdf->ez['leftMargin'], $my_y - $pdf->y);
+            $pdf->filledRectangle($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'] - $pdf->ez['leftMargin'], $my_y - $pdf->y);
             $pdf->setColor(0, 0, 0);
         }
 
@@ -960,22 +1156,22 @@ class C_Prescription extends Controller
         $pdf->ez['leftMargin'] = $GLOBALS['rx_left_margin'];
         $pdf->ez['rightMargin'] = $GLOBALS['rx_right_margin'];
         $pdf->ezText('');
-        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth']-$pdf->ez['rightMargin'], $pdf->y);
+        $pdf->line($pdf->ez['leftMargin'], $pdf->y, $pdf->ez['pageWidth'] - $pdf->ez['rightMargin'], $pdf->y);
         $pdf->ezText('');
     }
 
     function multiprintcss_body($p)
     {
         $d = $this->get_prescription_body_text($p);
-        $patterns = array ('/\n/','/     /');
-        $replace = array ('<br>','&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+        $patterns = array('/\n/', '/     /');
+        $replace = array('<br>', '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
         $d = preg_replace($patterns, $replace, $d);
-        echo ("<div class='scriptdiv'>\n" . $d . "</div>\n");
+        echo("<div class='scriptdiv'>\n" . $d . "</div>\n");
     }
 
     function multiprintfax_action($id = "")
     {
-        $this->is_print_to_fax=true;
+        $this->is_print_to_fax = true;
         return $this->multiprint_action($id);
     }
 
@@ -1032,17 +1228,17 @@ class C_Prescription extends Controller
 
         $p = new Prescription($id);
         switch ($_POST['submit']) {
-            case (xl("Print")." (".xl("PDF").")"):
+            case (xl("Print") . " (" . xl("PDF") . ")"):
                 // The following statement added by Rod.
                 // Looking at Controller.class.php, it appears that _state is set to false
                 // to indicate that no further HTML is to be generated.
                 $this->_state = false; // Added by Rod - see Controller.class.php
                 return $this->_print_prescription($p, $dummy);
                 break;
-            case (xl("Print")." (".xl("HTML").")"):
-                                $this->_state = false;
+            case (xl("Print") . " (" . xl("HTML") . ")"):
+                $this->_state = false;
                 return $this->_print_prescription_css($p, $dummy);
-                        break;
+                break;
             case xl("Print To Fax"):
                 $this->_state = false;
                 $this->is_print_to_fax = true;
@@ -1071,7 +1267,7 @@ class C_Prescription extends Controller
 
                     //else print it
                 } elseif ($phar->get_transmit_method() == TRANSMIT_FAX) {
-                    $faxNum= $phar->get_fax();
+                    $faxNum = $phar->get_fax();
                     if (!empty($faxNum)) {
                         return $this->_fax_prescription($p, $faxNum);
                     }
@@ -1088,7 +1284,7 @@ class C_Prescription extends Controller
         return;
     }
 
-    function _print_prescription($p, & $toFile)
+    function _print_prescription($p, &$toFile)
     {
         $html = $this->render_prescription_sheet_document(array($p), false);
         $filename = "Rx_" . convert_safe_file_dir_name($p->patient->fname) . "_" . $p->patient->id . ".pdf";
@@ -1096,12 +1292,12 @@ class C_Prescription extends Controller
         return;
     }
 
-    function _print_prescription_css($p, & $toFile)
+    function _print_prescription_css($p, &$toFile)
     {
         echo $this->render_prescription_sheet_document(array($p), true);
     }
 
-    function _print_prescription_old($p, & $toFile)
+    function _print_prescription_old($p, &$toFile)
     {
         $pdf = new Cezpdf($GLOBALS['rx_paper_size']);
         $pdf->ezSetMargins($GLOBALS['rx_top_margin'], $GLOBALS['rx_bottom_margin'], $GLOBALS['rx_left_margin'], $GLOBALS['rx_right_margin']);
@@ -1139,9 +1335,9 @@ class C_Prescription extends Controller
         $mail->From = $GLOBALS['practice_return_email_path'];
         $mail->FromName = $p->provider->get_name_display();
         $mail->isMail();
-        $mail->Host     = "localhost";
-        $mail->Mailer   = "mail";
-        $text_body  = $p->get_prescription_display();
+        $mail->Host = "localhost";
+        $mail->Mailer = "mail";
+        $text_body = $p->get_prescription_display();
         $mail->Body = $text_body;
         $mail->Subject = "Prescription for: " . $p->patient->get_name_display();
         $mail->AddAddress($email);
@@ -1157,12 +1353,12 @@ class C_Prescription extends Controller
     function do_lookup()
     {
         if ($_POST['process'] != "true") {
-                    // don't do a lookup
+            // don't do a lookup
             $this->assign("drug", $_GET['drug']);
-                    return;
+            return;
         }
 
-                // process the lookup
+        // process the lookup
         $this->assign("drug", $_POST['drug']);
         $list = array();
         if (!empty($_POST['drug'])) {
@@ -1174,7 +1370,7 @@ class C_Prescription extends Controller
             $this->assign("drug_options", $list);
             $this->assign("drug_values", array_keys($list));
         } else {
-            $this->assign("NO_RESULTS", xl("No results found for") . ": " .$_POST['drug']);
+            $this->assign("NO_RESULTS", xl("No results found for") . ": " . $_POST['drug']);
         }
 
         //print_r($_POST);
@@ -1194,8 +1390,8 @@ class C_Prescription extends Controller
             //get the sendfax command and execute it
             $cmd = $this->pconfig['sendfax'];
             // prepend any prefix to the fax number
-            $pref=$this->pconfig['prefix'];
-            $faxNum=$pref.$faxNum;
+            $pref = $this->pconfig['prefix'];
+            $faxNum = $pref . $faxNum;
             if (empty($cmd)) {
                 $err .= " Send fax not set in includes/config.php";
             } else {
@@ -1207,7 +1403,7 @@ class C_Prescription extends Controller
                 }
 
                 $fileName = $GLOBALS['OE_SITE_DIR'] . "/documents/" . $p->get_id() .
-                $p->get_patient_id() . "_fax_.pdf";
+                    $p->get_patient_id() . "_fax_.pdf";
                 //print "filename is $fileName";
                 touch($fileName); // php bug
                 $handle = fopen($fileName, "w");
