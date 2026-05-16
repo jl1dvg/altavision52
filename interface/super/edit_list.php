@@ -38,6 +38,14 @@ if (empty($_REQUEST['list_id'])) {
     $list_id = $_REQUEST['list_id'];
 }
 
+if (
+    $_SERVER['REQUEST_METHOD'] === 'GET' &&
+    ($list_id === 'feesheet' || (!empty($_GET['list_id_container']) && $_GET['list_id_container'] === 'feesheet'))
+) {
+    header("Location: fee_sheet_packages.php");
+    exit;
+}
+
 // Check authorization.
 $thisauth = acl_check('lists', 'qpeditor');
 if (!$thisauth) {
@@ -1443,6 +1451,9 @@ function writeITLine($it_array)
                         }
 
                         while ($row = sqlFetchArray($res)) {
+                            if ($row['option_id'] === 'feesheet') {
+                                continue;
+                            }
                             // This allows the list to default to the first item on the list
                             //   when the list_id request parameter is blank.
                             if (($blank_list_id) && ($list_id == 'language')) {

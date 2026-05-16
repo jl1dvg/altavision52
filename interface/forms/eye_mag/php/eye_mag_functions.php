@@ -7046,6 +7046,53 @@ function eyeMagOrdersHaveEyeColumn()
     return $hasEyeColumn;
 }
 
+function eyeMagEnsureProviderList($providerId, $targetListId, $targetTitle, $defaultListId, $sortKey = 'seq')
+{
+    $sortOptions = array(
+        'seq' => 'seq',
+        'title' => 'title',
+        'subtype_seq' => 'subtype ASC, seq ASC',
+    );
+    $orderBy = $sortOptions[$sortKey] ?? $sortOptions['seq'];
+    $providerId = trim((string)$providerId);
+    $targetListId = trim((string)$targetListId);
+    $defaultListId = trim((string)$defaultListId);
+
+    if ($providerId === '' || $targetListId === '' || $defaultListId === '') {
+        return sqlStatement("SELECT * FROM list_options WHERE list_id=? AND activity='1' ORDER BY " . $orderBy, array($targetListId));
+    }
+
+    $providerList = sqlStatement("SELECT * FROM list_options WHERE list_id=? AND activity='1' ORDER BY " . $orderBy, array($targetListId));
+    if (sqlNumRows($providerList) > 0) {
+        return $providerList;
+    }
+
+    sqlStatement(
+        "REPLACE INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES ('lists', ?, ?, '0', '1', '0', '', '', '', '0')",
+        array($targetListId, $targetTitle)
+    );
+
+    $defaults = sqlStatement("SELECT * FROM list_options WHERE list_id=? ORDER BY " . $orderBy, array($defaultListId));
+    while ($default = sqlFetchArray($defaults)) {
+        sqlStatement(
+            "REPLACE INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `mapping`, `notes`, `codes`, `activity`, `subtype`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            array(
+                $targetListId,
+                $default['option_id'],
+                $default['title'],
+                $default['seq'],
+                $default['mapping'],
+                $default['notes'],
+                $default['codes'],
+                $default['activity'],
+                $default['subtype'],
+            )
+        );
+    }
+
+    return sqlStatement("SELECT * FROM list_options WHERE list_id=? AND activity='1' ORDER BY " . $orderBy, array($targetListId));
+}
+
 /**
  * Function to recursively search through prior eye appointments
  * to discover the target IOPS for this patient.

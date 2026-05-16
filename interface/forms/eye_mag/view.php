@@ -5659,27 +5659,14 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                   *  This list is used to create the plan for the next visit.  Anything with a CODE
                                   *  is also listed as a billable item/TEST in the CODING ENGINE.
                                   */
-                                            $query = "select * from list_options where list_id=? and activity='1' order by subtype ASC, seq ASC";
-                                            $TODO_data = sqlStatement($query, array("Eye_todo_done_" . $provider_id));
-                                            if (sqlNumRows($TODO_data) < '1') {
-                                                // Provider list is not created yet, or was deleted.
-                                                // Create it fom defaults...
-                                                $query = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES ('lists', ?, ?, '0', '1', '0', '', '', '', '0')";
-                                                sqlStatement($query, array('Eye_todo_done_' . $provider_id, 'Eye Orders ' . $prov_data['lname']));
-                                                $SQL_INSERT = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `mapping`, `notes`, `codes`, `activity`, `subtype`) VALUES ";
-                                                $number_rows = 0;
-                                                $query = "SELECT * FROM list_options where list_id =? ORDER BY seq";
-                                                $TODO_data = sqlStatement($query, array("Eye_todo_done_defaults"));
-                                                while ($TODO = sqlFetchArray($TODO_data)) {
-                                                    if ($number_rows > 0) {
-                                                        $SQL_INSERT .= ",
-                                            ";
-                                                    }
-                                                    $SQL_INSERT .= "('Eye_todo_done_" . add_escape_custom($provider_id) . "','" . add_escape_custom($TODO['option_id']) . "','" . add_escape_custom($TODO['title']) . "','" . add_escape_custom($TODO['seq']) . "','" . add_escape_custom($TODO['mapping']) . "','" . add_escape_custom($TODO['notes']) . "','" . add_escape_custom($TODO['codes']) . "','" . add_escape_custom($TODO['activity']) . "','" . add_escape_custom($TODO['subtype']) . "')";
-                                                    $number_rows++;
-                                                }
-                                                sqlStatement($SQL_INSERT . ";");
-                                            }
+                                            $eyeTodoListId = 'Eye_todo_done_' . $provider_id;
+                                            $TODO_data = eyeMagEnsureProviderList(
+                                                $provider_id,
+                                                $eyeTodoListId,
+                                                'Eye Orders ' . ($prov_data['lname'] ?? ''),
+                                                'Eye_todo_done_defaults',
+                                                'subtype_seq'
+                                            );
                                             ?>
                                             <dt class="borderShadow">
                                                 <span><?php echo xlt('Next Visit Orders'); ?></span>
@@ -5748,7 +5735,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                                 }
                                                                 $plan_eye = $PLAN_eye_map[$title] ?? '';
                                                                 // <!-- <i title="Build your plan." class="fa fa-mail-forward fa-flip-horizontal" id="make_blank_PLAN" name="make_blank_PLAN"></i>-->
-                                                                echo "<input type='checkbox' class='plan-order-checkbox' id='PLAN$counter' name='PLAN[" . attr($counter) . "]' $checked value='" . attr($row['title']) . "'> ";
+                                                                echo "<input type='checkbox' class='plan-order-checkbox' id='PLAN$counter' name='PLAN[" . attr($counter) . "]' $checked value='" . attr($row['title']) . "' data-plan-title='" . attr($row['title']) . "' data-plan-subtype='" . attr($row['subtype']) . "' data-plan-notes='" . attr($row['notes']) . "'> ";
                                                                 $label = text(substr($row['title'], 0, 30));
                                                                 echo "<label for='PLAN$counter' class='input-helper input-helper--checkbox' title='" . attr($row['notes']) . "'>";
                                                                 echo $label . "</label>";
@@ -5775,7 +5762,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
 
                                                             ?>
                                                             <script>
-                                                                var PLANoptions = <?php echo json_encode($arrPLAN); ?>;
+                                                                window.PLAN_ORDER_OPTIONS = <?php echo json_encode($arrPLAN); ?>;
                                                             </script>
                                                         </td>
                                                     </tr>
@@ -5794,33 +5781,20 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             /*
                                 *  Esta es una lista de CIRUGIAS PROPUESTAS PARA EL OJO DERECHO específicos del proveedor que el usuario puede definir.
                                 */
-                                            $query = "select * from list_options where list_id=? and activity='1' order by title";
-                                            $TODO_data = sqlStatement($query, array('cirugia_propuesta_' . $provider_id));
-                                            if (sqlNumRows($TODO_data) < '1') {
-                                                // Provider list is not created yet, or was deleted.
-                                                // Create it fom defaults...
-                                                $query = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES ('lists', ?, ?, '0', '1', '0', '', '', '', '0')";
-                                                sqlStatement($query, array('cirugia_propuesta_' . $providerID, 'Eye Orders ' . $prov_data['lname']));
-                                                $SQL_INSERT = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `mapping`, `notes`, `codes`, `activity`, `subtype`) VALUES ";
-                                                $number_rows = 0;
-                                                $query = "SELECT * FROM list_options where list_id =? ORDER BY title";
-                                                $TODO_data = sqlStatement($query, array("cirugia_propuesta_defaults"));
-                                                while ($TODO = sqlFetchArray($TODO_data)) {
-                                                    if ($number_rows > 0) {
-                                                        $SQL_INSERT .= ",
-                          ";
-                                                    }
-                                                    $SQL_INSERT .= "('cirugia_propuesta_" . add_escape_custom($providerID) . "','" . add_escape_custom($TODO['option_id']) . "','" . add_escape_custom($TODO['title']) . "','" . add_escape_custom($TODO['seq']) . "','" . add_escape_custom($TODO['mapping']) . "','" . add_escape_custom($TODO['notes']) . "','" . add_escape_custom($TODO['codes']) . "','" . add_escape_custom($TODO['activity']) . "','" . add_escape_custom($TODO['subtype']) . "')";
-                                                    $number_rows++;
-                                                }
-                                                sqlStatement($SQL_INSERT . ";");
-                                            }
+                                            $surgeryProposalListId = 'cirugia_propuesta_' . $provider_id;
+                                            $TODO_data = eyeMagEnsureProviderList(
+                                                $provider_id,
+                                                $surgeryProposalListId,
+                                                'Cirugia Propuesta ' . ($prov_data['lname'] ?? ''),
+                                                'cirugia_propuesta_defaults',
+                                                'title'
+                                            );
 
                                             ?>
                                             <dt class="borderShadow">
                                                 <span><?php echo xlt('Cirugia Propuesta OD'); ?></span>
                                                 <?php
-                                                echo '<a href="' . $GLOBALS['webroot'] . '/interface/super/edit_list.php?list_id=cirugia_propuesta_' . $provider_id . '" target="RTop"';
+                                                echo '<a href="' . $GLOBALS['webroot'] . '/interface/super/edit_list.php?list_id=cirugia_propuesta_' . attr($provider_id) . '" target="RTop"';
                                                 ?>
                                                 title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>
                                                 "
@@ -5839,6 +5813,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             //could maybe use options.inc checkbox type 21?
                                                             $count = 0;
                                                             $counter = 0;
+                                                            $foundQX = 0;
+                                                            $PLANQX_arr = array();
+                                                            $arrPLANQX = array();
                                                             $query = "SELECT * FROM form_eye_mag_ordenqxod where form_id=? and pid=? ORDER BY id ASC";
                                                             $PLANQX_results = sqlStatement($query, array($form_id, $pid));
                                                             while ($planQX_row = sqlFetchArray($PLANQX_results)) {
@@ -5874,7 +5851,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             }
                                                             ?>
                                                             <script>
-                                                                var PLANoptions = <?php echo json_encode($arrPLANQX); ?>;
+                                                                window.PLAN_SURGERY_OD_OPTIONS = <?php echo json_encode($arrPLANQX); ?>;
                                                             </script>
                                                         </td>
                                                     </tr>
@@ -5906,32 +5883,18 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                             /*
                               *  Esta es una lista de CIRUGIAS PROPUESTAS PARA EL OJO IZQUIERDO específicos del proveedor que el usuario puede definir.
                               */
-                                            $query = "select * from list_options where list_id=? and activity='1' order by title";
-                                            $TODO_data = sqlStatement($query, array('cirugia_propuesta_' . $provider_id));
-                                            if (sqlNumRows($TODO_data) < '1') {
-                                                // Provider list is not created yet, or was deleted.
-                                                // Create it fom defaults...
-                                                $query = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `is_default`, `option_value`, `mapping`, `notes`, `codes`, `activity`) VALUES ('lists', ?, ?, '0', '1', '0', '', '', '', '0')";
-                                                sqlStatement($query, array('cirugia_propuesta_' . $providerID, 'Eye Orders ' . $prov_data['lname']));
-                                                $SQL_INSERT = "INSERT INTO `list_options` (`list_id`, `option_id`, `title`, `seq`, `mapping`, `notes`, `codes`, `activity`, `subtype`) VALUES ";
-                                                $number_rows = 0;
-                                                $query = "SELECT * FROM list_options where list_id =? ORDER BY title";
-                                                $TODO_data = sqlStatement($query, array("cirugia_propuesta_defaults"));
-                                                while ($TODO = sqlFetchArray($TODO_data)) {
-                                                    if ($number_rows > 0) {
-                                                        $SQL_INSERT .= ",
-                        ";
-                                                    }
-                                                    $SQL_INSERT .= "('cirugia_propuesta_" . add_escape_custom($providerID) . "','" . add_escape_custom($TODO['option_id']) . "','" . add_escape_custom($TODO['title']) . "','" . add_escape_custom($TODO['seq']) . "','" . add_escape_custom($TODO['mapping']) . "','" . add_escape_custom($TODO['notes']) . "','" . add_escape_custom($TODO['codes']) . "','" . add_escape_custom($TODO['activity']) . "','" . add_escape_custom($TODO['subtype']) . "')";
-                                                    $number_rows++;
-                                                }
-                                                sqlStatement($SQL_INSERT . ";");
-                                            }
+                                            $TODO_data = eyeMagEnsureProviderList(
+                                                $provider_id,
+                                                $surgeryProposalListId,
+                                                'Cirugia Propuesta ' . ($prov_data['lname'] ?? ''),
+                                                'cirugia_propuesta_defaults',
+                                                'title'
+                                            );
 
                                             ?>
                                             <dt class="borderShadow">
                                                 <span><?php echo xlt('Cirugia Propuesta OI'); ?></span>
-                                                <a href="<?php echo $GLOBALS['webroot']; ?>/interface/super/edit_list.php?list_id=cirugia_propuesta_<?php echo attr($providerID); ?>"
+                                                <a href="<?php echo $GLOBALS['webroot']; ?>/interface/super/edit_list.php?list_id=cirugia_propuesta_<?php echo attr($provider_id); ?>"
                                                    target="RTop"
                                                    title="<?php echo xla('Click here to Edit this Doctor\'s Plan options'); ?>"
                                                    name="provider_todo" style="color:black;font-weight:600;"><i
@@ -5949,6 +5912,9 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             //could maybe use options.inc checkbox type 21?
                                                             $count = 0;
                                                             $counter = 0;
+                                                            $foundQXOI = 0;
+                                                            $PLANQXOI_arr = array();
+                                                            $arrPLANQXOI = array();
                                                             $query = "SELECT * FROM form_eye_mag_ordenqxoi where form_id=? and pid=? ORDER BY id ASC";
                                                             $PLANQXOI_results = sqlStatement($query, array($form_id, $pid));
                                                             while ($planQXOI_row = sqlFetchArray($PLANQXOI_results)) {
@@ -5984,7 +5950,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                                                             }
                                                             ?>
                                                             <script>
-                                                                var PLANoptions = <?php echo json_encode($arrPLANQXOI); ?>;
+                                                                window.PLAN_SURGERY_OI_OPTIONS = <?php echo json_encode($arrPLANQXOI); ?>;
                                                             </script>
                                                         </td>
                                                     </tr>
@@ -6437,21 +6403,18 @@ if ($display != "fullscreen") {
         var selectedOptions = [];
 
         checkedPlans.forEach(function (input) {
-            var index = parseInt(input.id.replace('PLAN', ''), 10);
             var eyeSelect = getPlanEyeSelect(input);
             var orderEye = eyeSelect ? eyeSelect.value : '';
-            if (Array.isArray(window.PLANoptions) && window.PLANoptions[index]) {
-                var selectedOption = window.PLANoptions[index];
-                selectedOption.eye = orderEye;
-                selectedOptions.push(selectedOption);
-            } else {
-                selectedOptions.push({
-                    title: input.value,
-                    subtype: '',
-                    notes: '',
-                    eye: orderEye
-                });
-            }
+            var title = input.getAttribute('data-plan-title') || input.value || '';
+            var subtype = input.getAttribute('data-plan-subtype') || '';
+            var notes = input.getAttribute('data-plan-notes') || '';
+
+            selectedOptions.push({
+                title: title,
+                subtype: subtype,
+                notes: notes,
+                eye: orderEye
+            });
         });
 
         if (!selectedOptions.length && !freeText) {

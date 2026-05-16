@@ -72,6 +72,20 @@ function normalizeIMPPLANItems(items) {
     return normalized;
 }
 
+function getIMPPLANClinicalItems(location) {
+    if (typeof obj === "undefined" || !obj || !obj.Clinical || !Array.isArray(obj.Clinical[location])) {
+        return [];
+    }
+
+    var clinicalItems = [];
+    $.each(obj.Clinical[location], function(_, clinicalItem) {
+        if (clinicalItem && typeof clinicalItem === "object") {
+            clinicalItems.push(clinicalItem);
+        }
+    });
+    return clinicalItems;
+}
+
 function escapeIMPPLANHtml(value) {
     return String(value)
         .replace(/&/g, '&amp;')

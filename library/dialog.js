@@ -611,16 +611,20 @@ function dlgopen(url, winname, width, height, forceNewWindow, title, opts) {
                 console.log('Doing onClosed:[' + opts.onClosed + ']');
                 if (opts.onClosed === 'reload') {
                     window.location.reload();
-                } else {
+                } else if (typeof window[opts.onClosed] === 'function') {
                     window[opts.onClosed]();
+                } else {
+                    console.warn('Dialog onClosed callback not found:', opts.onClosed);
                 }
             }
-            if (opts.callBack.call) {
+            if (opts.callBack && opts.callBack.call) {
                 console.log('Doing callBack:[' + opts.callBack.call + '|' + opts.callBack.args + ']');
                 if (opts.callBack.call === 'reload') {
                     window.location.reload();
-                } else {
+                } else if (typeof window[opts.callBack.call] === 'function') {
                     window[opts.callBack.call](opts.callBack.args);
+                } else {
+                    console.warn('Dialog callBack callback not found:', opts.callBack.call);
                 }
             }
 

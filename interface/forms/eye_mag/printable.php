@@ -1,4 +1,3 @@
-<!DOCTYPE HTML>
 <?php
 require_once("../../globals.php");
 require_once("$srcdir/forms.inc");
@@ -17,6 +16,79 @@ $form_folder = "eye_mag";
 $facilityService = new FacilityService();
 
 require_once("../../forms/" . $form_folder . "/php/" . $form_folder . "_functions.php");
+
+function eyeMagPrintableCleanText($value)
+{
+    return trim(preg_replace('/\s+/', ' ', (string) $value));
+}
+
+function eyeMagPrintableCodeList($value)
+{
+    $codes = array();
+    foreach (explode(',', (string) $value) as $code) {
+        $code = trim($code);
+        if ($code === '' || stripos($code, 'Code') !== false) {
+            continue;
+        }
+        $codes[] = $code;
+    }
+    return array_values(array_unique($codes));
+}
+
+function eyeMagPrintableDiagnosisLines($code, $codedesc)
+{
+    $codes = eyeMagPrintableCodeList($code);
+    $descriptions = preg_split('/\r\n|\r|\n/', (string) $codedesc);
+    $descriptions = array_values(array_filter(array_map('eyeMagPrintableCleanText', $descriptions), 'strlen'));
+    $lines = array();
+
+    if (count($codes) > 1 && count($descriptions) >= count($codes)) {
+        foreach ($codes as $index => $singleCode) {
+            $lines[] = trim($singleCode . ' ' . $descriptions[$index]);
+        }
+        return $lines;
+    }
+
+    $description = eyeMagPrintableCleanText($codedesc);
+    $codeText = implode(', ', $codes);
+    $line = trim(($codeText !== '' ? $codeText . ' ' : '') . $description);
+    if ($line !== '') {
+        $lines[] = $line;
+    }
+
+    return $lines;
+}
+
+function eyeMagPrintableOrderDetails($form_id, $pid)
+{
+    $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
+    $result = sqlStatement($query, array($form_id, $pid));
+    $details = array();
+    while ($row = sqlFetchArray($result)) {
+        $detail = eyeMagPrintableCleanText(eyeMagOrderDetailsWithEye($row));
+        if ($detail !== '') {
+            $details[] = $detail;
+        }
+    }
+    return $details;
+}
+
+function eyeMagPrintableProcedureNames($table, $form_id, $pid)
+{
+    $query = "SELECT c.name
+              FROM " . $table . " AS o
+              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
+              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
+    $result = sqlStatement($query, array($form_id, $pid));
+    $names = array();
+    while ($row = sqlFetchArray($result)) {
+        $name = eyeMagPrintableCleanText($row['name']);
+        if ($name !== '') {
+            $names[] = $name;
+        }
+    }
+    return $names;
+}
 
 if ($_REQUEST['ptid']) {
     $pid = $_REQUEST['ptid'];
@@ -166,6 +238,32 @@ ob_start();
             font-style: oblique;
             font-weight: bold;
             font-size: 20px;
+        }
+
+        .section-title {
+            font-family: Arial;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 10px 0 4px;
+        }
+
+        .diagnosis-list {
+            margin: 4px 0 8px 18px;
+            padding: 0;
+            font-family: Arial;
+            font-size: 12px;
+        }
+
+        .diagnosis-list li {
+            margin-bottom: 3px;
+            line-height: 1.35;
+        }
+
+        .recommendation-list {
+            margin: 3px 0 6px 18px;
+            padding: 0;
+            font-family: Arial;
+            font-size: 12px;
         }
     </STYLE>
 </HEAD>
@@ -331,16 +429,6 @@ ob_start();
             <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSADD_$i"}) ?: "-"); ?></td>
             <td style="font-weight:400;font-size:10px;text-align:center;"><?php echo(text(${"OSNEARVA_$i"}) ?: "-"); ?></td>
         </tr>
-        <?php
-        if (${"COMMENTS_$i"}) {
-            ?>
-            <tr>
-                <td></td>
-                <td colspan="2"><?php echo xlt('Comments'); ?>:</td>
-                <td colspan="7"><?php echo text(${"COMMENTS_$i"}); ?></td>
-            </tr>
-            <?php
-        }
     }
     if ($ARODSPH || $AROSSPH) { ?>
         <tr style="border-bottom:1pt solid black;">
@@ -404,7 +492,7 @@ ob_start();
 <?php
 
 //Variables Segmento anterior
-if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
+if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $OSCONJ || $ODCONJ || $ODCORNEA || $OSCORNEA || $ODAC || $OSAC || $ODLENS || $OSLENS || $ODIRIS || $OSIRIS || $ODDISC || $OSDISC || $ODCUP || $OSCUP ||
     $ODMACULA || $OSMACULA || $ODVESSELS || $OSVESSELS || $ODPERIPH || $OSPERIPH || $ODVITREOUS || $OSVITREOUS) {
     ?>
     <!-- start of Anterior Segment exam -->
@@ -412,7 +500,7 @@ if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNE
         de 20 Dioptrías bajo dilatación con gotas de tropicamida y fenilefrina a la Biomicroscopía se observa:</p>
 
 <?php }
-if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA || $EXT_COMMENTS) {
+if ($RBROW || $LBROW || $RUL || $LUL || $RLL || $LLL || $RMCT || $LMCT || $RADNEXA || $LADNEXA) {
     ?>
     <span><?php echo text("Examen Externo:"); ?></span>
 <?php }
@@ -465,8 +553,8 @@ if ($LADNEXA) {
     ?>
     <span><?php echo text("Anexos " . $LADNEXA . ", "); ?></span>
     <?php
-} ?>
-<span><?php echo text($EXT_COMMENTS); ?></span>
+}
+?>
 <?php
 //Segmento Anterior Ojo Derecho
 if ($ODCONJ || $ODCORNEA || $ODAC || $ODLENS || $ODIRIS || $OSCONJ || $OSCORNEA || $OSAC || $OSLENS || $OSIRIS) {
@@ -587,93 +675,49 @@ if ($OSVITREOUS) {
 <?php }
 ?>
 .</P>
-<P class="texto"><B>IMPRESI&Oacute;N DIAGNOSTICA:</B>
-    <?php
-    /**
-     *  Retrieve and Display the IMPPLAN_items for the Impression/Plan zone.
-     */
-    $query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? order by IMPPLAN_order ASC";
-    $result = sqlStatement($query, array($form_id, $pid));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
+<?php
+$query = "select * from form_" . $form_folder . "_impplan where form_id=? and pid=? order by IMPPLAN_order ASC";
+$result = sqlStatement($query, array($form_id, $pid));
+$diagnosisLines = array();
+while ($ip_list = sqlFetchArray($result)) {
+    foreach (eyeMagPrintableDiagnosisLines($ip_list['code'], $ip_list['codedesc']) as $diagnosisLine) {
+        $diagnosisLines[] = $diagnosisLine;
     }
+}
 
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            echo $item['code'] . " " . $item['codedesc'] . ". ";
-        }
-
-    }
-
-    $query = "SELECT * FROM form_eye_mag_orders where form_id=? and pid=? ORDER BY id ASC";
-    $PLAN_results = sqlStatement($query, array($form_id, $pid));
-    if (!empty($PLAN_results)) { ?>
-</p>
-<p class="texto"><b>RECOMENDACIÓN: </b>
-    <?php
-    while ($plan_row = sqlFetchArray($PLAN_results)) {
-        echo text(eyeMagOrderDetailsWithEye($plan_row)) . ", ";
-    }
-    echo "<br>";
-    }
-
-    $query1 = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
-              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
-              FROM form_eye_mag_ordenqxod AS o
-              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
-              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
-    $PLAN_results1 = sqlStatement($query1, array($form_id, $pid));
-
-    if (!empty($PLAN_results1)) {
-        ?>
-        <b><?php echo xlt('Procedimiento propuesto OD'); ?>: </b>
-        <?php
-        while ($plan_row1 = sqlFetchArray($PLAN_results1)) {
-            echo $plan_row1['name'] . ". ";
-        }
-        echo "<br>";
-    }
-
-    $query2 = "SELECT c.name, c.consiste, c.realiza, c.grafico, c.duracion, c.beneficios,
-              c.riesgos, c.riesgos_graves, c.alternativas, c.post, c.consecuencias
-              FROM form_eye_mag_ordenqxoi AS o
-              LEFT JOIN consentimiento_informado AS c ON c.Id = o.ORDER_DETAILS
-              WHERE o.form_id=? AND o.pid=? ORDER BY o.id ASC";
-    $PLAN_results2 = sqlStatement($query2, array($form_id, $pid));
-    if (!empty($PLAN_results2)) { ?>
-        <b><?php echo xlt('Procedimiento propuesto OI'); ?>: </b>
-        <?php
-        while ($plan_row2 = sqlFetchArray($PLAN_results2)) {
-            echo $plan_row2['name'] . ". ";
-        }
-        echo "<br>";
-    }
-
+if (!empty($diagnosisLines)) {
     ?>
+    <div class="section-title">IMPRESI&Oacute;N DIAGN&Oacute;STICA:</div>
+    <ol class="diagnosis-list">
+        <?php foreach ($diagnosisLines as $diagnosisLine) { ?>
+            <li><?php echo text($diagnosisLine); ?></li>
+        <?php } ?>
+    </ol>
+    <?php
+}
 
-</P>
+$orderDetails = eyeMagPrintableOrderDetails($form_id, $pid);
+$proceduresOD = eyeMagPrintableProcedureNames('form_eye_mag_ordenqxod', $form_id, $pid);
+$proceduresOI = eyeMagPrintableProcedureNames('form_eye_mag_ordenqxoi', $form_id, $pid);
+if (!empty($orderDetails) || !empty($proceduresOD) || !empty($proceduresOI)) {
+    ?>
+    <div class="section-title">RECOMENDACI&Oacute;N:</div>
+    <?php if (!empty($orderDetails)) { ?>
+        <ul class="recommendation-list">
+            <?php foreach ($orderDetails as $detail) { ?>
+                <li><?php echo text($detail); ?></li>
+            <?php } ?>
+        </ul>
+    <?php } ?>
+    <?php if (!empty($proceduresOD)) { ?>
+        <p class="texto"><b><?php echo xlt('Procedimiento propuesto OD'); ?>: </b><?php echo text(implode('. ', $proceduresOD)); ?>.</p>
+    <?php } ?>
+    <?php if (!empty($proceduresOI)) { ?>
+        <p class="texto"><b><?php echo xlt('Procedimiento propuesto OI'); ?>: </b><?php echo text(implode('. ', $proceduresOI)); ?>.</p>
+    <?php } ?>
+    <?php
+}
+?>
 <P class="texto">Atentamente,</P>
 <P class="texto"><BR><BR>
 </P>

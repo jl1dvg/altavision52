@@ -130,6 +130,72 @@ function isProcedureCategory($category)
     return strtoupper(trim((string) $category)) === 'PROCED';
 }
 
+function normalizedCategory($category)
+{
+    return preg_replace('/[^A-Z0-9]/', '', strtoupper(trim((string) $category)));
+}
+
+function billingGroup($line)
+{
+    $codeType = strtoupper(trim((string) $line['code_type']));
+    $category = normalizedCategory(isset($line['code_category']) ? $line['code_category'] : '');
+
+    if ($codeType === 'CPT4' && $category === 'PROCED') {
+        return array('rank' => 10, 'label' => '1. CPT4 Proced', 'class' => 'group-procedure');
+    }
+
+    if ($codeType === 'CPT42') {
+        return array('rank' => 20, 'label' => '2. CPT42 Ayudante', 'class' => 'group-secondary');
+    }
+
+    if ($codeType === 'CPT4A') {
+        return array('rank' => 30, 'label' => '3. CPT4A Anestesia', 'class' => 'group-anesthesia');
+    }
+
+    if ($codeType === 'CPT4' && ($category === 'DERECHOSALA' || $category === 'MATERIALFUNGIBLE')) {
+        return array('rank' => 40, 'label' => '4. CPT4 DerechoSala / MaterialFungible', 'class' => 'group-room-material');
+    }
+
+    if ($codeType === 'INSUM') {
+        return array('rank' => 50, 'label' => '5. INSUM', 'class' => 'group-supply');
+    }
+
+    if ($codeType === 'CPT4' && $category === 'EQUIPOS') {
+        return array('rank' => 60, 'label' => '6. CPT4 Equipos', 'class' => 'group-equipment');
+    }
+
+    if ($codeType === 'RXCUI') {
+        return array('rank' => 70, 'label' => '7. RXCUI', 'class' => 'group-product');
+    }
+
+    return array('rank' => 90, 'label' => xl('Other'), 'class' => 'group-other');
+}
+
+function sortBillingLinesForDisplay($lines)
+{
+    foreach ($lines as $idx => $line) {
+        $group = billingGroup($line);
+        $lines[$idx]['display_group_rank'] = $group['rank'];
+        $lines[$idx]['display_group_label'] = $group['label'];
+        $lines[$idx]['display_group_class'] = $group['class'];
+        $lines[$idx]['display_original_index'] = $idx;
+    }
+
+    usort($lines, function ($left, $right) {
+        if ($left['display_group_rank'] != $right['display_group_rank']) {
+            return $left['display_group_rank'] < $right['display_group_rank'] ? -1 : 1;
+        }
+
+        if ($left['display_original_index'] == $right['display_original_index']) {
+            return 0;
+        }
+
+        return $left['display_original_index'] < $right['display_original_index'] ? -1 : 1;
+    });
+
+    return $lines;
+}
+
 function billingFactor($codeType, $sequenceByType, $category)
 {
     $codeType = strtoupper(trim((string) $codeType));
@@ -323,7 +389,7 @@ function buildInvoiceRows($startdate, $enddate, $filters)
     $rows = array();
     while ($row = sqlFetchArray($res)) {
         $effectivePricelevel = $filters['pricelevel'] !== '' ? $filters['pricelevel'] : $row['pricelevel'];
-        $billingLines = applyBillingRules(getBillingLines($row['pid'], $row['encounter'], '', $effectivePricelevel));
+        $billingLines = sortBillingLinesForDisplay(applyBillingRules(getBillingLines($row['pid'], $row['encounter'], '', $effectivePricelevel)));
         $productLines = getProductLines($row['pid'], $row['encounter'], '', $effectivePricelevel);
         $billingTotal = sumLines($billingLines);
         $productTotal = sumLines($productLines);
@@ -525,6 +591,36 @@ $invoiceRows = $form_refresh ? buildInvoiceRows($startdate, $enddate, $filters) 
         .rule-note {
             color: #475569;
             margin: 4px 0 10px 0;
+        }
+        .billing-group-row td {
+            border-top: 2px solid #94a3b8;
+            color: #111827;
+            font-weight: bold;
+            padding: 7px 8px;
+        }
+        .group-procedure td {
+            background: #dbeafe;
+        }
+        .group-secondary td {
+            background: #e0e7ff;
+        }
+        .group-anesthesia td {
+            background: #ffedd5;
+        }
+        .group-room-material td {
+            background: #fef3c7;
+        }
+        .group-product td {
+            background: #dcfce7;
+        }
+        .group-equipment td {
+            background: #ede9fe;
+        }
+        .group-supply td {
+            background: #ccfbf1;
+        }
+        .group-other td {
+            background: #f1f5f9;
         }
         .summary-cards {
             display: table;
@@ -786,7 +882,14 @@ $invoiceRows = $form_refresh ? buildInvoiceRows($startdate, $enddate, $filters) 
                                     <?php if (empty($row['billing_lines'])) { ?>
                                         <tr><td colspan="10"><?php echo xlt('No billing lines.'); ?></td></tr>
                                     <?php } ?>
+                                    <?php $lastDisplayGroup = ''; ?>
                                     <?php foreach ($row['billing_lines'] as $line) { ?>
+                                        <?php if ($lastDisplayGroup !== $line['display_group_label']) { ?>
+                                            <?php $lastDisplayGroup = $line['display_group_label']; ?>
+                                            <tr class="billing-group-row <?php echo attr($line['display_group_class']); ?>">
+                                                <td colspan="10"><?php echo text($lastDisplayGroup); ?></td>
+                                            </tr>
+                                        <?php } ?>
                                         <?php $lineClass = codeTypeClass($line['code_type']); ?>
                                         <tr class="<?php echo attr($lineClass); ?>">
                                             <td><?php echo text(oeFormatShortDate(substr($line['date'], 0, 10))); ?></td>

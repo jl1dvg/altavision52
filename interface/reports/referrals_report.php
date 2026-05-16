@@ -14,6 +14,7 @@
  */
 
 require_once("../globals.php");
+require_once("../../custom/code_types.inc.php");
 require_once("$srcdir/patient.inc");
 require_once "$srcdir/options.inc.php";
 
@@ -95,6 +96,205 @@ function classifyReferralSpecialty($reason)
     return 'unknown';
 }
 
+/**
+ * Extracts a CPT4 code from the referral requested-service field.
+ *
+ * @param string $value
+ * @return string
+ */
+function getReferralRequestedServiceCode($value)
+{
+    $codes = getReferralRequestedServiceCodes($value);
+    return empty($codes) ? '' : reset($codes);
+}
+
+/**
+ * Extracts unique strict CPT4 tokens from the referral requested-service field.
+ *
+ * @param string $value
+ * @return array
+ */
+function getReferralRequestedServiceCodes($value)
+{
+    $value = trim((string)$value);
+    if ($value === '') {
+        return array();
+    }
+
+    preg_match_all('/(?:^|;)CPT4:([A-Za-z0-9]+)/i', $value, $matches);
+    if (empty($matches[1])) {
+        return array();
+    }
+
+    $codes = array();
+    foreach ($matches[1] as $code) {
+        $code = strtoupper(trim($code));
+        if ($code !== '') {
+            $codes[$code] = $code;
+        }
+    }
+
+    return array_values($codes);
+}
+
+/**
+ * Builds a code => short description map for CPT4 service codes.
+ *
+ * @param array $values
+ * @return array
+ */
+function getReferralRequestedServiceDescriptions($values)
+{
+    global $code_types;
+
+    $codes = array();
+    foreach ($values as $value) {
+        foreach (getReferralRequestedServiceCodes($value) as $code) {
+            $codes[$code] = $code;
+        }
+    }
+
+    if (empty($codes)) {
+        return array();
+    }
+
+    $cpt4TypeId = $code_types['CPT4']['id'] ?? null;
+    if (empty($cpt4TypeId)) {
+        $typeRow = sqlQuery("SELECT ct_id FROM code_types WHERE ct_key = 'CPT4' LIMIT 1");
+        $cpt4TypeId = $typeRow['ct_id'] ?? null;
+    }
+
+    if (empty($cpt4TypeId)) {
+        return array();
+    }
+
+    $codeValues = array_values($codes);
+    $placeholders = implode(',', array_fill(0, count($codeValues), '?'));
+    $params = array_merge(array($cpt4TypeId), $codeValues);
+    $res = sqlStatement(
+        "SELECT code, COALESCE(NULLIF(code_text_short, ''), NULLIF(code_text, ''), code) AS code_description " .
+        "FROM codes WHERE code_type = ? AND code IN ($placeholders)",
+        $params
+    );
+
+    $descriptions = array();
+    while ($row = sqlFetchArray($res)) {
+        $descriptions[strtoupper($row['code'])] = $row['code_description'];
+    }
+
+    return $descriptions;
+}
+
+/**
+ * Formats requested-service display as code - short description.
+ *
+ * @param string $value
+ * @param array $descriptions
+ * @return string
+ */
+function formatReferralRequestedService($value, $descriptions)
+{
+    $value = trim((string)$value);
+    if ($value === '') {
+        return '';
+    }
+
+    $codes = getReferralRequestedServiceCodes($value);
+    if (empty($codes)) {
+        return $value;
+    }
+
+    $displayValues = array();
+    foreach ($codes as $code) {
+        $displayValues[] = formatReferralRequestedServiceCode($code, $descriptions);
+    }
+
+    return implode('; ', $displayValues);
+}
+
+/**
+ * Formats one CPT4 code display as code - short description.
+ *
+ * @param string $code
+ * @param array $descriptions
+ * @return string
+ */
+function formatReferralRequestedServiceCode($code, $descriptions)
+{
+    $code = strtoupper(trim((string)$code));
+    if ($code === '') {
+        return '';
+    }
+
+    if (!empty($descriptions[$code])) {
+        return $code . ' - ' . $descriptions[$code];
+    }
+
+    return $code;
+}
+
+function formatReferralState($state, $listId = '')
+{
+    $state = trim((string)$state);
+    if ($state === '') {
+        return '';
+    }
+
+    $listId = trim((string)$listId);
+    if ($listId !== '') {
+        $label = trim((string)getListItemTitle($listId, $state));
+        if ($label !== '') {
+            return $label;
+        }
+    }
+
+    return $state;
+}
+
+/**
+ * Formats protocol operation option ids into readable procedure names.
+ *
+ * @param string $operationValue
+ * @return string
+ */
+function formatProtocolOperation($operationValue)
+{
+    static $operationLabelCache = array();
+
+    $operationValue = trim((string)$operationValue);
+    if ($operationValue === '' || $operationValue === '0') {
+        return '';
+    }
+
+    $operationIds = array();
+    foreach (explode('|', $operationValue) as $operationId) {
+        $operationId = trim($operationId);
+        if ($operationId !== '' && $operationId !== '0') {
+            $operationIds[$operationId] = $operationId;
+        }
+    }
+
+    if (empty($operationIds)) {
+        return '';
+    }
+
+    $labels = array();
+    foreach ($operationIds as $operationId) {
+        if (!isset($operationLabelCache[$operationId])) {
+            $row = sqlQuery(
+                "SELECT COALESCE(NULLIF(notes, ''), NULLIF(title, ''), option_id) AS operation_label " .
+                "FROM list_options WHERE list_id = 'cirugia_propuesta_defaults' AND option_id = ? LIMIT 1",
+                array($operationId)
+            );
+            $operationLabelCache[$operationId] = !empty($row['operation_label']) ? $row['operation_label'] : $operationId;
+        }
+
+        $labels[] = $operationLabelCache[$operationId];
+    }
+
+    return implode(' + ', $labels);
+}
+
 $form_refresh = !empty($_POST['form_refresh']);
 $form_auto_assign = !empty($_POST['form_auto_assign']);
 $form_revert_auto_assign = !empty($_POST['form_revert_auto_assign']);
@@ -105,6 +305,10 @@ $form_facility = isset($_POST['form_facility']) ? trim((string)$_POST['form_faci
 $form_validity = isset($_POST['form_validity']) ? trim((string)$_POST['form_validity']) : '';
 $form_appt_state = isset($_POST['form_appt_state']) ? trim((string)$_POST['form_appt_state']) : '';
 $form_assigned_provider = isset($_POST['form_assigned_provider']) ? trim((string)$_POST['form_assigned_provider']) : '';
+$form_requested_service = isset($_POST['form_requested_service']) ? trim((string)$_POST['form_requested_service']) : '';
+$form_refer_state = isset($_POST['form_refer_state']) ? trim((string)$_POST['form_refer_state']) : '';
+$form_operation_state = isset($_POST['form_operation_state']) ? trim((string)$_POST['form_operation_state']) : '';
+$form_patient_type = isset($_POST['form_patient_type']) ? trim((string)$_POST['form_patient_type']) : '';
 
 if (!isValidIsoDate($form_from_date)) {
     $form_from_date = date('Y-01-01');
@@ -129,13 +333,34 @@ if (!in_array($form_validity, $allowedValidityFilters, true)) {
     $form_validity = '';
 }
 
-$allowedAppointmentFilters = array('', 'assigned', 'pending');
+$allowedAppointmentFilters = array('', 'scheduled', 'pending_schedule', 'pending', 'assigned');
 if (!in_array($form_appt_state, $allowedAppointmentFilters, true)) {
     $form_appt_state = '';
+}
+if ($form_appt_state === 'assigned') {
+    $form_appt_state = 'scheduled';
+}
+
+$allowedOperationFilters = array('', 'operated', 'not_operated');
+if (!in_array($form_operation_state, $allowedOperationFilters, true)) {
+    $form_operation_state = '';
+}
+
+$allowedPatientTypeFilters = array('', 'new', 'returning');
+if (!in_array($form_patient_type, $allowedPatientTypeFilters, true)) {
+    $form_patient_type = '';
 }
 
 if ($form_assigned_provider !== '' && $form_assigned_provider !== '__unassigned__' && !ctype_digit($form_assigned_provider)) {
     $form_assigned_provider = '';
+}
+
+if ($form_requested_service !== '' && !preg_match('/^[A-Za-z0-9]+$/', $form_requested_service)) {
+    $form_requested_service = '';
+}
+
+if (strlen($form_refer_state) > 128) {
+    $form_refer_state = '';
 }
 
 $providerOptions = array();
@@ -143,10 +368,86 @@ $providerRes = sqlStatement("SELECT id, fname, lname FROM users WHERE active = 1
 while ($prow = sqlFetchArray($providerRes)) {
     $providerOptions[] = $prow;
 }
+
+$referStateListId = '';
+$referStateLayout = sqlQuery("SELECT list_id FROM layout_options WHERE form_id = 'LBTref' AND field_id = 'refer_state' LIMIT 1");
+if (!empty($referStateLayout['list_id'])) {
+    $referStateListId = trim((string)$referStateLayout['list_id']);
+}
+
+$referStateOptions = array();
+$referStateQuery = "SELECT DISTINCT ds.field_value AS refer_state " .
+    "FROM transactions AS t " .
+    "JOIN lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
+    "JOIN lbt_data AS ds ON ds.form_id = t.id AND ds.field_id = 'refer_state' " .
+    "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
+    "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
+    "WHERE t.title = 'LBTref' " .
+    "AND ds.field_value != '' " .
+    "AND d1.field_value >= ? AND d1.field_value <= ? ";
+$referStateParams = array($form_from_date, $form_to_date);
+if ($form_facility !== '') {
+    if ($form_facility === '0') {
+        $referStateQuery .= "AND (uf.facility_id IS NULL OR uf.facility_id = 0) ";
+    } else {
+        $referStateQuery .= "AND uf.facility_id = ? ";
+        $referStateParams[] = (int)$form_facility;
+    }
+}
+$referStateQuery .= "ORDER BY ds.field_value";
+$referStateRes = sqlStatement($referStateQuery, $referStateParams);
+while ($stateRow = sqlFetchArray($referStateRes)) {
+    $stateValue = trim((string)($stateRow['refer_state'] ?? ''));
+    if ($stateValue !== '') {
+        $referStateOptions[$stateValue] = formatReferralState($stateValue, $referStateListId);
+    }
+}
+if ($form_refer_state !== '' && !isset($referStateOptions[$form_refer_state])) {
+    $referStateOptions[$form_refer_state] = formatReferralState($form_refer_state, $referStateListId);
+}
+
+$requestedServiceOptions = array();
+$requestedServiceValues = array();
+$serviceQuery = "SELECT DISTINCT d.field_value AS requested_service " .
+    "FROM transactions AS t " .
+    "JOIN lbt_data AS d ON d.form_id = t.id AND d.field_id = 'refer_related_code' " .
+    "JOIN lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
+    "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
+    "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
+    "WHERE t.title = 'LBTref' " .
+    "AND d.field_value != '' " .
+    "AND d1.field_value >= ? AND d1.field_value <= ? ";
+$serviceParams = array($form_from_date, $form_to_date);
+if ($form_facility !== '') {
+    if ($form_facility === '0') {
+        $serviceQuery .= "AND (uf.facility_id IS NULL OR uf.facility_id = 0) ";
+    } else {
+        $serviceQuery .= "AND uf.facility_id = ? ";
+        $serviceParams[] = (int)$form_facility;
+    }
+}
+$serviceQuery .= "ORDER BY d.field_value";
+$serviceRes = sqlStatement(
+    $serviceQuery,
+    $serviceParams
+);
+while ($srow = sqlFetchArray($serviceRes)) {
+    $serviceValue = trim((string)($srow['requested_service'] ?? ''));
+    if ($serviceValue === '') {
+        continue;
+    }
+
+    foreach (getReferralRequestedServiceCodes($serviceValue) as $serviceCode) {
+        $requestedServiceOptions[$serviceCode] = $serviceCode;
+    }
+    $requestedServiceValues[] = $serviceValue;
+}
+ksort($requestedServiceOptions, SORT_NATURAL);
+$requestedServiceDescriptions = getReferralRequestedServiceDescriptions($requestedServiceValues);
 ?>
 <html>
 <head>
-    <title><?php echo xlt('Referrals'); ?></title>
+    <title><?php echo xlt('Referencias'); ?></title>
 
     <?php Header::setupHeader(['datetime-picker', 'report-helper']); ?>
     <link rel="stylesheet" href="<?php echo $GLOBALS['assets_static_relative']; ?>/datatables.net-bs/css/dataTables.bootstrap.min.css" type="text/css">
@@ -158,23 +459,159 @@ while ($prow = sqlFetchArray($providerRes)) {
 
         $(function () {
             var reportTable = $('#mymaintable');
-            if (reportTable.length && reportTable.find('tbody tr').length) {
-                reportTable.DataTable({
+            if (reportTable.length) {
+                var dataTable = reportTable.DataTable({
                     pageLength: 25,
                     order: [[1, 'desc']],
                     autoWidth: false,
                     scrollX: true,
-                    <?php // Bring in datatable translations ?>
-                    <?php $translationsDatatablesOverride = array('lengthMenu' => (xla('Display') . ' _MENU_ ' . xla('records per page')),
-                        'zeroRecords' => (xla('Nothing found - sorry')),
-                        'info' => (xla('Showing page') . ' _PAGE_ ' . xla('of') . ' _PAGES_'),
-                        'infoEmpty' => (xla('No records available')),
-                        'infoFiltered' => ('(' . xla('filtered from') . ' _MAX_ ' . xla('total records') . ')'),
-                        'infoPostFix' => (''),
-                        'url' => ('')
-                    ); ?>
-                    <?php require($GLOBALS['srcdir'] . '/js/xl/datatables-net.js.php'); ?>
+                    language: {
+                        emptyTable: <?php echo xlj('No hay datos disponibles en la tabla'); ?>,
+                        info: <?php echo xlj('Mostrando _START_ a _END_ de _TOTAL_ registros'); ?>,
+                        infoEmpty: <?php echo xlj('Mostrando 0 a 0 de 0 registros'); ?>,
+                        infoFiltered: <?php echo xlj('(filtrado de _MAX_ registros totales)'); ?>,
+                        lengthMenu: <?php echo xlj('Mostrar _MENU_ registros'); ?>,
+                        loadingRecords: <?php echo xlj('Cargando...'); ?>,
+                        processing: <?php echo xlj('Procesando...'); ?>,
+                        search: <?php echo xlj('Buscar'); ?> + ':',
+                        zeroRecords: <?php echo xlj('No se encontraron registros'); ?>,
+                        paginate: {
+                            first: <?php echo xlj('Primero'); ?>,
+                            last: <?php echo xlj('Último'); ?>,
+                            next: <?php echo xlj('Siguiente'); ?>,
+                            previous: <?php echo xlj('Anterior'); ?>
+                        },
+                        aria: {
+                            sortAscending: ': ' + <?php echo xlj('activar para ordenar la columna ascendente'); ?>,
+                            sortDescending: ': ' + <?php echo xlj('activar para ordenar la columna descendente'); ?>
+                        }
+                    }
                 });
+
+                var requestedServiceFilter = $('#form_requested_service');
+                var selectedRequestedService = requestedServiceFilter.length ? requestedServiceFilter.val() : '';
+                var requestedServiceLabels = {};
+                if (requestedServiceFilter.length) {
+                    requestedServiceFilter.find('option').each(function () {
+                        var optionValue = $(this).attr('value') || '';
+                        if (optionValue) {
+                            requestedServiceLabels[optionValue] = $(this).text();
+                        }
+                    });
+                }
+
+                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    if (!settings.nTable || settings.nTable.id !== 'mymaintable' || !selectedRequestedService) {
+                        return true;
+                    }
+
+                    var serviceCell = dataTable.cell(dataIndex, 7).node();
+                    var serviceCodes = ($(serviceCell).attr('data-cpt4') || '').toString().split(';');
+                    return serviceCodes.some(function (serviceCode) {
+                        return $.trim(serviceCode) === selectedRequestedService;
+                    });
+                });
+
+                function updateReferralSummaryCards() {
+                    var counts = {
+                        total: 0,
+                        active: 0,
+                        expired: 0,
+                        no_end: 0,
+                        scheduled: 0,
+                        pending_schedule: 0,
+                        pending: 0,
+                        operated: 0,
+                        not_operated: 0,
+                        new_patient: 0,
+                        returning_patient: 0
+                    };
+
+                    dataTable.rows({filter: 'applied'}).nodes().each(function (rowNode) {
+                        var row = $(rowNode);
+                        counts.total++;
+
+                        var validity = row.attr('data-validity') || '';
+                        if (validity === 'expired') {
+                            counts.expired++;
+                        } else {
+                            counts.active++;
+                            if (validity === 'no_end') {
+                                counts.no_end++;
+                            }
+                        }
+
+                        var appt = row.attr('data-appt') || 'pending';
+                        if (appt === 'scheduled') {
+                            counts.scheduled++;
+                        } else if (appt === 'pending_schedule') {
+                            counts.pending_schedule++;
+                        } else {
+                            counts.pending++;
+                        }
+
+                        if ((row.attr('data-operation') || '') === 'operated') {
+                            counts.operated++;
+                        } else {
+                            counts.not_operated++;
+                        }
+
+                        if ((row.attr('data-patient-type') || '') === 'new') {
+                            counts.new_patient++;
+                        } else {
+                            counts.returning_patient++;
+                        }
+                    });
+
+                    $('[data-summary-key]').each(function () {
+                        var key = $(this).attr('data-summary-key');
+                        $(this).text(counts[key] || 0);
+                    });
+                }
+
+                if (requestedServiceFilter.length) {
+                    var availableRequestedServices = {};
+                    dataTable.rows().nodes().each(function (rowNode) {
+                        var serviceCodes = ($('td', rowNode).eq(7).attr('data-cpt4') || '').toString().split(';');
+                        serviceCodes.forEach(function (serviceCode) {
+                            serviceCode = $.trim(serviceCode);
+                            if (serviceCode) {
+                                availableRequestedServices[serviceCode] = requestedServiceLabels[serviceCode] || serviceCode;
+                            }
+                        });
+                    });
+
+                    requestedServiceFilter.empty();
+                    requestedServiceFilter.append($('<option>', {
+                        value: '',
+                        text: '-- <?php echo xla('Todos'); ?> --'
+                    }));
+
+                    Object.keys(availableRequestedServices).sort(function (a, b) {
+                        return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+                    }).forEach(function (serviceCode) {
+                        requestedServiceFilter.append($('<option>', {
+                            value: serviceCode,
+                            text: availableRequestedServices[serviceCode]
+                        }));
+                    });
+
+                    if (selectedRequestedService && !availableRequestedServices[selectedRequestedService]) {
+                        requestedServiceFilter.append($('<option>', {
+                            value: selectedRequestedService,
+                            text: requestedServiceLabels[selectedRequestedService] || selectedRequestedService
+                        }));
+                    }
+                    requestedServiceFilter.val(selectedRequestedService);
+
+                    requestedServiceFilter.on('change', function () {
+                        selectedRequestedService = $(this).val();
+                        dataTable.draw();
+                    });
+                }
+
+                dataTable.on('draw', updateReferralSummaryCards);
+                dataTable.draw();
             } else if (document.getElementById('mymaintable')) {
                 oeFixedHeaderSetup(document.getElementById('mymaintable'));
             }
@@ -247,7 +684,7 @@ while ($prow = sqlFetchArray($providerRes)) {
         }
 
         function revertAutoAssignReferrals() {
-            if (!confirm(<?php echo xlj('This will remove assigned provider for pending referrals in current filters. Continue?'); ?>)) {
+            if (!confirm(<?php echo xlj('Esto eliminará el proveedor asignado para las referencias pendientes en los filtros actuales. ¿Continuar?'); ?>)) {
                 return false;
             }
 
@@ -346,6 +783,10 @@ while ($prow = sqlFetchArray($providerRes)) {
             max-width: 640px;
         }
 
+        #report_parameters .form-control {
+            width: 300px;
+        }
+
         /* specifically include & exclude from printing */
         @media print {
             #report_parameters {
@@ -386,10 +827,10 @@ while ($prow = sqlFetchArray($providerRes)) {
 <body class="body_top">
 
 <div class="report-shell">
-    <span class='title'><?php echo xlt('Report'); ?> - <?php echo xlt('Referrals'); ?></span>
+    <span class='title'><?php echo xlt('Reporte'); ?> - <?php echo xlt('Referencias'); ?></span>
 
     <div id="report_parameters_daterange">
-        <?php echo text(oeFormatShortDate($form_from_date)) . " &nbsp; " . xlt('to') . " &nbsp; " . text(oeFormatShortDate($form_to_date)); ?>
+        <?php echo text(oeFormatShortDate($form_from_date)) . " &nbsp; " . xlt('hasta') . " &nbsp; " . text(oeFormatShortDate($form_to_date)); ?>
     </div>
 
     <form name='theform' id='theform' method='post' action='referrals_report.php'
@@ -407,13 +848,13 @@ while ($prow = sqlFetchArray($providerRes)) {
                             <table class='text'>
                                 <tr>
                                     <td class='control-label'>
-                                        <?php echo xlt('Facility'); ?>:
+                                        <?php echo xlt('Centro'); ?>:
                                     </td>
                                     <td>
                                         <?php dropdown_facility($form_facility, 'form_facility', true); ?>
                                     </td>
                                     <td class='control-label'>
-                                        <?php echo xlt('From'); ?>:
+                                        <?php echo xlt('Desde'); ?>:
                                     </td>
                                     <td>
                                         <input type='text' name='form_from_date' id="form_from_date" size='10'
@@ -421,7 +862,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                                                class='datepicker form-control'>
                                     </td>
                                     <td class='control-label'>
-                                        <?php echo xlt('To'); ?>:
+                                        <?php echo xlt('Hasta'); ?>:
                                     </td>
                                     <td>
                                         <input type='text' name='form_to_date' id="form_to_date" size='10'
@@ -431,37 +872,88 @@ while ($prow = sqlFetchArray($providerRes)) {
                                 </tr>
                                 <tr>
                                     <td class='control-label'>
-                                        <?php echo xlt('Validity'); ?>:
+                                        <?php echo xlt('Vigencia'); ?>:
                                     </td>
                                     <td>
                                         <select name='form_validity' id='form_validity' class='form-control'>
-                                            <option value=''>-- <?php echo xlt('All'); ?> --</option>
-                                            <option value='vigente'<?php echo ($form_validity === 'vigente') ? ' selected' : ''; ?>><?php echo xlt('Active (Any)'); ?></option>
-                                            <option value='active'<?php echo ($form_validity === 'active') ? ' selected' : ''; ?>><?php echo xlt('Active (With End Date)'); ?></option>
-                                            <option value='no_end'<?php echo ($form_validity === 'no_end') ? ' selected' : ''; ?>><?php echo xlt('No End Date'); ?></option>
-                                            <option value='expired'<?php echo ($form_validity === 'expired') ? ' selected' : ''; ?>><?php echo xlt('Expired'); ?></option>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <option value='vigente'<?php echo ($form_validity === 'vigente') ? ' selected' : ''; ?>><?php echo xlt('Vigente (Todos)'); ?></option>
+                                            <option value='active'<?php echo ($form_validity === 'active') ? ' selected' : ''; ?>><?php echo xlt('Vigente (Con fecha fin)'); ?></option>
+                                            <option value='no_end'<?php echo ($form_validity === 'no_end') ? ' selected' : ''; ?>><?php echo xlt('Sin fecha fin'); ?></option>
+                                            <option value='expired'<?php echo ($form_validity === 'expired') ? ' selected' : ''; ?>><?php echo xlt('Caducada'); ?></option>
                                         </select>
                                     </td>
                                     <td class='control-label'>
-                                        <?php echo xlt('Appointment'); ?>:
+                                        <?php echo xlt('Estado de cita'); ?>:
                                     </td>
                                     <td>
                                         <select name='form_appt_state' id='form_appt_state' class='form-control'>
-                                            <option value=''>-- <?php echo xlt('All'); ?> --</option>
-                                            <option value='assigned'<?php echo ($form_appt_state === 'assigned') ? ' selected' : ''; ?>><?php echo xlt('Assigned'); ?></option>
-                                            <option value='pending'<?php echo ($form_appt_state === 'pending') ? ' selected' : ''; ?>><?php echo xlt('Pending'); ?></option>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <option value='scheduled'<?php echo ($form_appt_state === 'scheduled') ? ' selected' : ''; ?>><?php echo xlt('Asignada'); ?></option>
+                                            <option value='pending_schedule'<?php echo ($form_appt_state === 'pending_schedule') ? ' selected' : ''; ?>><?php echo xlt('Pendiente de agendar'); ?></option>
+                                            <option value='pending'<?php echo ($form_appt_state === 'pending') ? ' selected' : ''; ?>><?php echo xlt('Pendiente'); ?></option>
                                         </select>
                                     </td>
                                     <td class='control-label'>
-                                        <?php echo xlt('Assigned Provider'); ?>:
+                                        <?php echo xlt('Proveedor asignado'); ?>:
                                     </td>
                                     <td>
                                         <select name='form_assigned_provider' id='form_assigned_provider' class='form-control'>
-                                            <option value=''>-- <?php echo xlt('All'); ?> --</option>
-                                            <option value='__unassigned__'<?php echo ($form_assigned_provider === '__unassigned__') ? ' selected' : ''; ?>><?php echo xlt('Unassigned Only'); ?></option>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <option value='__unassigned__'<?php echo ($form_assigned_provider === '__unassigned__') ? ' selected' : ''; ?>><?php echo xlt('Sólo sin asignar'); ?></option>
                                             <?php foreach ($providerOptions as $providerOption) { ?>
                                                 <option value='<?php echo attr($providerOption['id']); ?>'<?php echo ($form_assigned_provider === (string)$providerOption['id']) ? ' selected' : ''; ?>>
                                                     <?php echo text(trim(($providerOption['lname'] ?? '') . ', ' . ($providerOption['fname'] ?? ''))); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Servicio solicitado'); ?>:
+                                    </td>
+                                    <td colspan='5'>
+                                        <select name='form_requested_service' id='form_requested_service' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <?php foreach ($requestedServiceOptions as $serviceCode) { ?>
+                                                <option value='<?php echo attr($serviceCode); ?>'<?php echo ($form_requested_service === $serviceCode) ? ' selected' : ''; ?>>
+                                                    <?php echo text(formatReferralRequestedServiceCode($serviceCode, $requestedServiceDescriptions)); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Cirugía'); ?>:
+                                    </td>
+                                    <td>
+                                        <select name='form_operation_state' id='form_operation_state' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <option value='operated'<?php echo ($form_operation_state === 'operated') ? ' selected' : ''; ?>><?php echo xlt('Operados'); ?></option>
+                                            <option value='not_operated'<?php echo ($form_operation_state === 'not_operated') ? ' selected' : ''; ?>><?php echo xlt('No operados'); ?></option>
+                                        </select>
+                                    </td>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Tipo de paciente'); ?>:
+                                    </td>
+                                    <td>
+                                        <select name='form_patient_type' id='form_patient_type' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <option value='new'<?php echo ($form_patient_type === 'new') ? ' selected' : ''; ?>><?php echo xlt('Nuevos'); ?></option>
+                                            <option value='returning'<?php echo ($form_patient_type === 'returning') ? ' selected' : ''; ?>><?php echo xlt('Recurrentes'); ?></option>
+                                        </select>
+                                    </td>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Estado de referencia'); ?>:
+                                    </td>
+                                    <td>
+                                        <select name='form_refer_state' id='form_refer_state' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <?php foreach ($referStateOptions as $stateValue => $stateLabel) { ?>
+                                                <option value='<?php echo attr($stateValue); ?>'<?php echo ($form_refer_state === (string)$stateValue) ? ' selected' : ''; ?>>
+                                                    <?php echo text($stateLabel); ?>
                                                 </option>
                                             <?php } ?>
                                         </select>
@@ -478,20 +970,20 @@ while ($prow = sqlFetchArray($providerRes)) {
                                         <div class="btn-group" role="group">
                                             <a href='#' class='btn btn-default btn-save'
                                                onclick='$("#form_refresh").attr("value","true"); $("#theform").submit();'>
-                                                <?php echo xlt('Submit'); ?>
+                                                <?php echo xlt('Consultar'); ?>
                                             </a>
                                             <?php if ($form_refresh) { ?>
                                                 <a href='#' class='btn btn-default btn-print' id='printbutton'>
-                                                    <?php echo xlt('Print'); ?>
+                                                    <?php echo xlt('Imprimir'); ?>
                                                 </a>
                                                 <a href='#' class='btn btn-default' onclick='return exportReferralCsv();'>
-                                                    <?php echo xlt('Export CSV'); ?>
+                                                    <?php echo xlt('Exportar CSV'); ?>
                                                 </a>
                                                 <a href='#' class='btn btn-default' onclick='return autoAssignReferrals();'>
-                                                    <?php echo xlt('Auto Assign Pending'); ?>
+                                                    <?php echo xlt('Autoasignar pendientes'); ?>
                                                 </a>
                                                 <a href='#' class='btn btn-danger' onclick='return revertAutoAssignReferrals();'>
-                                                    <?php echo xlt('Revert Auto Assign'); ?>
+                                                    <?php echo xlt('Revertir autoasignación'); ?>
                                                 </a>
                                             <?php } ?>
                                         </div>
@@ -512,16 +1004,22 @@ while ($prow = sqlFetchArray($providerRes)) {
             $caducadaCount = 0;
             $openEndCount = 0;
             $assignedCount = 0;
+            $pendingScheduleCount = 0;
             $pendingCount = 0;
+            $operatedCount = 0;
+            $notOperatedCount = 0;
+            $newPatientCount = 0;
+            $returningPatientCount = 0;
 
             $query = "SELECT t.id, t.pid, t.date AS created_date, " .
                 "d1.field_value AS refer_date, " .
                 "d2.field_value AS refer_end_date, " .
-                "d3.field_value AS reply_date, " .
                 "d4.field_value AS body, " .
                 "d5.field_value AS refer_id, " .
                 "d8.field_value AS refer_from_id, " .
                 "d9.field_value AS assigned_provider_id, " .
+                "d10.field_value AS refer_related_code, " .
+                "d11.field_value AS refer_state, " .
                 "ut.organization, uf.facility_id, p.pubpid, " .
                 "CONCAT(uf.fname,' ', uf.lname) AS referer_name, " .
                 "CONCAT(ut.fname,' ', ut.lname) AS referer_to, " .
@@ -531,12 +1029,13 @@ while ($prow = sqlFetchArray($providerRes)) {
                 "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
                 "JOIN      lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
                 "LEFT JOIN lbt_data AS d2 ON d2.form_id = t.id AND d2.field_id = 'refer_end_date' " .
-                "LEFT JOIN lbt_data AS d3 ON d3.form_id = t.id AND d3.field_id = 'reply_date' " .
                 "LEFT JOIN lbt_data AS d4 ON d4.form_id = t.id AND d4.field_id = 'body' " .
                 "LEFT JOIN lbt_data AS d5 ON d5.form_id = t.id AND d5.field_id = 'refer_id' " .
                 "LEFT JOIN lbt_data AS d7 ON d7.form_id = t.id AND d7.field_id = 'refer_to' " .
                 "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
                 "LEFT JOIN lbt_data AS d9 ON d9.form_id = t.id AND d9.field_id = 'assigned_provider' " .
+                "LEFT JOIN lbt_data AS d10 ON d10.form_id = t.id AND d10.field_id = 'refer_related_code' " .
+                "LEFT JOIN lbt_data AS d11 ON d11.form_id = t.id AND d11.field_id = 'refer_state' " .
                 "LEFT JOIN users AS ut ON ut.id = d7.field_value " .
                 "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
                 "LEFT JOIN users AS ua ON ua.id = d9.field_value " .
@@ -562,6 +1061,7 @@ while ($prow = sqlFetchArray($providerRes)) {
             $allRows = array();
             $pidSet = array();
             $minReferDate = '';
+            $minReferralEntryDate = '';
             while ($row = sqlFetchArray($res)) {
                 $referToDisplay = !empty($row['organization']) ? $row['organization'] : $row['referer_to'];
 
@@ -569,15 +1069,15 @@ while ($prow = sqlFetchArray($providerRes)) {
                 if ($isExpired) {
                     $validityKey = 'expired';
                     $validityClass = 'pill-expired';
-                    $validityLabel = xlt('Expired');
+                    $validityLabel = xlt('Caducada');
                 } elseif (empty($row['refer_end_date'])) {
                     $validityKey = 'no_end';
                     $validityClass = 'pill-neutral';
-                    $validityLabel = xlt('No End Date');
+                    $validityLabel = xlt('Sin fecha fin');
                 } else {
                     $validityKey = 'active';
                     $validityClass = 'pill-active';
-                    $validityLabel = xlt('Active');
+                    $validityLabel = xlt('Vigente');
                 }
 
                 $row['refer_to_display'] = $referToDisplay;
@@ -613,6 +1113,11 @@ while ($prow = sqlFetchArray($providerRes)) {
                 if (!empty($row['refer_date']) && ($minReferDate === '' || $row['refer_date'] < $minReferDate)) {
                     $minReferDate = $row['refer_date'];
                 }
+
+                $referralEntryDate = empty($row['created_date']) ? '' : substr((string)$row['created_date'], 0, 10);
+                if ($referralEntryDate !== '' && ($minReferralEntryDate === '' || $referralEntryDate < $minReferralEntryDate)) {
+                    $minReferralEntryDate = $referralEntryDate;
+                }
             }
 
             $appointmentsByPid = array();
@@ -645,34 +1150,178 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
             }
 
-            foreach ($allRows as &$row) {
-                $pidKey = (string)($row['pid'] ?? '');
-                if ($pidKey === '' || empty($appointmentsByPid[$pidKey])) {
-                    continue;
-                }
+            $protocolsByPid = array();
+            if (!empty($pidSet) && !empty($minReferDate)) {
+                $pidList = array_values($pidSet);
+                $pidPlaceholders = implode(',', array_fill(0, count($pidList), '?'));
+                $protocolQuery = "SELECT f.pid, f.form_id, f.encounter, COALESCE(fe.date, f.date) AS protocol_date, lopr.field_value AS operation_value " .
+                    "FROM forms AS f " .
+                    "LEFT JOIN form_encounter AS fe ON fe.pid = f.pid AND fe.encounter = f.encounter " .
+                    "LEFT JOIN lbf_data AS lopr ON lopr.form_id = f.form_id AND lopr.field_id = 'Prot_opr' " .
+                    "WHERE f.pid IN ($pidPlaceholders) " .
+                    "AND f.formdir = 'LBFprotocolo' " .
+                    "AND f.deleted = 0 " .
+                    "AND COALESCE(fe.date, f.date) > ? " .
+                    "ORDER BY f.pid, COALESCE(fe.date, f.date) ASC, f.form_id ASC";
 
+                $protocolParams = $pidList;
+                $protocolParams[] = $minReferDate . ' 00:00:00';
+                $protocolRes = sqlStatement($protocolQuery, $protocolParams);
+                while ($protocolRow = sqlFetchArray($protocolRes)) {
+                    $pidKey = (string)($protocolRow['pid'] ?? '');
+                    if ($pidKey === '') {
+                        continue;
+                    }
+
+                    if (!isset($protocolsByPid[$pidKey])) {
+                        $protocolsByPid[$pidKey] = array();
+                    }
+
+                    $protocolsByPid[$pidKey][] = $protocolRow;
+                }
+            }
+
+            $carePlansByPid = array();
+            if (!empty($pidSet) && !empty($minReferDate)) {
+                $pidList = array_values($pidSet);
+                $pidPlaceholders = implode(',', array_fill(0, count($pidList), '?'));
+                $carePlanQuery = "SELECT pid, id, date AS care_plan_date, code, codetext, description " .
+                    "FROM form_care_plan " .
+                    "WHERE pid IN ($pidPlaceholders) " .
+                    "AND activity = 1 " .
+                    "AND date > ? " .
+                    "ORDER BY pid, date ASC, id ASC";
+
+                $carePlanParams = $pidList;
+                $carePlanParams[] = $minReferDate;
+                $carePlanRes = sqlStatement($carePlanQuery, $carePlanParams);
+                while ($carePlanRow = sqlFetchArray($carePlanRes)) {
+                    $pidKey = (string)($carePlanRow['pid'] ?? '');
+                    if ($pidKey === '') {
+                        continue;
+                    }
+
+                    if (!isset($carePlansByPid[$pidKey])) {
+                        $carePlansByPid[$pidKey] = array();
+                    }
+
+                    $carePlansByPid[$pidKey][] = $carePlanRow;
+                }
+            }
+
+            $encountersByPid = array();
+            if (!empty($pidSet)) {
+                $pidList = array_values($pidSet);
+                $pidPlaceholders = implode(',', array_fill(0, count($pidList), '?'));
+                $encounterQuery = "SELECT pid, date AS encounter_date " .
+                    "FROM form_encounter " .
+                    "WHERE pid IN ($pidPlaceholders) " .
+                    "ORDER BY pid, date ASC";
+
+                $encounterRes = sqlStatement($encounterQuery, $pidList);
+                while ($encounterRow = sqlFetchArray($encounterRes)) {
+                    $pidKey = (string)($encounterRow['pid'] ?? '');
+                    if ($pidKey === '') {
+                        continue;
+                    }
+
+                    if (!isset($encountersByPid[$pidKey])) {
+                        $encountersByPid[$pidKey] = array();
+                    }
+
+                    $encountersByPid[$pidKey][] = substr((string)($encounterRow['encounter_date'] ?? ''), 0, 10);
+                }
+            }
+
+            foreach ($allRows as &$row) {
+                $row['operation_key'] = 'not_operated';
+                $row['operation_class'] = 'pill-pending';
+                $row['operation_label'] = xlt('No operado');
+                $row['operation_date'] = '';
+                $row['operation_details'] = '';
+                $row['patient_type_key'] = 'new';
+                $row['patient_type_class'] = 'pill-active';
+                $row['patient_type_label'] = xlt('Nuevo');
+
+                $pidKey = (string)($row['pid'] ?? '');
                 $referDate = (string)($row['refer_date'] ?? '');
                 $referEndDate = trim((string)($row['refer_end_date'] ?? ''));
-                foreach ($appointmentsByPid[$pidKey] as $apptRow) {
-                    $eventDate = (string)($apptRow['pc_eventDate'] ?? '');
-                    if ($eventDate === '' || (!empty($referDate) && $eventDate < $referDate)) {
-                        continue;
-                    }
+                $referralEntryDate = empty($row['created_date']) ? '' : substr((string)$row['created_date'], 0, 10);
+                $patientTypeCompareDate = $referralEntryDate !== '' ? $referralEntryDate : $referDate;
+                $requestedServiceCodes = getReferralRequestedServiceCodes($row['refer_related_code'] ?? '');
+                $useCarePlanForOperation = !empty(array_intersect($requestedServiceCodes, array('281339', '281351', '66761')));
 
-                    if ($referEndDate !== '' && $eventDate > $referEndDate) {
-                        continue;
+                if ($pidKey !== '' && !empty($encountersByPid[$pidKey]) && $patientTypeCompareDate !== '') {
+                    foreach ($encountersByPid[$pidKey] as $encounterDate) {
+                        if ($encounterDate !== '' && $encounterDate < $patientTypeCompareDate) {
+                            $row['patient_type_key'] = 'returning';
+                            $row['patient_type_class'] = 'pill-neutral';
+                            $row['patient_type_label'] = xlt('Recurrente');
+                            break;
+                        }
                     }
+                }
 
-                    $row['next_appt_date'] = $eventDate;
-                    $row['next_appt_status'] = (string)($apptRow['pc_apptstatus'] ?? '');
-                    $row['next_appt_provider_id'] = trim((string)($apptRow['pc_aid'] ?? ''));
-                    $row['next_appt_provider'] = trim((string)($apptRow['provider_name'] ?? ''));
+                if ($pidKey !== '' && !empty($appointmentsByPid[$pidKey])) {
+                    foreach ($appointmentsByPid[$pidKey] as $apptRow) {
+                        $eventDate = (string)($apptRow['pc_eventDate'] ?? '');
+                        if ($eventDate === '' || (!empty($referDate) && $eventDate < $referDate)) {
+                            continue;
+                        }
 
-                    if (trim((string)$row['effective_provider_id']) === '') {
-                        $row['effective_provider_id'] = $row['next_appt_provider_id'];
-                        $row['effective_provider_name'] = $row['next_appt_provider'];
+                        if ($referEndDate !== '' && $eventDate > $referEndDate) {
+                            continue;
+                        }
+
+                        $row['next_appt_date'] = $eventDate;
+                        $row['next_appt_status'] = (string)($apptRow['pc_apptstatus'] ?? '');
+                        $row['next_appt_provider_id'] = trim((string)($apptRow['pc_aid'] ?? ''));
+                        $row['next_appt_provider'] = trim((string)($apptRow['provider_name'] ?? ''));
+
+                        if (trim((string)$row['effective_provider_id']) === '') {
+                            $row['effective_provider_id'] = $row['next_appt_provider_id'];
+                            $row['effective_provider_name'] = $row['next_appt_provider'];
+                        }
+                        break;
                     }
-                    break;
+                }
+
+                if ($useCarePlanForOperation && $pidKey !== '' && !empty($carePlansByPid[$pidKey])) {
+                    foreach ($carePlansByPid[$pidKey] as $carePlanRow) {
+                        $carePlanDate = substr((string)($carePlanRow['care_plan_date'] ?? ''), 0, 10);
+                        if ($carePlanDate === '' || (!empty($referDate) && $carePlanDate <= $referDate)) {
+                            continue;
+                        }
+
+                        $carePlanDetails = trim((string)($carePlanRow['codetext'] ?? ''));
+                        if ($carePlanDetails === '') {
+                            $carePlanDetails = trim((string)($carePlanRow['description'] ?? ''));
+                        }
+                        if ($carePlanDetails === '') {
+                            $carePlanDetails = trim((string)($carePlanRow['code'] ?? ''));
+                        }
+
+                        $row['operation_key'] = 'operated';
+                        $row['operation_class'] = 'pill-active';
+                        $row['operation_label'] = xlt('Operado');
+                        $row['operation_date'] = $carePlanDate;
+                        $row['operation_details'] = $carePlanDetails;
+                        break;
+                    }
+                } elseif (!$useCarePlanForOperation && $pidKey !== '' && !empty($protocolsByPid[$pidKey])) {
+                    foreach ($protocolsByPid[$pidKey] as $protocolRow) {
+                        $protocolDate = substr((string)($protocolRow['protocol_date'] ?? ''), 0, 10);
+                        if ($protocolDate === '' || (!empty($referDate) && $protocolDate <= $referDate)) {
+                            continue;
+                        }
+
+                        $row['operation_key'] = 'operated';
+                        $row['operation_class'] = 'pill-active';
+                        $row['operation_label'] = xlt('Operado');
+                        $row['operation_date'] = $protocolDate;
+                        $row['operation_details'] = formatProtocolOperation($protocolRow['operation_value'] ?? '');
+                        break;
+                    }
                 }
             }
             unset($row);
@@ -696,7 +1345,7 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
                 unset($arow);
 
-                $autoAssignMessage = xlt('Revert completed.') . ' ' . xlt('Pending referrals cleared') . ': ' . $revertedCount;
+                $autoAssignMessage = xlt('Reversión completada.') . ' ' . xlt('Referencias pendientes limpiadas') . ': ' . $revertedCount;
             }
 
             if ($form_auto_assign) {
@@ -767,23 +1416,27 @@ while ($prow = sqlFetchArray($providerRes)) {
                 }
                 unset($arow);
 
-                $autoAssignMessage = xlt('Auto assignment completed.') . ' ' . xlt('Assigned referrals') . ': ' . $autoAssignedCount;
+                $autoAssignMessage = xlt('Autoasignación completada.') . ' ' . xlt('Referencias asignadas') . ': ' . $autoAssignedCount;
             }
 
             foreach ($allRows as &$row) {
                 $hasAppointment = !empty($row['next_appt_date']);
-                $hasAssignedProvider = trim((string)($row['effective_provider_id'] ?? '')) !== '';
+                $hasExplicitAssignedProvider = trim((string)($row['assigned_provider_id'] ?? '')) !== '';
                 if ($hasAppointment) {
-                    $apptKey = 'assigned';
+                    $apptKey = 'scheduled';
                     $apptClass = 'pill-assigned';
-                    $apptLabel = xlt('Scheduled');
+                    $apptLabel = xlt('Agendada');
+                } elseif ($hasExplicitAssignedProvider) {
+                    $apptKey = 'pending_schedule';
+                    $apptClass = 'pill-pending';
+                    $apptLabel = xlt('Pendiente de agendar');
                 } else {
                     $apptKey = 'pending';
                     $apptClass = 'pill-pending';
-                    $apptLabel = $hasAssignedProvider ? xlt('Pending Scheduling') : xlt('Pending');
+                    $apptLabel = xlt('Pendiente');
                 }
 
-                $nextAppointment = xlt('No appointment');
+                $nextAppointment = xlt('Sin cita');
                 if ($hasAppointment) {
                     $nextAppointment = oeFormatShortDate($row['next_appt_date']);
                     if (!empty($row['next_appt_status'])) {
@@ -824,6 +1477,18 @@ while ($prow = sqlFetchArray($providerRes)) {
                     continue;
                 }
 
+                if ($form_operation_state !== '' && $row['operation_key'] !== $form_operation_state) {
+                    continue;
+                }
+
+                if ($form_patient_type !== '' && $row['patient_type_key'] !== $form_patient_type) {
+                    continue;
+                }
+
+                if ($form_refer_state !== '' && trim((string)($row['refer_state'] ?? '')) !== $form_refer_state) {
+                    continue;
+                }
+
                 $rowProviderId = trim((string)($row['effective_provider_id'] ?? ''));
                 if ($form_assigned_provider === '__unassigned__' && $rowProviderId !== '') {
                     continue;
@@ -844,16 +1509,30 @@ while ($prow = sqlFetchArray($providerRes)) {
                     $vigenteCount++;
                 }
 
-                if ($row['appt_key'] === 'assigned') {
+                if ($row['appt_key'] === 'scheduled') {
                     $assignedCount++;
+                } elseif ($row['appt_key'] === 'pending_schedule') {
+                    $pendingScheduleCount++;
                 } else {
                     $pendingCount++;
                 }
 
-                if ($row['appt_key'] === 'assigned') {
+                if ($row['operation_key'] === 'operated') {
+                    $operatedCount++;
+                } else {
+                    $notOperatedCount++;
+                }
+
+                if ($row['patient_type_key'] === 'new') {
+                    $newPatientCount++;
+                } else {
+                    $returningPatientCount++;
+                }
+
+                if ($row['appt_key'] === 'scheduled') {
                     $providerName = trim((string)($row['effective_provider_name'] ?? ''));
                     if ($providerName === '') {
-                        $providerName = xlt('Unassigned');
+                        $providerName = xlt('Sin asignar');
                     }
 
                     $providerKey = $rowProviderId !== '' ? ('id:' . $rowProviderId) : ('name:' . $providerName);
@@ -892,51 +1571,71 @@ while ($prow = sqlFetchArray($providerRes)) {
                     </div>
                 <?php } ?>
                 <div class="text-muted" style="margin-bottom:8px; font-size:12px;">
-                    <?php echo xlt('Appointment status considers appointments from referral date and within referral validity range.'); ?>
+                    <?php echo xlt('El estado de cita considera citas desde la fecha de referencia y dentro del rango de vigencia de la referencia.'); ?>
                 </div>
                 <div class="referral-summary">
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('Total Referrals'); ?></span>
-                        <span class="summary-value"><?php echo text($totalReferrals); ?></span>
+                        <span class="summary-label"><?php echo xlt('Total de referencias'); ?></span>
+                        <span class="summary-value" data-summary-key="total"><?php echo text($totalReferrals); ?></span>
                     </div>
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('Active'); ?></span>
-                        <span class="summary-value"><?php echo text($vigenteCount); ?></span>
+                        <span class="summary-label"><?php echo xlt('Vigentes'); ?></span>
+                        <span class="summary-value" data-summary-key="active"><?php echo text($vigenteCount); ?></span>
                     </div>
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('Expired'); ?></span>
-                        <span class="summary-value"><?php echo text($caducadaCount); ?></span>
+                        <span class="summary-label"><?php echo xlt('Caducadas'); ?></span>
+                        <span class="summary-value" data-summary-key="expired"><?php echo text($caducadaCount); ?></span>
                     </div>
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('No End Date'); ?></span>
-                        <span class="summary-value"><?php echo text($openEndCount); ?></span>
+                        <span class="summary-label"><?php echo xlt('Sin fecha fin'); ?></span>
+                        <span class="summary-value" data-summary-key="no_end"><?php echo text($openEndCount); ?></span>
                     </div>
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('Assigned'); ?></span>
-                        <span class="summary-value"><?php echo text($assignedCount); ?></span>
+                        <span class="summary-label"><?php echo xlt('Asignadas'); ?></span>
+                        <span class="summary-value" data-summary-key="scheduled"><?php echo text($assignedCount); ?></span>
                     </div>
                     <div class="summary-card">
-                        <span class="summary-label"><?php echo xlt('Pending'); ?></span>
-                        <span class="summary-value"><?php echo text($pendingCount); ?></span>
+                        <span class="summary-label"><?php echo xlt('Pendientes de agendar'); ?></span>
+                        <span class="summary-value" data-summary-key="pending_schedule"><?php echo text($pendingScheduleCount); ?></span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label"><?php echo xlt('Pendientes'); ?></span>
+                        <span class="summary-value" data-summary-key="pending"><?php echo text($pendingCount); ?></span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label"><?php echo xlt('Operados'); ?></span>
+                        <span class="summary-value" data-summary-key="operated"><?php echo text($operatedCount); ?></span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label"><?php echo xlt('No operados'); ?></span>
+                        <span class="summary-value" data-summary-key="not_operated"><?php echo text($notOperatedCount); ?></span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label"><?php echo xlt('Pacientes nuevos'); ?></span>
+                        <span class="summary-value" data-summary-key="new_patient"><?php echo text($newPatientCount); ?></span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label"><?php echo xlt('Pacientes recurrentes'); ?></span>
+                        <span class="summary-value" data-summary-key="returning_patient"><?php echo text($returningPatientCount); ?></span>
                     </div>
                 </div>
                 <div class="provider-stats-wrap">
                     <div class="d-flex align-items-center" style="gap:8px; margin-bottom:6px;">
-                        <div class="stats-title" style="margin:0;"><?php echo xlt('Assigned Referrals By Provider'); ?></div>
+                        <div class="stats-title" style="margin:0;"><?php echo xlt('Referencias asignadas por proveedor'); ?></div>
                         <a href="#providerStatsCollapse" class="btn btn-sm btn-default" data-toggle="collapse" aria-expanded="false" aria-controls="providerStatsCollapse">
-                            <?php echo xlt('Show/Hide'); ?>
+                            <?php echo xlt('Mostrar/Ocultar'); ?>
                         </a>
                     </div>
                     <div id="providerStatsCollapse" class="collapse">
                         <?php if (empty($providerStatsRows)) { ?>
-                            <div class="text-muted" style="font-size:12px;"><?php echo xlt('No assigned referrals in current filters.'); ?></div>
+                            <div class="text-muted" style="font-size:12px;"><?php echo xlt('No hay referencias asignadas en los filtros actuales.'); ?></div>
                         <?php } else { ?>
                             <table class='table table-bordered table-striped'>
                                 <thead>
                                 <tr>
-                                    <th><?php echo xlt('Provider'); ?></th>
-                                    <th><?php echo xlt('Assigned Referrals'); ?></th>
-                                    <th><?php echo xlt('Unique Patients'); ?></th>
+                                    <th><?php echo xlt('Proveedor'); ?></th>
+                                    <th><?php echo xlt('Referencias asignadas'); ?></th>
+                                    <th><?php echo xlt('Pacientes únicos'); ?></th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -955,53 +1654,56 @@ while ($prow = sqlFetchArray($providerRes)) {
                 <table width='98%' id='mymaintable' class='table table-bordered table-striped'>
                     <thead>
                     <tr>
-                        <th><?php echo xlt('Refer To'); ?></th>
-                        <th><?php echo xlt('Refer Date'); ?></th>
-                        <th><?php echo xlt('System Entry Date'); ?></th>
-                        <th><?php echo xlt('Reply Date'); ?></th>
-                        <th><?php echo xlt('Patient'); ?></th>
+                        <th><?php echo xlt('Referido a'); ?></th>
+                        <th><?php echo xlt('Fecha de referencia'); ?></th>
+                        <th><?php echo xlt('Fecha de ingreso al sistema'); ?></th>
+                        <th><?php echo xlt('Tipo de paciente'); ?></th>
+                        <th><?php echo xlt('Paciente'); ?></th>
                         <th><?php echo xlt('ID'); ?></th>
-                        <th><?php echo xlt('Reason'); ?></th>
-                        <th><?php echo xlt('Referral Code'); ?></th>
-                        <th><?php echo xlt('Valid Until'); ?></th>
-                        <th><?php echo xlt('Validity'); ?></th>
-                        <th><?php echo xlt('Appointment'); ?></th>
-                        <th><?php echo xlt('Assigned Provider'); ?></th>
-                        <th><?php echo xlt('Next Appointment'); ?></th>
+                        <th><?php echo xlt('Motivo'); ?></th>
+                        <th><?php echo xlt('Servicio solicitado'); ?></th>
+                        <th><?php echo xlt('Código de referencia'); ?></th>
+                        <th><?php echo xlt('Válida hasta'); ?></th>
+                        <th><?php echo xlt('Vigencia'); ?></th>
+                        <th><?php echo xlt('Cita'); ?></th>
+                        <th><?php echo xlt('Proveedor asignado'); ?></th>
+                        <th><?php echo xlt('Próxima cita'); ?></th>
+                        <th><?php echo xlt('Cirugía'); ?></th>
+                        <th><?php echo xlt('Fecha de cirugía'); ?></th>
+                        <th><?php echo xlt('Procedimiento operado'); ?></th>
                     </tr>
                     </thead>
                     <tbody>
-                    <?php if (empty($rows)) { ?>
-                        <tr>
-                            <td colspan="13"
-                                class="text-center text-muted"><?php echo xlt('No referrals found for this criteria.'); ?></td>
-                        </tr>
-                    <?php } else { ?>
-                        <?php foreach ($rows as $row) { ?>
-                            <tr>
-                                <td><?php echo text($row['refer_to_display']); ?></td>
-                                <td>
+                    <?php foreach ($rows as $row) { ?>
+	                            <tr data-validity="<?php echo attr($row['validity_key']); ?>" data-appt="<?php echo attr($row['appt_key']); ?>" data-operation="<?php echo attr($row['operation_key']); ?>" data-patient-type="<?php echo attr($row['patient_type_key']); ?>">
+	                                <td><?php echo text($row['refer_to_display']); ?></td>
+	                                <td data-order="<?php echo attr($row['refer_date']); ?>">
                                     <a href='#' onclick="return show_referral(<?php echo js_escape($row['id']); ?>)">
                                         <?php echo text(oeFormatShortDate($row['refer_date'])); ?>&nbsp;
                                     </a>
                                 </td>
-                                <td>
+                                <?php $createdDate = empty($row['created_date']) ? '' : substr($row['created_date'], 0, 10); ?>
+                                <td data-order="<?php echo attr($createdDate); ?>">
                                     <?php
-                                    $createdDate = empty($row['created_date']) ? '' : substr($row['created_date'], 0, 10);
                                     echo text($createdDate ? oeFormatShortDate($createdDate) : '');
                                     ?>
                                 </td>
-                                <td><?php echo text(oeFormatShortDate($row['reply_date'])); ?></td>
+                                <td><span
+                                        class="status-pill <?php echo attr($row['patient_type_class']); ?>"><?php echo text($row['patient_type_label']); ?></span>
+                                </td>
                                 <td><?php echo text($row['patient_name']); ?></td>
                                 <td><?php echo text($row['pubpid']); ?></td>
                                 <td><?php echo text($row['body']); ?></td>
+                                <td data-cpt4="<?php echo attr(implode(';', getReferralRequestedServiceCodes($row['refer_related_code'] ?? ''))); ?>">
+                                    <?php echo text(formatReferralRequestedService($row['refer_related_code'] ?? '', $requestedServiceDescriptions)); ?>
+                                </td>
                                 <td><?php echo text($row['refer_id']); ?></td>
-                                <td>
+                                <td data-order="<?php echo attr($row['refer_end_date'] ?? ''); ?>">
                                     <?php
                                     if (!empty($row['refer_end_date'])) {
                                         echo text(oeFormatShortDate($row['refer_end_date']));
                                     } else {
-                                        echo '<span class="status-pill pill-neutral">' . xlt('No End Date') . '</span>';
+                                        echo '<span class="status-pill pill-neutral">' . xlt('Sin fecha fin') . '</span>';
                                     }
                                     ?>
                                 </td>
@@ -1015,24 +1717,30 @@ while ($prow = sqlFetchArray($providerRes)) {
                                     <?php
                                     $apptProvider = trim((string)($row['effective_provider_name'] ?? ''));
                                     if ($apptProvider === '') {
-                                        $apptProvider = trim((string)($row['next_appt_provider'] ?? ''));
+                                    $apptProvider = trim((string)($row['next_appt_provider'] ?? ''));
                                     }
                                     if ($apptProvider === '') {
                                         $apptProvider = trim((string)($row['assigned_provider_name'] ?? ''));
                                     }
-                                    echo text($apptProvider !== '' ? $apptProvider : xlt('Unassigned'));
+                                    echo text($apptProvider !== '' ? $apptProvider : xlt('Sin asignar'));
                                     ?>
                                 </td>
-                                <td><?php echo text($row['next_appointment']); ?></td>
+                                <td data-order="<?php echo attr($row['next_appt_date'] ?? ''); ?>"><?php echo text($row['next_appointment']); ?></td>
+                                <td><span
+                                        class="status-pill <?php echo attr($row['operation_class']); ?>"><?php echo text($row['operation_label']); ?></span>
+                                </td>
+                                <td data-order="<?php echo attr($row['operation_date'] ?? ''); ?>">
+                                    <?php echo !empty($row['operation_date']) ? text(oeFormatShortDate($row['operation_date'])) : ''; ?>
+                                </td>
+                                <td><?php echo text($row['operation_details']); ?></td>
                             </tr>
-                        <?php } ?>
                     <?php } ?>
                     </tbody>
                 </table>
             </div> <!-- end of results -->
         <?php } else { ?>
             <div class='text'>
-                <?php echo xlt('Please input search criteria above, and click Submit to view results.'); ?>
+                <?php echo xlt('Ingrese los criterios de búsqueda y haga clic en Consultar para ver los resultados.'); ?>
             </div>
         <?php } ?>
     </form>

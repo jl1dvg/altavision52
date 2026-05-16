@@ -181,23 +181,22 @@ foreach ($planTitles as $index => $planTitle) {
     $signature = $GLOBALS["webserver_root"] . "/interface/forms/eye_mag/images/sign_" . attr($_SESSION['authUserID']) . ".jpg";
     if (file_exists($signature)) {
         ?>
-        <img src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/eye_mag/images/sign_<?php echo attr($_SESSION['authUserID']); ?>.jpg"
-             alt="Firma"
-             class="signature-image">
+        <img
+            src="<?php echo $GLOBALS['webroot']; ?>/interface/forms/eye_mag/images/sign_<?php echo attr($_SESSION['authUserID']); ?>.jpg"
+            alt="Firma"
+            class="signature-image">
     <?php } else { ?>
         <div class="signature-line"></div>
     <?php } ?>
 
-    <div>
-        <?php echo xlt('Provider'); ?>:
-        <?php
-        $providerDisplayName = trim(($prov_data['fname'] ?? '') . ' ' . ($prov_data['lname'] ?? ''));
-        echo text($providerDisplayName);
-        ?>
-        <?php if (!empty($prov_data['suffix'])) {
-            echo ', ' . text($prov_data['suffix']);
-        } ?>
-    </div>
+    <div><b>
+            <?php if (!empty($prov_data['suffix'])) {
+                echo text($prov_data['suffix'] . ' ');
+            }
+            $providerDisplayName = trim(($prov_data['fname'] ?? '') . ' ' . ($prov_data['lname'] ?? ''));
+            echo text($providerDisplayName);
+            ?>
+        </b></div>
 </div>
 </body>
 </html>

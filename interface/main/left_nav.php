@@ -1522,6 +1522,9 @@ if ($GLOBALS['gbl_portal_cms_enable'] && acl_check('patientportal', 'portal')) {
             genMiscLink('RTop', 'adm', '0', xl('Layouts'), 'super/edit_layout.php');
         } ?>
         <?php if (acl_check('admin', 'super')) {
+            genMiscLink('RTop', 'adm', '0', xl('Package Builder'), 'super/fee_sheet_packages.php');
+        } ?>
+        <?php if (acl_check('admin', 'super')) {
             genMiscLink('RTop', 'adm', '0', xl('Lists'), 'super/edit_list.php');
         } ?>
         <?php if (acl_check('admin', 'acl')) {

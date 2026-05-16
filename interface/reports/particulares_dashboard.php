@@ -99,6 +99,20 @@ function dashboardSuperiorCategory($pricelevel)
     return strtoupper(trim((string) $pricelevel)) === 'STANDARD' ? 'Particulares' : 'Privados';
 }
 
+function dashboardSurgeryStatusEligible($status, $statusToggle1 = null, $statusToggle2 = null)
+{
+    $status = trim((string) $status);
+    if ($status === '') {
+        return false;
+    }
+
+    if (!empty($statusToggle1) || !empty($statusToggle2)) {
+        return true;
+    }
+
+    return in_array($status, array('<', '$'), true);
+}
+
 function dashboardDelta($current, $previous)
 {
     $current = (float) $current;
@@ -224,7 +238,9 @@ $kpis = array(
     'perdida' => 0,
     'unique_patients' => 0,
     'total_billed' => 0.0,
+    'total_collected' => 0.0,
     'avg_ticket' => 0.0,
+    'collection_rate' => 0.0,
     'pending_rate' => 0.0,
     'loss_rate' => 0.0,
 );
@@ -232,6 +248,7 @@ $kpis = array(
 $encounterIndex = array();
 $encounterPidDate = array();
 $appointmentPidDate = array();
+$surgeryAppointmentStatusByPidDate = array();
 $billingEncounterKeys = array();
 $doctorSummary = array();
 $rawCategorySummary = array();
@@ -243,8 +260,8 @@ $alerts = array();
 $detailRows = array();
 $monthsInRange = dashboardMonthsInRange($form_from_date, $form_to_date);
 $superiorCategorySummary = array(
-    'Particulares' => array('label' => 'Particulares', 'amount' => 0.0, 'encounters' => array(), 'patients' => array()),
-    'Privados' => array('label' => 'Privados', 'amount' => 0.0, 'encounters' => array(), 'patients' => array()),
+    'Particulares' => array('label' => 'Particulares', 'amount' => 0.0, 'collected' => 0.0, 'encounters' => array(), 'patients' => array()),
+    'Privados' => array('label' => 'Privados', 'amount' => 0.0, 'collected' => 0.0, 'encounters' => array(), 'patients' => array()),
 );
 
 if ($form_refresh) {
@@ -253,6 +270,7 @@ if ($form_refresh) {
             $monthlyFunnel[$monthKey] = array(
                 'label' => dashboardMonthLabelEs($monthKey),
                 'Facturacion' => 0.0,
+                'Recaudado' => 0.0,
                 'Evaluadas' => 0,
                 'Realizadas' => 0,
                 'Facturadas' => 0,
@@ -330,6 +348,7 @@ if ($form_refresh) {
             'provider_name' => $row['provider_name'],
             'reason' => $row['reason'],
             'billed_amount' => 0.0,
+            'collected_amount' => 0.0,
             'billing_lines' => 0,
             'units' => array(),
             'dominant_unit' => 'Sin clasificar',
@@ -359,8 +378,11 @@ if ($form_refresh) {
             TRIM(CONCAT(COALESCE(NULLIF(u.lname, ''), ''), CASE WHEN COALESCE(NULLIF(u.lname, ''), '') != '' AND COALESCE(NULLIF(u.fname, ''), '') != '' THEN ', ' ELSE '' END, COALESCE(NULLIF(u.fname, ''), 'Sin medico'))) AS provider_name,
             e.pc_title,
             e.pc_hometext,
+            e.pc_catid,
             e.pc_apptstatus,
-            COALESCE(loa.title, e.pc_apptstatus) AS appt_status_title
+            COALESCE(loa.title, e.pc_apptstatus) AS appt_status_title,
+            loa.toggle_setting_1 AS appt_toggle_1,
+            loa.toggle_setting_2 AS appt_toggle_2
         FROM openemr_postcalendar_events AS e
         INNER JOIN patient_data AS p ON p.pid = e.pc_pid
         LEFT JOIN facility AS fa ON fa.id = e.pc_facility
@@ -400,6 +422,28 @@ if ($form_refresh) {
         }
         $appointmentPidDate[$pidDateKey][] = $row;
         $monthlyFunnel[$monthKey]['Evaluadas']++;
+
+        if (in_array((int) $row['pc_catid'], array(15, 19), true)) {
+            if (!isset($surgeryAppointmentStatusByPidDate[$pidDateKey])) {
+                $surgeryAppointmentStatusByPidDate[$pidDateKey] = array(
+                    'has_surgery_appointment' => true,
+                    'has_eligible_status' => false,
+                    'status_labels' => array(),
+                );
+            }
+
+            if (dashboardSurgeryStatusEligible($row['pc_apptstatus'], $row['appt_toggle_1'], $row['appt_toggle_2'])) {
+                $surgeryAppointmentStatusByPidDate[$pidDateKey]['has_eligible_status'] = true;
+            }
+
+            $statusLabel = trim((string) $row['appt_status_title']);
+            if ($statusLabel === '') {
+                $statusLabel = trim((string) $row['pc_apptstatus']);
+            }
+            if ($statusLabel !== '') {
+                $surgeryAppointmentStatusByPidDate[$pidDateKey]['status_labels'][$statusLabel] = true;
+            }
+        }
 
         $statusKey = trim((string) $row['appt_status_title']) === '' ? 'Sin estado' : $row['appt_status_title'];
         if (!isset($appointmentStatusSummary[$statusKey])) {
@@ -484,6 +528,7 @@ if ($form_refresh) {
                 'provider_name' => $row['provider_name'],
                 'reason' => '',
                 'billed_amount' => 0.0,
+                'collected_amount' => 0.0,
                 'billing_lines' => 0,
                 'units' => array(),
                 'dominant_unit' => 'Sin clasificar',
@@ -498,6 +543,15 @@ if ($form_refresh) {
         $unitName = dashboardBusinessUnit($row['code_category']);
         $superiorCategory = dashboardSuperiorCategory($row['effective_pricelevel']);
         $procedureLabel = trim($row['code'] . (!empty($row['modifier']) ? '-' . $row['modifier'] : '') . ' ' . $row['procedure_text']);
+        $pidDateKey = $row['pid'] . ':' . $row['service_date'];
+        $skipSurgeryLine = $unitName === 'Cirugias'
+            && !empty($surgeryAppointmentStatusByPidDate[$pidDateKey]['has_surgery_appointment'])
+            && empty($surgeryAppointmentStatusByPidDate[$pidDateKey]['has_eligible_status']);
+
+        if ($skipSurgeryLine) {
+            continue;
+        }
+
         $encounterIndex[$encounterKey]['billed_amount'] += $amount;
         $encounterIndex[$encounterKey]['billing_lines']++;
         if (!isset($encounterIndex[$encounterKey]['units'][$unitName])) {
@@ -550,6 +604,44 @@ if ($form_refresh) {
         }
         $doctorSummary[$doctorKey]['amount'] += $amount;
         $doctorSummary[$doctorKey]['encounters'][$encounterKey] = true;
+    }
+
+    $paymentSql = "SELECT
+            a.pid,
+            a.encounter,
+            COALESCE(SUM(a.pay_amount), 0) AS total_paid
+        FROM ar_activity AS a
+        INNER JOIN form_encounter AS fe ON fe.pid = a.pid AND fe.encounter = a.encounter
+        INNER JOIN patient_data AS p ON p.pid = fe.pid
+        WHERE fe.date >= ? AND fe.date <= ?
+            AND a.pay_amount != 0
+            AND UPPER(COALESCE(NULLIF(p.pricelevel, ''), 'STANDARD')) NOT IN (?, ?)";
+    $paymentBind = array($form_from_date . ' 00:00:00', $form_to_date . ' 23:59:59', 'IESS', 'MSP');
+
+    if ($form_facility !== '') {
+        $paymentSql .= " AND fe.facility_id = ? ";
+        $paymentBind[] = $form_facility;
+    }
+
+    $paymentSql .= " GROUP BY a.pid, a.encounter";
+    $paymentRes = sqlStatement($paymentSql, $paymentBind);
+    while ($payRow = sqlFetchArray($paymentRes)) {
+        $encounterKey = $payRow['pid'] . ':' . $payRow['encounter'];
+        if (empty($encounterIndex[$encounterKey])) {
+            continue;
+        }
+
+        $collectedAmount = (float) $payRow['total_paid'];
+        $encounterIndex[$encounterKey]['collected_amount'] = $collectedAmount;
+
+        $monthKey = substr($encounterIndex[$encounterKey]['service_date'], 0, 7);
+        $ensureMonth($monthKey);
+        $monthlyFunnel[$monthKey]['Recaudado'] += $collectedAmount;
+
+        $superiorCategory = $encounterIndex[$encounterKey]['superior_category'];
+        if (isset($superiorCategorySummary[$superiorCategory])) {
+            $superiorCategorySummary[$superiorCategory]['collected'] += $collectedAmount;
+        }
     }
 
     $uniquePatients = array();
@@ -618,22 +710,25 @@ if ($form_refresh) {
     $kpis['perdida'] = 0;
     $kpis['unique_patients'] = count($uniquePatients);
     $kpis['total_billed'] = 0.0;
+    $kpis['total_collected'] = 0.0;
 
     foreach ($monthlyFunnel as $monthRow) {
         $kpis['evaluadas'] += (int) $monthRow['Evaluadas'];
         $kpis['perdida'] += (int) $monthRow['Perdida'];
         $kpis['total_billed'] += (float) $monthRow['Facturacion'];
+        $kpis['total_collected'] += (float) $monthRow['Recaudado'];
     }
 
     $kpis['avg_ticket'] = $kpis['realizadas'] > 0 ? ($kpis['total_billed'] / $kpis['realizadas']) : 0.0;
+    $kpis['collection_rate'] = $kpis['total_billed'] > 0 ? (($kpis['total_collected'] / $kpis['total_billed']) * 100) : 0.0;
     $kpis['pending_rate'] = $kpis['realizadas'] > 0 ? (($kpis['pendientes'] / $kpis['realizadas']) * 100) : 0.0;
     $kpis['loss_rate'] = $kpis['evaluadas'] > 0 ? (($kpis['perdida'] / $kpis['evaluadas']) * 100) : 0.0;
 
     $currentMonth = substr($form_to_date, 0, 7);
     $previousMonth = date('Y-m', strtotime($currentMonth . '-01 -1 month'));
 
-    $currentOverall = $monthlyFunnel[$currentMonth] ?? array('Facturacion' => 0.0, 'Realizadas' => 0);
-    $previousOverall = $monthlyFunnel[$previousMonth] ?? array('Facturacion' => 0.0, 'Realizadas' => 0);
+    $currentOverall = $monthlyFunnel[$currentMonth] ?? array('Facturacion' => 0.0, 'Recaudado' => 0.0, 'Realizadas' => 0);
+    $previousOverall = $monthlyFunnel[$previousMonth] ?? array('Facturacion' => 0.0, 'Recaudado' => 0.0, 'Realizadas' => 0);
     $overallAmountDelta = dashboardDelta($currentOverall['Facturacion'], $previousOverall['Facturacion']);
     $overallCountDelta = dashboardDelta($currentOverall['Realizadas'], $previousOverall['Realizadas']);
     $overallBadge = dashboardGrowthBadge($overallAmountDelta, $overallCountDelta);
@@ -641,7 +736,9 @@ if ($form_refresh) {
     $objectiveCard = array(
         'status' => $overallBadge,
         'total_amount' => $kpis['total_billed'],
+        'total_collected' => $kpis['total_collected'],
         'avg_monthly_amount' => $kpis['total_billed'] / $monthsInRange,
+        'avg_monthly_collected' => $kpis['total_collected'] / $monthsInRange,
         'attentions' => $kpis['realizadas'],
         'avg_monthly_attentions' => $kpis['realizadas'] / $monthsInRange,
         'avg_ticket' => $kpis['avg_ticket'],
@@ -650,6 +747,8 @@ if ($form_refresh) {
         'previous_month' => $previousMonth,
         'current_amount' => $currentOverall['Facturacion'],
         'previous_amount' => $previousOverall['Facturacion'],
+        'current_collected' => $currentOverall['Recaudado'],
+        'previous_collected' => $previousOverall['Recaudado'],
         'current_attentions' => $currentOverall['Realizadas'],
         'previous_attentions' => $previousOverall['Realizadas'],
         'current_ticket' => $currentOverall['Realizadas'] > 0 ? ($currentOverall['Facturacion'] / $currentOverall['Realizadas']) : 0.0,
@@ -1029,15 +1128,15 @@ if ($form_refresh) {
             if (monthlyFunnelRows.length) {
                 new Dygraph(
                     document.getElementById('facturacionTrend'),
-                    buildDygraphCsv(monthlyFunnelRows, ['Fecha', 'Facturacion']),
+                    buildDygraphCsv(monthlyFunnelRows, ['Fecha', 'Facturacion', 'Recaudado']),
                     {
-                        title: <?php echo xlj('Facturacion Mensual'); ?>,
+                        title: <?php echo xlj('Generado vs Recaudado Mensual'); ?>,
                         ylabel: <?php echo xlj('Monto'); ?>,
                         xlabel: <?php echo xlj('Mes'); ?>,
                         legend: 'always',
                         labelsKMB: true,
                         strokeWidth: 3,
-                        color: '#2563eb'
+                        colors: ['#2563eb', '#16a34a']
                     }
                 );
 
@@ -1079,7 +1178,7 @@ if ($form_refresh) {
 <div class="dashboard-shell">
     <div class="filters-card">
         <div class="section-title"><?php echo xlt('Dashboard Particulares y Privados'); ?></div>
-        <div class="section-subtitle"><?php echo xlt('Cruza agenda, encounters y billing para pacientes no publicos. Particulares = standard; Privados = resto. Excluye IESS y MSP.'); ?></div>
+        <div class="section-subtitle"><?php echo xlt('Cruza agenda, encounters y billing para pacientes no publicos.'); ?></div>
 
         <form method="post" id="theform" action="particulares_dashboard.php" onsubmit="return top.restoreSession()">
             <input type="hidden" name="csrf_token_form" value="<?php echo attr(CsrfUtils::collectCsrfToken()); ?>" />
@@ -1146,6 +1245,16 @@ if ($form_refresh) {
                 <span class="kpi-foot"><?php echo text($kpis['realizadas'] > 0 ? dashboardPct(($kpis['facturadas'] / $kpis['realizadas']) * 100, 2) : '0.00%'); ?> <?php echo xlt('de las realizadas'); ?></span>
             </div>
             <div class="kpi-card">
+                <span class="kpi-label"><?php echo xlt('Generado'); ?></span>
+                <span class="kpi-value"><?php echo text(dashboardMoney($kpis['total_billed'])); ?></span>
+                <span class="kpi-foot"><?php echo xlt('Billing generado'); ?></span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label"><?php echo xlt('Colectado'); ?></span>
+                <span class="kpi-value"><?php echo text(dashboardMoney($kpis['total_collected'])); ?></span>
+                <span class="kpi-foot"><?php echo text(dashboardPct($kpis['collection_rate'], 2)); ?> <?php echo xlt('del generado'); ?></span>
+            </div>
+            <div class="kpi-card">
                 <span class="kpi-label"><?php echo xlt('Pendientes'); ?></span>
                 <span class="kpi-value"><?php echo text(number_format($kpis['pendientes'])); ?></span>
                 <span class="kpi-foot"><?php echo text(dashboardPct($kpis['pending_rate'], 2)); ?> <?php echo xlt('de las realizadas'); ?></span>
@@ -1167,6 +1276,7 @@ if ($form_refresh) {
                 $encountersCount = count($summaryRow['encounters']);
                 $patientsCount = count($summaryRow['patients']);
                 $avgTicket = $encountersCount > 0 ? ($summaryRow['amount'] / $encountersCount) : 0.0;
+                $collectionRate = $summaryRow['amount'] > 0 ? (($summaryRow['collected'] / $summaryRow['amount']) * 100) : 0.0;
                 ?>
                 <div class="section-card">
                     <div class="status-line">
@@ -1177,8 +1287,13 @@ if ($form_refresh) {
                     </div>
                     <div class="metrics-row">
                         <div class="metric-box">
-                            <small><?php echo xlt('Facturacion'); ?></small>
+                            <small><?php echo xlt('Generado'); ?></small>
                             <strong><?php echo text(dashboardMoney($summaryRow['amount'])); ?></strong>
+                        </div>
+                        <div class="metric-box">
+                            <small><?php echo xlt('Colectado'); ?></small>
+                            <strong><?php echo text(dashboardMoney($summaryRow['collected'])); ?></strong>
+                            <small><?php echo text(dashboardPct($collectionRate, 2)); ?></small>
                         </div>
                         <div class="metric-box">
                             <small><?php echo xlt('Atenciones'); ?></small>
@@ -1198,16 +1313,21 @@ if ($form_refresh) {
             <div class="hero-head">
                 <div>
                     <div class="section-title"><?php echo xlt('Objetivo 1: crecimiento de no publicos'); ?></div>
-                    <div class="section-subtitle"><?php echo xlt('Señales ejecutivas con agenda, encounters y billing real para particulares y privados, excluyendo IESS/MSP.'); ?></div>
+                    <div class="section-subtitle"><?php echo xlt('Señales ejecutivas con agenda, encounters y billing real para particulares y privados.'); ?></div>
                 </div>
                 <span class="status-badge <?php echo attr($objectiveCard['status']['class']); ?>"><?php echo text($objectiveCard['status']['label']); ?></span>
             </div>
 
             <div class="metrics-row">
                 <div class="metric-box">
-                    <small><?php echo xlt('Facturacion total'); ?></small>
+                    <small><?php echo xlt('Generado total'); ?></small>
                     <strong><?php echo text(dashboardMoney($objectiveCard['total_amount'])); ?></strong>
                     <small><?php echo xlt('Prom. mensual'); ?> <?php echo text(dashboardMoney($objectiveCard['avg_monthly_amount'])); ?></small>
+                </div>
+                <div class="metric-box">
+                    <small><?php echo xlt('Colectado total'); ?></small>
+                    <strong><?php echo text(dashboardMoney($objectiveCard['total_collected'])); ?></strong>
+                    <small><?php echo xlt('Prom. mensual'); ?> <?php echo text(dashboardMoney($objectiveCard['avg_monthly_collected'])); ?></small>
                 </div>
                 <div class="metric-box">
                     <small><?php echo xlt('Atenciones'); ?></small>
@@ -1233,10 +1353,16 @@ if ($form_refresh) {
                     </thead>
                     <tbody>
                     <tr>
-                        <td><?php echo xlt('Facturacion mensual'); ?></td>
+                        <td><?php echo xlt('Generado mensual'); ?></td>
                         <td class="text-right"><?php echo text(dashboardMonthLabelEs($objectiveCard['current_month']) . ': ' . dashboardMoney($objectiveCard['current_amount'])); ?></td>
                         <td class="text-right"><?php echo text(dashboardMonthLabelEs($objectiveCard['previous_month']) . ': ' . dashboardMoney($objectiveCard['previous_amount'])); ?></td>
                         <td class="text-right"><?php echo text(dashboardDeltaLabel($objectiveCard['current_amount'], $objectiveCard['previous_amount'])); ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php echo xlt('Colectado mensual'); ?></td>
+                        <td class="text-right"><?php echo text(dashboardMonthLabelEs($objectiveCard['current_month']) . ': ' . dashboardMoney($objectiveCard['current_collected'])); ?></td>
+                        <td class="text-right"><?php echo text(dashboardMonthLabelEs($objectiveCard['previous_month']) . ': ' . dashboardMoney($objectiveCard['previous_collected'])); ?></td>
+                        <td class="text-right"><?php echo text(dashboardDeltaLabel($objectiveCard['current_collected'], $objectiveCard['previous_collected'])); ?></td>
                     </tr>
                     <tr>
                         <td><?php echo xlt('Atenciones mensuales'); ?></td>
@@ -1475,12 +1601,13 @@ if ($form_refresh) {
                         <th><?php echo xlt('Agenda'); ?></th>
                         <th><?php echo xlt('Unidad'); ?></th>
                         <th><?php echo xlt('Estado'); ?></th>
-                        <th class="text-right"><?php echo xlt('Facturacion'); ?></th>
+                        <th class="text-right"><?php echo xlt('Generado'); ?></th>
+                        <th class="text-right"><?php echo xlt('Colectado'); ?></th>
                     </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($detailRows)) { ?>
-                        <tr><td colspan="9" class="text-center text-muted"><?php echo xlt('No hay datos para este filtro.'); ?></td></tr>
+                        <tr><td colspan="10" class="text-center text-muted"><?php echo xlt('No hay datos para este filtro.'); ?></td></tr>
                     <?php } else { ?>
                         <?php foreach ($detailRows as $row) { ?>
                             <tr>
@@ -1493,6 +1620,7 @@ if ($form_refresh) {
                                 <td><?php echo text($row['dominant_unit']); ?></td>
                                 <td><?php echo text($row['flow_status']); ?></td>
                                 <td class="text-right"><?php echo text(dashboardMoney($row['billed_amount'])); ?></td>
+                                <td class="text-right"><?php echo text(dashboardMoney($row['collected_amount'])); ?></td>
                             </tr>
                         <?php } ?>
                     <?php } ?>

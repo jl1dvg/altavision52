@@ -1596,11 +1596,13 @@ function build_DX_list(obj) {
     build_IMPPLAN(obj.IMPPLAN_items);
     if ($('#inc_PE').is(':checked') && obj.Clinical) {
         $.each(obj.Clinical, function(key, value) {
+               var clinicalItems = getIMPPLANClinicalItems(key);
+               if (!clinicalItems.length) { return; }
                diagnosis='';
-               if (obj.Clinical[key][0].diagnosis > '') { //so we are just showing this first item of each Dx (Eg bilateral, x4 pterygium, only first shows up)
-               diagnosis = "<code class='float-right ICD_CODE'>"+obj.Clinical[key][0].code+"</code>";
+               if (clinicalItems[0].diagnosis > '') { //so we are just showing this first item of each Dx (Eg bilateral, x4 pterygium, only first shows up)
+               diagnosis = "<code class='float-right ICD_CODE'>"+clinicalItems[0].code+"</code>";
                }
-               out += "<li class='ui-widget-content'><span name='DX_Clinical_"+key+"' id='DX_Clinical_"+key+"'>"+obj.Clinical[key][0].title+"</span> "+diagnosis+"</li> ";
+               out += "<li class='ui-widget-content'><span name='DX_Clinical_"+key+"' id='DX_Clinical_"+key+"'>"+clinicalItems[0].title+"</span> "+diagnosis+"</li> ";
                });
     }
 
@@ -1749,19 +1751,18 @@ function build_IMPPLAN(items,nodisplay) {
 
                     //this works for Clinical-derived terms with more than one Dx Code (found in more than one location/field)
                   if (value.PMSFH_link && value.PMSFH_link.match(/Clinical_(.*)/)) {
-                    if (typeof obj.Clinical !== "undefined") {
                       var location = value.PMSFH_link.match(/Clinical_(.*)/)[1];
-                      if (obj.Clinical[location]!=null ) {
-                        for (i=0; i < obj.Clinical[location].length; i++) {
-                            $('#Coding_DX_Codes').append(count_dx +'. '+obj.Clinical[location][i].code+': '+obj.Clinical[location][i].codedesc+'<br />');
-                            justify_btn = '<span class="modifier status_on" id="visit_just_'+count_dx+'" name="visit_justifier" value="" data-justcode="'+obj.Clinical[location][i].codetype+'|'+obj.Clinical[location][i].code+'" title="'+obj.Clinical[location][i].codedesc+'">'+count_dx+'</span>';
+                      var clinicalItems = getIMPPLANClinicalItems(location);
+                      if (clinicalItems.length) {
+                        for (i=0; i < clinicalItems.length; i++) {
+                            $('#Coding_DX_Codes').append(count_dx +'. '+clinicalItems[i].code+': '+clinicalItems[i].codedesc+'<br />');
+                            justify_btn = '<span class="modifier status_on" id="visit_just_'+count_dx+'" name="visit_justifier" value="" data-justcode="'+clinicalItems[i].codetype+'|'+clinicalItems[i].code+'" title="'+clinicalItems[i].codedesc+'">'+count_dx+'</span>';
                             count_dx++;
                             $('#visit_justification').append(justify_btn);
 
-                            visit_justifier.push(obj.Clinical[location][i].codetype+'|'+obj.Clinical[location][i].code);
+                            visit_justifier.push(clinicalItems[i].codetype+'|'+clinicalItems[i].code);
                         }
                       }
-                    }
                   }
                 }
               } else { //all is good, one code only
@@ -1975,19 +1976,23 @@ function dragto_IMPPLAN_zone(event, ui) {
     if (group =="Clinical") {
             //more than one field can contain this DX.
             //Group them into one IMPPLAN.
-        for (i=0;i < obj.Clinical[location].length; i++) {
-            the_codes.push(obj.Clinical[location][i]['code']);
-            the_codedesc = obj.Clinical[location][i]['codedesc'];
-            the_codetext = obj.Clinical[location][i]['codetext'];
+        var clinicalItems = getIMPPLANClinicalItems(location);
+        if (!clinicalItems.length) {
+            return;
+        }
+        for (i=0;i < clinicalItems.length; i++) {
+            the_codes.push(clinicalItems[i]['code']);
+            the_codedesc = clinicalItems[i]['codedesc'];
+            the_codetext = clinicalItems[i]['codetext'];
         }
         obj.IMPPLAN_items.push({
                                code:        normalizeIMPPLANCodeList(the_codes).join(", "),
                                codedesc:    the_codedesc,
                                codetext:    the_codetext,
-                               codetype:    obj.Clinical[location][0]['codetype'],
+                               codetype:    clinicalItems[0]['codetype'],
                                plan:        '',
-                               PMSFH_link:  obj.Clinical[location][0]['PMSFH_link'],
-                               title:       obj.Clinical[location][0]['title']
+                               PMSFH_link:  clinicalItems[0]['PMSFH_link'],
+                               title:       clinicalItems[0]['title']
                                });
 
     } else {
@@ -2054,15 +2059,41 @@ function build_CODING_list() {
           // physical finding found in more than one location, more than one code...
           // if there is a comma in there, there is more than one code present. Split them out.
           // And all those in one group have the same link out (PMSFH_link) value
-          var location = value.PMSFH_link.match(/Clinical_(.*)/)[1];
-          for (i=0; i< obj.Clinical[location].length; i++) {
-            CODING_items.push({
-                             code:     obj.Clinical[location][i]['code'],
-                             codedesc: obj.Clinical[location][i]['codedesc'],
-                             codetext: obj.Clinical[location][i]['codetext'],
-                             codetype: obj.Clinical[location][i]['codetype'],
-                             title:    obj.Clinical[location][i]['title']
-                             });
+          var clinicalMatch = value.PMSFH_link ? value.PMSFH_link.match(/Clinical_(.*)/) : null;
+          if (clinicalMatch) {
+            var location = clinicalMatch[1];
+            var clinicalItems = getIMPPLANClinicalItems(location);
+            if (clinicalItems.length) {
+              for (i=0; i< clinicalItems.length; i++) {
+                CODING_items.push({
+                                 code:     clinicalItems[i]['code'],
+                                 codedesc: clinicalItems[i]['codedesc'],
+                                 codetext: clinicalItems[i]['codetext'],
+                                 codetype: clinicalItems[i]['codetype'],
+                                 title:    clinicalItems[i]['title']
+                                 });
+              }
+            } else {
+              $.each(normalizeIMPPLANCodeList(value['code']), function(_, code) {
+                CODING_items.push({
+                                 code:     code,
+                                 codedesc: value['codedesc'],
+                                 codetext: value['codetext'],
+                                 codetype: value['codetype'],
+                                 title:    value['title']
+                                 });
+              });
+            }
+          } else {
+            $.each(normalizeIMPPLANCodeList(value['code']), function(_, code) {
+              CODING_items.push({
+                               code:     code,
+                               codedesc: value['codedesc'],
+                               codetext: value['codetext'],
+                               codetype: value['codetype'],
+                               title:    value['title']
+                               });
+            });
           }
         } else if (value['code'].match(/Code/)){
           //ignore
@@ -4562,24 +4593,26 @@ $("body").on("click","[name^='old_canvas']", function() {
                                                       var the_codes=[];
                                                       var the_codedesc='';
                                                       var the_codetext='';
-                                                      for (i=0;i < obj.Clinical[issue[2]].length; i++) {
+                                                      var clinicalItems = getIMPPLANClinicalItems(issue[2]);
+                                                      if (!clinicalItems.length) { return; }
+                                                      for (i=0;i < clinicalItems.length; i++) {
                                                         if (i == 0) {
-                                                            the_code = obj.Clinical[issue[2]][i]['code'];
-                                                        } else if (i < obj.Clinical[issue[2]].length) {
-                                                            the_code += ', '+ obj.Clinical[issue[2]][i]['code'];
+                                                            the_code = clinicalItems[i]['code'];
+                                                        } else if (i < clinicalItems.length) {
+                                                            the_code += ', '+ clinicalItems[i]['code'];
                                                         }
-                                                        the_codedesc += obj.Clinical[issue[2]][i]['codedesc'] + "\r";
-                                                        the_codetext += obj.Clinical[issue[2]][i]['codetext'] + "\r";
-                                                        the_codes.push(obj.Clinical[issue[2]][i]['code']);
+                                                        the_codedesc += clinicalItems[i]['codedesc'] + "\r";
+                                                        the_codetext += clinicalItems[i]['codetext'] + "\r";
+                                                        the_codes.push(clinicalItems[i]['code']);
                                                       }
                                                       obj.IMPPLAN_items.push({
-                                                                             title:obj.Clinical[issue[2]][0]['title'],
+                                                                             title:clinicalItems[0]['title'],
                                                                              code: normalizeIMPPLANCodeList(the_codes.length ? the_codes : the_code).join(", "),
-                                                                             codetype: obj.Clinical[issue[2]][0]['codetype'],
+                                                                             codetype: clinicalItems[0]['codetype'],
                                                                              codedesc: the_codedesc,
                                                                              codetext: the_codetext,
                                                                              plan: '',
-                                                                             PMSFH_link: obj.Clinical[issue[2]][0]['PMSFH_link']
+                                                                             PMSFH_link: clinicalItems[0]['PMSFH_link']
                                                                              });
                                                   } else {
                                                       if (issue[1] == "PMH") {

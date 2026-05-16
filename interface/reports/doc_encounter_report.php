@@ -36,6 +36,12 @@ require_once("../../custom/code_types.inc.php");
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
 use OpenEMR\Services\FacilityService;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 if (!empty($_POST)) {
     if (!CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"])) {
@@ -326,30 +332,43 @@ if ($form_excelexport) {
     $excelQuery .= "ORDER BY fe.date, p.lname, p.fname, b.id";
     $excelRes = sqlStatement($excelQuery, $excelBindArray);
 
-    header("Content-Type: application/vnd.ms-excel; charset=utf-8");
-    header("Content-Disposition: attachment; filename=provider_fees_" . $form_month . ".xls");
-    header("Pragma: no-cache");
-    header("Expires: 0");
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Honorarios');
+    $headers = array('Mes', 'Paciente', 'Categoria', 'Procedimiento', 'Cantidad', 'Pagador', 'Valor', 'Total');
+    $sheet->fromArray($headers, null, 'A1');
 
+    $sheet->getStyle('A1:H1')->applyFromArray(array(
+        'font' => array('bold' => true),
+        'fill' => array(
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => array('argb' => 'FFD9E2F3'),
+        ),
+        'alignment' => array('horizontal' => Alignment::HORIZONTAL_CENTER),
+        'borders' => array(
+            'allBorders' => array('borderStyle' => Border::BORDER_THIN, 'color' => array('argb' => 'FF7F7F7F')),
+        ),
+    ));
+
+    $rowNumber = 2;
     $monthSubtotal = 0;
     $grandTotalExcel = 0;
     $currentMonthLabel = '';
 
-    echo "<html><head><meta charset='utf-8'>";
-    echo "<style>
-        table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; font-size: 12px; }
-        td, th { border: 1px solid #7f7f7f; padding: 6px; }
-        th { background: #d9e2f3; font-weight: bold; text-align: center; }
-        .money { text-align: right; white-space: nowrap; }
-        .subtotal td { background: #ffd966; font-weight: bold; }
-    </style></head><body>";
-    echo "<table>";
-    echo "<tr><th>Mes</th><th>Paciente</th><th>Categoria</th><th>Procedimiento</th><th>Cantidad</th><th>Pagador</th><th>Valor</th><th>Total</th></tr>";
-
     while ($excelRow = sqlFetchArray($excelRes)) {
         $monthLabel = monthLabelEs(substr($excelRow['service_date'], 0, 10));
         if ($currentMonthLabel !== '' && $currentMonthLabel !== $monthLabel) {
-            echo "<tr class='subtotal'><td colspan='7'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
+            $sheet->mergeCells('A' . $rowNumber . ':G' . $rowNumber);
+            $sheet->setCellValueExplicit('A' . $rowNumber, 'Subtotal ' . $currentMonthLabel, DataType::TYPE_STRING);
+            $sheet->setCellValue('H' . $rowNumber, $monthSubtotal);
+            $sheet->getStyle('A' . $rowNumber . ':H' . $rowNumber)->applyFromArray(array(
+                'font' => array('bold' => true),
+                'fill' => array(
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => array('argb' => 'FFFFD966'),
+                ),
+            ));
+            ++$rowNumber;
             $monthSubtotal = 0;
         }
 
@@ -369,24 +388,67 @@ if ($form_excelexport) {
         $monthSubtotal += $lineTotal;
         $grandTotalExcel += $lineTotal;
 
-        echo "<tr>";
-        echo "<td>" . text($monthLabel) . "</td>";
-        echo "<td>" . text($patientName) . "</td>";
-        echo "<td>" . text($excelRow['code_category']) . "</td>";
-        echo "<td>" . text($procedureText) . "</td>";
-        echo "<td>" . text($excelRow['units']) . "</td>";
-        echo "<td>" . text($excelRow['payer_name']) . "</td>";
-        echo "<td class='money'>" . text(bucks($lineTotal)) . "</td>";
-        echo "<td class='money'>" . text(bucks($lineTotal)) . "</td>";
-        echo "</tr>";
+        $sheet->setCellValueExplicit('A' . $rowNumber, $monthLabel, DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('B' . $rowNumber, $patientName, DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('C' . $rowNumber, (string) $excelRow['code_category'], DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('D' . $rowNumber, $procedureText, DataType::TYPE_STRING);
+        $sheet->setCellValue('E' . $rowNumber, (float) $excelRow['units']);
+        $sheet->setCellValueExplicit('F' . $rowNumber, (string) $excelRow['payer_name'], DataType::TYPE_STRING);
+        $sheet->setCellValue('G' . $rowNumber, $lineTotal);
+        $sheet->setCellValue('H' . $rowNumber, $lineTotal);
+        ++$rowNumber;
     }
 
     if ($currentMonthLabel !== '') {
-        echo "<tr class='subtotal'><td colspan='7'>Subtotal " . text($currentMonthLabel) . "</td><td class='money'>" . text(bucks($monthSubtotal)) . "</td></tr>";
+        $sheet->mergeCells('A' . $rowNumber . ':G' . $rowNumber);
+        $sheet->setCellValueExplicit('A' . $rowNumber, 'Subtotal ' . $currentMonthLabel, DataType::TYPE_STRING);
+        $sheet->setCellValue('H' . $rowNumber, $monthSubtotal);
+        $sheet->getStyle('A' . $rowNumber . ':H' . $rowNumber)->applyFromArray(array(
+            'font' => array('bold' => true),
+            'fill' => array(
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => array('argb' => 'FFFFD966'),
+            ),
+        ));
+        ++$rowNumber;
     }
 
-    echo "<tr class='subtotal'><td colspan='7'>Total general</td><td class='money'>" . text(bucks($grandTotalExcel)) . "</td></tr>";
-    echo "</table></body></html>";
+    $sheet->mergeCells('A' . $rowNumber . ':G' . $rowNumber);
+    $sheet->setCellValueExplicit('A' . $rowNumber, 'Total general', DataType::TYPE_STRING);
+    $sheet->setCellValue('H' . $rowNumber, $grandTotalExcel);
+    $sheet->getStyle('A' . $rowNumber . ':H' . $rowNumber)->applyFromArray(array(
+        'font' => array('bold' => true),
+        'fill' => array(
+            'fillType' => Fill::FILL_SOLID,
+            'startColor' => array('argb' => 'FFFFD966'),
+        ),
+    ));
+
+    $lastRow = $rowNumber;
+    $sheet->getStyle('A1:H' . $lastRow)->applyFromArray(array(
+        'borders' => array(
+            'allBorders' => array('borderStyle' => Border::BORDER_THIN, 'color' => array('argb' => 'FF7F7F7F')),
+        ),
+    ));
+    $sheet->getStyle('G2:H' . $lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+    $sheet->getStyle('E2:E' . $lastRow)->getNumberFormat()->setFormatCode('#,##0.##');
+    $sheet->getStyle('G2:H' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+    foreach (range('A', 'H') as $column) {
+        $sheet->getColumnDimension($column)->setAutoSize(true);
+    }
+    $sheet->freezePane('A2');
+
+    if (ob_get_length()) {
+        ob_end_clean();
+    }
+
+    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    header('Content-Disposition: attachment; filename=provider_fees_' . $form_month . '.xlsx');
+    header('Cache-Control: max-age=0');
+    header('Pragma: public');
+
+    $writer = new Xlsx($spreadsheet);
+    $writer->save('php://output');
     exit;
 }
 ?>
