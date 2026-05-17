@@ -191,7 +191,7 @@ class Criteria
      * used by inherited Criteria classes because we don't know what table this is associated
      * with, so we can't translate property names to column names.
      */
-    final private function Prepare()
+    private function Prepare()
     {
         if (! $this->_is_prepared) {
             if (get_class($this) == "Criteria") {
