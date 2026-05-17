@@ -783,7 +783,7 @@ foreach ($ar as $key => $val) {
             // echo $sql;
             $result = sqlStatement($sql, [$pid]);
             while ($row=sqlFetchArray($result)) {
-                echo text($row{'batchcom_data'}).", " . xlt('By') . ": ".text($row{'user_name'})."<br>" . xlt('Text') . ":<br> ".text($row{'msg_txt'})."<br>\n";
+                echo text($row['batchcom_data']).", " . xlt('By') . ": ".text($row['user_name'])."<br>" . xlt('Text') . ":<br> ".text($row['msg_txt'])."<br>\n";
             }
 
             echo "</div>\n";

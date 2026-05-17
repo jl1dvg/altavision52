@@ -75,7 +75,7 @@ class NumberToText
 
         // get rid of leading 0's
         /*
-        while ($number{0} == 0) {
+        while ($number[0] == 0) {
             $number = substr($number,1);
         }
         */
@@ -167,7 +167,7 @@ class NumberToText
             $text .= " point";
             for ($i = 0; $i < strlen($decimal); $i++) {
                 // go through one number at a time
-                $text .= " ".$small[$decimal{$i}];
+                $text .= " ".$small[$decimal[$i]];
             }
         }
 

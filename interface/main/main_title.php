@@ -92,7 +92,7 @@ function showhideMenu() {
 </head>
 <body class="body_title">
 <?php
-$res = sqlQuery("select * from users where username=?", array($_SESSION{"authUser"}));
+$res = sqlQuery("select * from users where username=?", array($_SESSION["authUser"]));
 ?>
 <table id="main-title" cellspacing="0" cellpadding="0" width="100%" height="100%">
 <tr>
@@ -172,7 +172,7 @@ $url = "open-emr.org/wiki/index.php/OpenEMR_".$open_emr_ver."_Users_Guide";
         </tr>
         <tr>
             <td colspan='2' valign="baseline" align='right'>
-                <span class="text title_bar_top" title="<?php echo attr(xl('Authorization group').': '.$_SESSION['authGroup']); ?>"><a href='main_title.php' onclick="<?php echo $javascript;?>" title=""><?php echo text($res{"fname"}.' '.$res{"lname"}); ?></a></span>
+                <span class="text title_bar_top" title="<?php echo attr(xl('Authorization group').': '.$_SESSION['authGroup']); ?>"><a href='main_title.php' onclick="<?php echo $javascript;?>" title=""><?php echo text($res["fname"].' '.$res["lname"]); ?></a></span>
             </td>
         </tr>
     </table>

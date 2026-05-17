@@ -451,7 +451,7 @@ class VerySimpleStringUtil
      */
     static function unicode_entity_replace($c)
     {
-        $h = ord($c {0});
+        $h = ord($c[0]);
         if ($h <= 0x7F) { // 127
             return $c;
         } else if ($h < 0xC2) { // 194
@@ -459,15 +459,15 @@ class VerySimpleStringUtil
         }
         
         if ($h <= 0xDF) { // 0xDF = 223
-            $h = ($h & 0x1F) << 6 | (ord($c {1}) & 0x3F); // 0x0F = 15, 0x1F = 31, 0x3F = 63
+            $h = ($h & 0x1F) << 6 | (ord($c[1]) & 0x3F); // 0x0F = 15, 0x1F = 31, 0x3F = 63
             $h = "&#" . $h . ";";
             return $h;
         } else if ($h <= 0xEF) { // 0xEF = 239
-            $h = ($h & 0x0F) << 12 | (ord($c {1}) & 0x3F) << 6 | (ord($c {2}) & 0x3F);
+            $h = ($h & 0x0F) << 12 | (ord($c[1]) & 0x3F) << 6 | (ord($c[2]) & 0x3F);
             $h = "&#" . $h . ";";
             return $h;
         } else if ($h <= 0xF4) { // 0xF4 = 244 (TODO: should this be 244 or 247 ??)
-            $h = ($h & 0x0F) << 18 | (ord($c {1}) & 0x3F) << 12 | (ord($c {2}) & 0x3F) << 6 | (ord($c {3}) & 0x3F);
+            $h = ($h & 0x0F) << 18 | (ord($c[1]) & 0x3F) << 12 | (ord($c[2]) & 0x3F) << 6 | (ord($c[3]) & 0x3F);
             $h = "&#" . $h . ";";
             return $h;
         }

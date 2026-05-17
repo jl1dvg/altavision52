@@ -1,0 +1,14 @@
+./portal/lib/index.php
+./portal/lib/account/register.php
+./portal/index.php
+./portal/account/register.php
+./portal/patient/fwk/libs/util/parsecsv.lib.php
+./portal/patient/fwk/libs/verysimple/String/VerySimpleStringUtil.php
+./interface/main/authorizations/authorizations_full.php
+./interface/main/authorizations/authorizations.php
+./interface/login/login.php
+./interface/forms/track_anything/create.php
+./interface/usergroup/usergroup_admin.php
+./interface/usergroup/usergroup_admin_add.php
+./library/classes/NumberToText.class.php
+./library/translation.inc.php

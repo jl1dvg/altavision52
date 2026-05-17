@@ -155,20 +155,20 @@ function create_HTML_statement($stmt)
     if ($GLOBALS['use_dunning_message']) {
         if ($stmt['ins_paid'] != 0 || $stmt['level_closed'] == 4) {
             // do collection messages
-            switch ($stmt{'age'}) {
-                case $stmt{'age'} <= $GLOBALS['first_dun_msg_set']:
+            switch ($stmt['age']) {
+                case $stmt['age'] <= $GLOBALS['first_dun_msg_set']:
                     $dun_message = $GLOBALS['first_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['second_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['second_dun_msg_set']:
                     $dun_message = $GLOBALS['second_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['third_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['third_dun_msg_set']:
                     $dun_message = $GLOBALS['third_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['fourth_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['fourth_dun_msg_set']:
                     $dun_message = $GLOBALS['fourth_dun_msg_text'];
                     break;
-                case $stmt{'age'} >= $GLOBALS['fifth_dun_msg_set']:
+                case $stmt['age'] >= $GLOBALS['fifth_dun_msg_set']:
                     $dun_message = $GLOBALS['fifth_dun_msg_text'];
                     break;
             }
@@ -558,20 +558,20 @@ function create_statement($stmt)
     if ($GLOBALS['use_dunning_message']) {
         if ($stmt['ins_paid'] != 0 || $stmt['level_closed'] == 4) {
             // do collection messages
-            switch ($stmt{'age'}) {
-                case $stmt{'age'} <= $GLOBALS['first_dun_msg_set']:
+            switch ($stmt['age']) {
+                case $stmt['age'] <= $GLOBALS['first_dun_msg_set']:
                     $dun_message = $GLOBALS['first_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['second_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['second_dun_msg_set']:
                     $dun_message = $GLOBALS['second_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['third_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['third_dun_msg_set']:
                     $dun_message = $GLOBALS['third_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['fourth_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['fourth_dun_msg_set']:
                     $dun_message = $GLOBALS['fourth_dun_msg_text'];
                     break;
-                case $stmt{'age'} >= $GLOBALS['fifth_dun_msg_set']:
+                case $stmt['age'] >= $GLOBALS['fifth_dun_msg_set']:
                     $dun_message = $GLOBALS['fifth_dun_msg_text'];
                     break;
             }
@@ -859,20 +859,20 @@ function osp_create_HTML_statement($stmt)
     if ($GLOBALS['use_dunning_message']) {
         if ($stmt['ins_paid'] != 0 || $stmt['level_closed'] == 4) {
             // do collection messages
-            switch ($stmt{'age'}) {
-                case $stmt{'age'} <= $GLOBALS['first_dun_msg_set']:
+            switch ($stmt['age']) {
+                case $stmt['age'] <= $GLOBALS['first_dun_msg_set']:
                     $dun_message = $GLOBALS['first_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['second_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['second_dun_msg_set']:
                     $dun_message = $GLOBALS['second_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['third_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['third_dun_msg_set']:
                     $dun_message = $GLOBALS['third_dun_msg_text'];
                     break;
-                case $stmt{'age'} <= $GLOBALS['fourth_dun_msg_set']:
+                case $stmt['age'] <= $GLOBALS['fourth_dun_msg_set']:
                     $dun_message = $GLOBALS['fourth_dun_msg_text'];
                     break;
-                case $stmt{'age'} >= $GLOBALS['fifth_dun_msg_set']:
+                case $stmt['age'] >= $GLOBALS['fifth_dun_msg_set']:
                     $dun_message = $GLOBALS['fifth_dun_msg_text'];
                     break;
             }

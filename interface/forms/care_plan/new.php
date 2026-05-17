@@ -149,12 +149,12 @@ endforeach;
                                 <label for="code_<?php echo attr($key) + 1; ?>" class="h5"><?php echo xlt('Code'); ?>
                                     :</label>
                                 <input type="text" id="code_<?php echo attr($key) + 1; ?>" name="code[]"
-                                       class="form-control code" value="<?php echo attr($obj{"code"}); ?>"
+                                       class="form-control code" value="<?php echo attr($obj["code"]); ?>"
                                        onclick='sel_code(this.parentElement.parentElement.parentElement.id);'>
                                 <span id="displaytext_<?php echo attr($key) + 1; ?>"
                                       class="displaytext help-block"></span>
                                 <input type="hidden" id="codetext_<?php echo attr($key) + 1; ?>" name="codetext[]"
-                                       class="codetext" value="<?php echo attr($obj{"codetext"}); ?>">
+                                       class="codetext" value="<?php echo attr($obj["codetext"]); ?>">
                             </div>
                             <div class="forms col-xs-4">
                                 <label for="description_<?php echo attr($key) + 1; ?>"
@@ -162,15 +162,15 @@ endforeach;
                                 <select name="description[]" id="description_<?php echo attr($key) + 1; ?>"
                                         class="form-control description">
                                     <option
-                                        value="Ojo Derecho"<?php if (text($obj{"description"}) === "Ojo Derecho") echo ' selected'; ?>>
+                                        value="Ojo Derecho"<?php if (text($obj["description"]) === "Ojo Derecho") echo ' selected'; ?>>
                                         Ojo Derecho
                                     </option>
                                     <option
-                                        value="Ojo Izquierdo"<?php if (text($obj{"description"}) === "Ojo Izquierdo") echo ' selected'; ?>>
+                                        value="Ojo Izquierdo"<?php if (text($obj["description"]) === "Ojo Izquierdo") echo ' selected'; ?>>
                                         Ojo Izquierdo
                                     </option>
                                     <option
-                                        value="Ambos Ojos"<?php if (text($obj{"description"}) === "Ambos Ojos" || empty(text($obj{"description"}))) echo ' selected'; ?>>
+                                        value="Ambos Ojos"<?php if (text($obj["description"]) === "Ambos Ojos" || empty(text($obj["description"]))) echo ' selected'; ?>>
                                         Ambos Ojos
                                     </option>
                                 </select>
@@ -180,7 +180,7 @@ endforeach;
                                        class="h5"><?php echo xlt('Date'); ?>:</label>
                                 <input type='text' id="code_date_<?php echo attr($key) + 1; ?>" name='code_date[]'
                                        class="form-control code_date datepicker"
-                                       value='<?php echo attr($obj{"date"}); ?>'
+                                       value='<?php echo attr($obj["date"]); ?>'
                                        title='<?php echo xla('yyyy-mm-dd Date of service'); ?>'/>
                             </div>
                             <div class="forms col-xs-2">
@@ -190,7 +190,7 @@ endforeach;
                                         class="form-control care_plan_type">
                                     <option value=""></option>
                                     <?php foreach ($care_plan_type as $value) :
-                                        $selected = ($value['value'] == $obj{"care_plan_type"}) ? 'selected="selected"' : '';
+                                        $selected = ($value['value'] == $obj["care_plan_type"]) ? 'selected="selected"' : '';
                                         ?>
                                         <option
                                             value="<?php echo attr($value['fname'] . " " . $value['lname']); ?>" <?php echo $selected; ?>><?php echo text($value['lname'] . " " . $value['fname']); ?></option>
@@ -219,25 +219,25 @@ endforeach;
                         <div class=" forms col-xs-3">
                             <label for="code_1" class="h5"><?php echo xlt('Code'); ?>:</label>
                             <input type="text" id="code_1" name="code[]" class="form-control code"
-                                   value="<?php echo attr($obj{"code"}); ?>"
+                                   value="<?php echo attr($obj["code"]); ?>"
                                    onclick='sel_code(this.parentElement.parentElement.parentElement.id);'>
                             <span id="displaytext_1" class="displaytext help-block"></span>
                             <input type="hidden" id="codetext_1" name="codetext[]" class="codetext"
-                                   value="<?php echo attr($obj{"codetext"}); ?>">
+                                   value="<?php echo attr($obj["codetext"]); ?>">
                         </div>
                         <div class="forms col-xs-4">
                             <label for="description_1" class="h5"><?php echo xlt('Ojo'); ?>:</label>
                             <select name="description[]" id="description_1" class="form-control description">
                                 <option
-                                    value="Ojo Derecho"<?php if (text($obj{"description"}) === "Ojo Derecho") echo ' selected'; ?>>
+                                    value="Ojo Derecho"<?php if (text($obj["description"]) === "Ojo Derecho") echo ' selected'; ?>>
                                     Ojo Derecho
                                 </option>
                                 <option
-                                    value="Ojo Izquierdo"<?php if (text($obj{"description"}) === "Ojo Izquierdo") echo ' selected'; ?>>
+                                    value="Ojo Izquierdo"<?php if (text($obj["description"]) === "Ojo Izquierdo") echo ' selected'; ?>>
                                     Ojo Izquierdo
                                 </option>
                                 <option
-                                    value="Ambos Ojos"<?php if (text($obj{"description"}) === "Ambos Ojos" || empty(text($obj{"description"}))) echo ' selected'; ?>>
+                                    value="Ambos Ojos"<?php if (text($obj["description"]) === "Ambos Ojos" || empty(text($obj["description"]))) echo ' selected'; ?>>
                                     Ambos Ojos
                                 </option>
                             </select>
@@ -251,7 +251,7 @@ endforeach;
                             <label for="code_date_1" class="h5"><?php echo xlt('Date'); ?>:</label>
                             <input type="text" id="code_date_1" name="code_date[]"
                                    class="form-control code_date datepicker"
-                                   value="<?php echo attr(!empty($obj{"date"}) ? $obj{"date"} : $currentDate); ?>"
+                                   value="<?php echo attr(!empty($obj["date"]) ? $obj["date"] : $currentDate); ?>"
                                    title="<?php echo xla('yyyy-mm-dd Date of service'); ?>"/>
 
                         </div>
@@ -260,7 +260,7 @@ endforeach;
                             <select name="care_plan_type[]" id="care_plan_type_1" class="form-control care_plan_type">
                                 <option value=""></option>
                                 <?php
-                                $selectedValue = ($obj{"care_plan_type"} !== '') ? attr($obj{"care_plan_type"}) : $_SESSION["authUser"];
+                                $selectedValue = ($obj["care_plan_type"] !== '') ? attr($obj["care_plan_type"]) : $_SESSION["authUser"];
 
                                 foreach ($care_plan_type as $value) {
                                     $selected = ($value['value'] == $selectedValue) ? 'selected="selected"' : '';
