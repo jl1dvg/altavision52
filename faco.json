@@ -1,0 +1,64 @@
+{
+    "defaults": {
+        "formdir": "LBFprotocolo",
+        "pricelevel": "IESS",
+        "date_from": "2026-01-01",
+        "date_to": "2026-05-16"
+    },
+    "rules": [
+        {
+            "label": "faco_iess",
+            "package": "1Faco - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "faco"
+        },
+        {
+            "label": "faco2_iess",
+            "package": "2Faco66984 - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "faco66984"
+        },
+        {
+            "label": "avastin_iess",
+            "package": "1Avastin-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "avastin"
+        },
+        {
+            "label": "faco_vpp_simple_iess",
+            "package": "1Faco + LIO + VPP IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovpp|endolaser"
+        },
+        {
+            "label": "vpp_simple_iess",
+            "package": "1VPP - Simple - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp|endolaser"
+        },
+        {
+            "label": "vpp_aceite_iess",
+            "package": "5VPP + Silicon - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp|endolaser|silicon"
+        },
+        {
+            "label": "vpp_gas",
+            "package": "7VPP + GAS -IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp|endolaser|gas"
+        },
+        {
+            "label": "vpp_retiro_aceite_iess",
+            "package": "8VPP + Retiro de Silicon - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp|endolaser|retsil"
+        },
+        {
+            "label": "pterigion_iess",
+            "package": "1Pterigion-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "pteri"
+        }
+    ]
+}

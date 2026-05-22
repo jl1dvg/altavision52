@@ -1,0 +1,40 @@
+{
+    "defaults": {
+        "formdir": "LBFprotocolo",
+        "pricelevel": "IESS",
+        "date_from": "2025-01-01",
+        "date_to": "2026-05-16"
+    },
+    "rules": [
+        {
+            "label": "faco_iess",
+            "package": "1Faco - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "faco"
+        },
+        {
+            "label": "avastin_iess",
+            "package": "1Avastin-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "avastin"
+        },
+        {
+            "label": "faco_vpp_simple_iess",
+            "package": "1Faco + LIO + VPP IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovpp|endolaser"
+        },
+        {
+            "label": "vpp_gas",
+            "package": "7VPP + GAS -IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp|endolaser|gas"
+        },
+        {
+            "label": "pterigion_iess",
+            "package": "1Pterigion-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "pteri"
+        }
+    ]
+}

@@ -297,6 +297,9 @@ ob_start();
         <br>
         <?php
         echo getProviderEspecialidad($providerID);
+        ?><br>
+        <?php
+        echo 'CI ' . getProviderIdentification($providerID);
         ?>
         <br>
         Centro Oftalmol&oacute;gico AltaVisi&oacute;n

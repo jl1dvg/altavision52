@@ -2,8 +2,8 @@
 /**
  * Surgical supply catalog sync and review.
  *
- * Seeds and reviews or_supply_catalog records from codes without
- * requiring manual inserts for every supply item.
+ * Seeds and reviews or_supply_catalog records from codes (INSUM and RXCUI)
+ * without requiring manual inserts for every supply item.
  */
 
 require_once("../globals.php");
@@ -14,6 +14,9 @@ use OpenEMR\Core\Header;
 if (!empty($_POST) && !CsrfUtils::verifyCsrfToken($_POST["csrf_token_form"] ?? '')) {
     CsrfUtils::csrfNotVerified();
 }
+
+// Supported code type keys available for catalog sync and display.
+define('OR_SUPPLY_CATALOG_KEYS', array('INSUM', 'RXCUI'));
 
 function orSupplyFetchAffectedRows()
 {
@@ -26,7 +29,41 @@ function orSupplyNormalizeSearch($value)
     return trim((string) $value);
 }
 
-function orSupplySyncCatalog($codeType)
+/**
+ * Resolve ct_key strings to their numeric code_type IDs.
+ * Returns only the keys that actually exist in code_types.
+ */
+function orSupplyResolveCodeTypeIds(array $ctKeys)
+{
+    if (empty($ctKeys)) {
+        return array();
+    }
+    $placeholders = implode(',', array_fill(0, count($ctKeys), '?'));
+    $res = sqlStatement(
+        "SELECT ct_id, ct_key FROM code_types WHERE ct_key IN ($placeholders)",
+        $ctKeys
+    );
+    $map = array();
+    while ($row = sqlFetchArray($res)) {
+        $map[$row['ct_key']] = (int) $row['ct_id'];
+    }
+    return $map;
+}
+
+/**
+ * Build a WHERE fragment and matching binds array for filtering codes
+ * by a set of numeric code_type IDs.
+ */
+function orSupplyBuildTypeFilter(array $typeIds)
+{
+    if (count($typeIds) === 1) {
+        return array('sql' => 'c.code_type = ?', 'binds' => array_values($typeIds));
+    }
+    $placeholders = implode(',', array_fill(0, count($typeIds), '?'));
+    return array('sql' => "c.code_type IN ($placeholders)", 'binds' => array_values($typeIds));
+}
+
+function orSupplySyncCatalog(array $typeIds)
 {
     $summary = array(
         'inserted' => 0,
@@ -34,6 +71,12 @@ function orSupplySyncCatalog($codeType)
         'classified_visco' => 0,
         'classified_day' => 0,
     );
+
+    if (empty($typeIds)) {
+        return $summary;
+    }
+
+    $filter = orSupplyBuildTypeFilter($typeIds);
 
     sqlStatement(
         "INSERT INTO or_supply_catalog (
@@ -57,10 +100,10 @@ function orSupplySyncCatalog($codeType)
             1
         FROM codes AS c
         LEFT JOIN or_supply_catalog AS osc ON osc.code_id = c.id
-        WHERE c.code_type = ?
+        WHERE {$filter['sql']}
           AND c.active = 1
           AND osc.code_id IS NULL",
-        array($codeType)
+        $filter['binds']
     );
     $summary['inserted'] = orSupplyFetchAffectedRows();
 
@@ -72,10 +115,10 @@ function orSupplySyncCatalog($codeType)
             osc.requires_lot = 1,
             osc.is_template_enabled = 1,
             osc.specialty_scope = 'all'
-        WHERE c.code_type = ?
+        WHERE {$filter['sql']}
           AND c.active = 1
           AND UPPER(c.code_text) LIKE '%LENTE INTRAOCULAR%'",
-        array($codeType)
+        $filter['binds']
     );
     $summary['classified_lens'] = orSupplyFetchAffectedRows();
 
@@ -85,7 +128,7 @@ function orSupplySyncCatalog($codeType)
         SET
             osc.default_level = 'surgery',
             osc.is_template_enabled = 1
-        WHERE c.code_type = ?
+        WHERE {$filter['sql']}
           AND c.active = 1
           AND (
             UPPER(c.code_text) LIKE '%VISCO%'
@@ -94,7 +137,7 @@ function orSupplySyncCatalog($codeType)
             OR UPPER(c.code_text) LIKE '%ACEITE%'
             OR UPPER(c.code_text) LIKE '%GAS%'
           )",
-        array($codeType)
+        $filter['binds']
     );
     $summary['classified_visco'] = orSupplyFetchAffectedRows();
 
@@ -104,7 +147,7 @@ function orSupplySyncCatalog($codeType)
         SET
             osc.default_level = 'day',
             osc.is_template_enabled = 1
-        WHERE c.code_type = ?
+        WHERE {$filter['sql']}
           AND c.active = 1
           AND (
             UPPER(c.code_text) LIKE '%BSS%'
@@ -113,7 +156,7 @@ function orSupplySyncCatalog($codeType)
             OR UPPER(c.code_text) LIKE '%GUANTE%'
             OR UPPER(c.code_text) LIKE '%PACK%'
           )",
-        array($codeType)
+        $filter['binds']
     );
     $summary['classified_day'] = orSupplyFetchAffectedRows();
 
@@ -122,15 +165,32 @@ function orSupplySyncCatalog($codeType)
 
 $formRefresh = !empty($_POST['form_refresh']);
 $formAction = $_POST['form_action'] ?? '';
-$formCodeType = isset($_POST['form_code_type']) && ctype_digit((string) $_POST['form_code_type'])
-    ? (int) $_POST['form_code_type']
-    : 115;
+
+// Parse selected code type keys from checkboxes; default to all supported.
+$selectedKeys = array();
+if (!empty($_POST)) {
+    foreach (OR_SUPPLY_CATALOG_KEYS as $key) {
+        if (!empty($_POST['form_ct_' . strtolower($key)])) {
+            $selectedKeys[] = $key;
+        }
+    }
+    if (empty($selectedKeys)) {
+        $selectedKeys = OR_SUPPLY_CATALOG_KEYS;
+    }
+} else {
+    $selectedKeys = OR_SUPPLY_CATALOG_KEYS;
+}
+
 $formSearch = orSupplyNormalizeSearch($_POST['form_search'] ?? '');
 $flashMessage = '';
 $flashSummary = array();
 
+// Resolve numeric IDs once for the whole page lifecycle.
+$resolvedTypeIds = orSupplyResolveCodeTypeIds($selectedKeys);
+$activeTypeIds   = array_values($resolvedTypeIds);
+
 if ($formAction === 'sync') {
-    $flashSummary = orSupplySyncCatalog($formCodeType);
+    $flashSummary = orSupplySyncCatalog($activeTypeIds);
     $flashMessage = xlt('Catalog synchronized from codes.');
     $formRefresh = true;
 }
@@ -141,56 +201,65 @@ $stats = array(
     'active_catalog_count' => 0,
 );
 
-$statsRow = sqlQuery(
-    "SELECT
-        SUM(CASE WHEN c.code_type = ? AND c.active = 1 THEN 1 ELSE 0 END) AS codes_count,
-        SUM(CASE WHEN c.code_type = ? AND osc.code_id IS NOT NULL THEN 1 ELSE 0 END) AS catalog_count,
-        SUM(CASE WHEN c.code_type = ? AND osc.active = 1 THEN 1 ELSE 0 END) AS active_catalog_count
-    FROM codes AS c
-    LEFT JOIN or_supply_catalog AS osc ON osc.code_id = c.id",
-    array($formCodeType, $formCodeType, $formCodeType)
-);
+if (!empty($activeTypeIds)) {
+    $filter = orSupplyBuildTypeFilter($activeTypeIds);
+    $statsRow = sqlQuery(
+        "SELECT
+            SUM(CASE WHEN {$filter['sql']} AND c.active = 1 THEN 1 ELSE 0 END) AS codes_count,
+            SUM(CASE WHEN {$filter['sql']} AND osc.code_id IS NOT NULL THEN 1 ELSE 0 END) AS catalog_count,
+            SUM(CASE WHEN {$filter['sql']} AND osc.active = 1 THEN 1 ELSE 0 END) AS active_catalog_count
+        FROM codes AS c
+        LEFT JOIN or_supply_catalog AS osc ON osc.code_id = c.id",
+        array_merge($filter['binds'], $filter['binds'], $filter['binds'])
+    );
 
-if (!empty($statsRow)) {
-    $stats['codes_count'] = (int) ($statsRow['codes_count'] ?? 0);
-    $stats['catalog_count'] = (int) ($statsRow['catalog_count'] ?? 0);
-    $stats['active_catalog_count'] = (int) ($statsRow['active_catalog_count'] ?? 0);
+    if (!empty($statsRow)) {
+        $stats['codes_count'] = (int) ($statsRow['codes_count'] ?? 0);
+        $stats['catalog_count'] = (int) ($statsRow['catalog_count'] ?? 0);
+        $stats['active_catalog_count'] = (int) ($statsRow['active_catalog_count'] ?? 0);
+    }
 }
 
-$binds = array($formCodeType);
-$where = " WHERE c.code_type = ? ";
+$catalogRes = null;
+if ($formRefresh && !empty($activeTypeIds)) {
+    $filter = orSupplyBuildTypeFilter($activeTypeIds);
+    $binds = $filter['binds'];
+    $where = " WHERE {$filter['sql']} ";
 
-if ($formSearch !== '') {
-    $where .= " AND (
-        c.code LIKE CONCAT('%', ?, '%')
-        OR c.code_text LIKE CONCAT('%', ?, '%')
-        OR COALESCE(c.code_text_short, '') LIKE CONCAT('%', ?, '%')
-    )";
-    $binds[] = $formSearch;
-    $binds[] = $formSearch;
-    $binds[] = $formSearch;
+    if ($formSearch !== '') {
+        $where .= " AND (
+            c.code LIKE CONCAT('%', ?, '%')
+            OR c.code_text LIKE CONCAT('%', ?, '%')
+            OR COALESCE(c.code_text_short, '') LIKE CONCAT('%', ?, '%')
+        )";
+        $binds[] = $formSearch;
+        $binds[] = $formSearch;
+        $binds[] = $formSearch;
+    }
+
+    $catalogSql = "SELECT
+            c.id,
+            c.code,
+            c.code_text,
+            c.code_text_short,
+            c.units,
+            c.fee,
+            c.active AS code_active,
+            ct.ct_key AS code_type_key,
+            osc.default_level,
+            osc.requires_lot,
+            osc.requires_serial,
+            osc.is_reusable,
+            osc.active AS catalog_active
+        FROM codes AS c
+        INNER JOIN code_types AS ct ON ct.ct_id = c.code_type
+        LEFT JOIN or_supply_catalog AS osc ON osc.code_id = c.id
+        " . $where . "
+        ORDER BY ct.ct_key, c.code_text
+        LIMIT 300";
+
+    $catalogRes = sqlStatement($catalogSql, $binds);
 }
-
-$catalogSql = "SELECT
-        c.id,
-        c.code,
-        c.code_text,
-        c.code_text_short,
-        c.units,
-        c.fee,
-        c.active AS code_active,
-        osc.default_level,
-        osc.requires_lot,
-        osc.requires_serial,
-        osc.is_reusable,
-        osc.active AS catalog_active
-    FROM codes AS c
-    LEFT JOIN or_supply_catalog AS osc ON osc.code_id = c.id
-    " . $where . "
-    ORDER BY c.code_text
-    LIMIT 200";
-
-$catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
 ?>
 <html>
 <head>
@@ -261,6 +330,34 @@ $catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             color: #5f7386;
+        }
+        .or-ct-checks {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .or-ct-checks label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+        .or-ct-checks input[type=checkbox] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .or-pill-insum {
+            background: #e2eefb;
+            color: #175a96;
+        }
+        .or-pill-rxcui {
+            background: #e8f5e9;
+            color: #1b6b31;
         }
         .or-summary-card {
             display: inline-block;
@@ -398,8 +495,20 @@ $catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
     <div class="or-toolbar">
     <table class="or-toolbar-table">
         <tr>
-            <td>Tipo de código:</td>
-            <td><input type="text" class="form-control" name="form_code_type" value="<?php echo attr((string) $formCodeType); ?>"/></td>
+            <td>Tipos:</td>
+            <td>
+                <div class="or-ct-checks">
+                    <?php foreach (OR_SUPPLY_CATALOG_KEYS as $ctKey) { ?>
+                        <label>
+                            <input type="checkbox"
+                                   name="form_ct_<?php echo attr(strtolower($ctKey)); ?>"
+                                   value="1"
+                                   <?php echo in_array($ctKey, $selectedKeys, true) ? 'checked' : ''; ?>/>
+                            <?php echo text($ctKey); ?>
+                        </label>
+                    <?php } ?>
+                </div>
+            </td>
             <td>Buscar:</td>
             <td><input type="text" class="form-control" name="form_search" value="<?php echo attr($formSearch); ?>" placeholder="Código o descripción"/></td>
             <td>
@@ -417,7 +526,7 @@ $catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
     </div>
 
     <div class="or-help">
-        Esta pantalla carga los insumos quirúrgicos desde `codes` hacia `or_supply_catalog` y aplica reglas básicas de clasificación para lentes, viscoelásticos e insumos comunes de uso diario.
+        Sincroniza los códigos de tipo <strong>INSUM</strong> (insumos) y <strong>RXCUI</strong> (medicamentos/productos) desde <code>codes</code> hacia <code>or_supply_catalog</code>, y aplica reglas de clasificación para lentes, viscoelásticos e insumos de uso diario. Selecciona uno o ambos tipos antes de buscar o sincronizar.
     </div>
 
     <?php if ($flashMessage !== '') { ?>
@@ -450,6 +559,7 @@ $catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
             <thead>
             <tr>
                 <th><?php echo xlt('ID'); ?></th>
+                <th>Tipo</th>
                 <th>Código</th>
                 <th>Descripción</th>
                 <th>Corto</th>
@@ -462,9 +572,13 @@ $catalogRes = $formRefresh ? sqlStatement($catalogSql, $binds) : null;
             </tr>
             </thead>
             <tbody>
-            <?php while ($row = sqlFetchArray($catalogRes)) { ?>
+            <?php while ($row = sqlFetchArray($catalogRes)) {
+                $ctKey = $row['code_type_key'] ?? '';
+                $pillClass = strtolower($ctKey) === 'rxcui' ? 'or-pill or-pill-rxcui' : 'or-pill or-pill-insum';
+            ?>
                 <tr>
                     <td><?php echo text($row['id']); ?></td>
+                    <td><span class="<?php echo attr($pillClass); ?>"><?php echo text($ctKey); ?></span></td>
                     <td><?php echo text($row['code']); ?></td>
                     <td><?php echo text($row['code_text']); ?></td>
                     <td><?php echo text($row['code_text_short']); ?></td>

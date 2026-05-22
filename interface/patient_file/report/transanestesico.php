@@ -24,34 +24,34 @@ if ($embed) {
 }
 
 if ($shouldRender) {
-    if ($PDF_OUTPUT && !$embed) {
-        $config_mpdf = array(
-            'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
-            'mode' => $GLOBALS['pdf_language'],
-            'format' => 'A4',
-            'default_font_size' => '10',
-            'default_font' => '"Arial","sans-serif"',
-            'margin_left' => 5,
-            'margin_right' => 5,
-            'margin_top' => 5,
-            'margin_bottom' => 5,
-            'margin_header' => '',
-            'margin_footer' => '',
-            'orientation' => 'L', // Cambiar a 'L' para orientación horizontal
-            'shrink_tables_to_fit' => 1,
-            'use_kwt' => true,
-            'autoScriptToLang' => true,
-            'keep_table_proportions' => true,
-            'table_layout' => 'fixed',
-        );
-        $pdf = new mPDF($config_mpdf);
-        $pdf->SetDisplayMode('real');
-        if ($_SESSION['language_direction'] == 'rtl') {
-            $pdf->SetDirectionality('rtl');
-        }
-        ob_start();
+if ($PDF_OUTPUT && !$embed) {
+    $config_mpdf = array(
+        'tempDir' => $GLOBALS['MPDF_WRITE_DIR'],
+        'mode' => $GLOBALS['pdf_language'],
+        'format' => 'A4',
+        'default_font_size' => '10',
+        'default_font' => '"Arial","sans-serif"',
+        'margin_left' => 5,
+        'margin_right' => 5,
+        'margin_top' => 5,
+        'margin_bottom' => 5,
+        'margin_header' => '',
+        'margin_footer' => '',
+        'orientation' => 'L', // Cambiar a 'L' para orientación horizontal
+        'shrink_tables_to_fit' => 1,
+        'use_kwt' => true,
+        'autoScriptToLang' => true,
+        'keep_table_proportions' => true,
+        'table_layout' => 'fixed',
+    );
+    $pdf = new mPDF($config_mpdf);
+    $pdf->SetDisplayMode('real');
+    if ($_SESSION['language_direction'] == 'rtl') {
+        $pdf->SetDirectionality('rtl');
     }
-    ?>
+    ob_start();
+}
+?>
 <html>
 <head>
 </head>
@@ -95,7 +95,8 @@ if ($shouldRender) {
         <td class="blanco_ta" colspan="24"><?php echo $titleres['mname']; ?></td>
         <td class="blanco_ta" colspan="8"><?php echo substr($titleres['sex'], 0, 1); ?></td>
         <td class="blanco_ta" colspan="16"><?php echo date('d/m/Y', strtotime($titleres['DOB_TS'])); ?></td>
-        <td class="blanco_ta" colspan="12"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
+        <td class="blanco_ta"
+            colspan="12"><?php echo getPatientAgeFromDate($titleres['DOB_TS'], date("Y/m/d", strtotime(fetchDateByEncounter($encounter)))); ?></td>
         <td class="blanco_ta" colspan="2"></td>
         <td class="blanco_ta" colspan="2"></td>
         <td class="blanco_ta" colspan="2"></td>
@@ -6660,13 +6661,16 @@ if ($shouldRender) {
         <tr style="height: 50px">
             <td class="verde_ta" style="height: 40px" colspan="3">HORA</td>
             <td class="blanco_ta" colspan="5"></td>
-            <td class="verde_ta" colspan="12">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
+            <td class="verde_ta" colspan="4">NOMBRE Y APELLIDO DEL PROFESIONAL</td>
             <td class="blanco_ta"
-                colspan="18"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
+                colspan="9"><?php echo getProviderNameConcat(getFieldValue($form_id, "Prot_anestesiologo")); ?></td>
+            <td class="verde_ta" colspan="4">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
+            <td class="blanco_ta"
+                colspan="5"><?php echo getProviderIdentification(getFieldValue($form_id, "Prot_anestesiologo")) ?></td>
             <td class="verde_ta" colspan="4">FIRMA</td>
-            <td class="blanco_ta" colspan="12"></td>
+            <td class="blanco_ta" colspan="16"></td>
             <td class="verde_ta" colspan="4">SELLO Y CÓDIGO</td>
-            <td class="blanco_ta" colspan="10"></td>
+            <td class="blanco_ta" colspan="14"></td>
         </tr>
     </table>
     <table style="border: none">

@@ -1,0 +1,8 @@
+{
+    "created_at": "2026-05-17T03:56:49+00:00",
+    "backup_table": "billing_backup_faco_iess_20260517_035642",
+    "encounters": 53,
+    "expected_rows_per_encounter": 44,
+    "expected_units_per_encounter": 412,
+    "expected_fee_per_encounter": 2774.58
+}
