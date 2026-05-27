@@ -75,6 +75,59 @@ if (!function_exists('getMedicalProblems')) {
     }
 }
 
+if (!function_exists('buildEyeMagExamOutputForReport')) {
+    function buildEyeMagExamOutputForReport($form_encounter, $pid)
+    {
+        $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
+        if (!$encounter_data) {
+            return '';
+        }
+
+        return ExamOftal($form_encounter,
+            $encounter_data['CC1'] ?? '',
+            $encounter_data['RBROW'] ?? '',
+            $encounter_data['LBROW'] ?? '',
+            $encounter_data['RUL'] ?? '',
+            $encounter_data['LUL'] ?? '',
+            $encounter_data['RLL'] ?? '',
+            $encounter_data['LLL'] ?? '',
+            $encounter_data['RMCT'] ?? '',
+            $encounter_data['LMCT'] ?? '',
+            $encounter_data['RADNEXA'] ?? '',
+            $encounter_data['LADNEXA'] ?? '',
+            $encounter_data['EXT_COMMENTS'] ?? '',
+            $encounter_data['SCODVA'] ?? '',
+            $encounter_data['SCOSVA'] ?? '',
+            $encounter_data['ODVA'] ?? '',
+            $encounter_data['OSVA'] ?? '',
+            $encounter_data['ODIOPAP'] ?? '',
+            $encounter_data['OSIOPAP'] ?? '',
+            $encounter_data['ODCONJ'] ?? '',
+            $encounter_data['OSCONJ'] ?? '',
+            $encounter_data['ODCORNEA'] ?? '',
+            $encounter_data['OSCORNEA'] ?? '',
+            $encounter_data['ODAC'] ?? '',
+            $encounter_data['OSAC'] ?? '',
+            $encounter_data['ODLENS'] ?? '',
+            $encounter_data['OSLENS'] ?? '',
+            $encounter_data['ODIRIS'] ?? '',
+            $encounter_data['OSIRIS'] ?? '',
+            $encounter_data['ODDISC'] ?? '',
+            $encounter_data['OSDISC'] ?? '',
+            $encounter_data['ODCUP'] ?? '',
+            $encounter_data['OSCUP'] ?? '',
+            $encounter_data['ODMACULA'] ?? '',
+            $encounter_data['OSMACULA'] ?? '',
+            $encounter_data['ODVESSELS'] ?? '',
+            $encounter_data['OSVESSELS'] ?? '',
+            $encounter_data['ODPERIPH'] ?? '',
+            $encounter_data['OSPERIPH'] ?? '',
+            $encounter_data['ODVITREOUS'] ?? '',
+            $encounter_data['OSVITREOUS'] ?? ''
+        );
+    }
+}
+
 
 // Limpiar (descartar) cualquier salida previa
 //ob_end_clean();
@@ -333,16 +386,10 @@ renderPatientInfoTable($titleres, $encounter);
         <td colspan="2" class="blanco_left">
             <?php
             if ($formdir === 'eye_mag') {
-                $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
-                if ($encounter_data) {
-                    extract($encounter_data);
-                    $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
-                        $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
-                        $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
-                    if (!empty($examOutput)) {
-                        $enfermedadActual = generateEnfermedadProblemaActual($reason, $examOutput);
-                        echo wordwrap($enfermedadActual, 165, "</td></tr><tr><td colspan='2' class='blanco_left'>", true);
-                    }
+                $examOutput = buildEyeMagExamOutputForReport($form_encounter, $pid);
+                if (!empty($examOutput)) {
+                    $enfermedadActual = generateEnfermedadProblemaActual($reason, $examOutput);
+                    echo wordwrap($enfermedadActual, 165, "</td></tr><tr><td colspan='2' class='blanco_left'>", true);
                 }
             }
             ?>
@@ -543,15 +590,9 @@ renderPatientInfoTable($titleres, $encounter);
             <td colspan="15" class="blanco_left">
                 <?php
                 if ($formdir === 'eye_mag') {
-                    $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
-                    if ($encounter_data) {
-                        extract($encounter_data);
-                        $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
-                            $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
-                            $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
-                        if (!empty($examOutput)) {
-                            echo wordwrap($examOutput, 165, "</td></tr><tr><td colspan='15' class='blanco_left'>", true);
-                        }
+                    $examOutput = buildEyeMagExamOutputForReport($form_encounter, $pid);
+                    if (!empty($examOutput)) {
+                        echo wordwrap($examOutput, 165, "</td></tr><tr><td colspan='15' class='blanco_left'>", true);
                     }
                 }
                 ?>
@@ -737,15 +778,9 @@ renderPatientInfoTable($titleres, $encounter);
                 <td class="blanco_left">
                     <?php
                     if ($formdir === 'eye_mag') {
-                        $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
-                        if ($encounter_data) {
-                            extract($encounter_data);
-                            $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
-                                $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
-                                $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
-                            if (!empty($examOutput)) {
-                                echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
-                            }
+                        $examOutput = buildEyeMagExamOutputForReport($form_encounter, $pid);
+                        if (!empty($examOutput)) {
+                            echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
                         }
                     }
                     ?>
@@ -1033,15 +1068,9 @@ renderPatientInfoTable($titleres, $encounter);
                         <td class="blanco_left">
                             <?php
                             if ($formdir === 'eye_mag') {
-                                $encounter_data = getEyeMagEncounterData($form_encounter, $pid);
-                                if ($encounter_data) {
-                                    extract($encounter_data);
-                                    $examOutput = ExamOftal($val, $CC1 ?? '', $RBROW ?? '', $LBROW ?? '', $RUL ?? '', $LUL ?? '', $RLL ?? '', $LLL ?? '', $RMCT ?? '', $LMCT ?? '', $RADNEXA ?? '', $LADNEXA ?? '', $EXT_COMMENTS ?? '',
-                                        $SCODVA ?? '', $SCOSVA ?? '', $ODVA ?? '', $OSVA ?? '', $ODIOPAP ?? '', $OSIOPAP ?? '', $ODCONJ ?? '', $OSCONJ ?? '', $ODCORNEA ?? '', $OSCORNEA ?? '', $ODAC ?? '', $OSAC ?? '', $ODLENS ?? '', $OSLENS ?? '', $ODIRIS ?? '', $OSIRIS ?? '',
-                                        $ODDISC ?? '', $OSDISC ?? '', $ODCUP ?? '', $OSCUP ?? '', $ODMACULA ?? '', $OSMACULA ?? '', $ODVESSELS ?? '', $OSVESSELS ?? '', $ODPERIPH ?? '', $OSPERIPH ?? '', $ODVITREOUS ?? '', $OSVITREOUS ?? '');
-                                    if (!empty($examOutput)) {
-                                        echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
-                                    }
+                                $examOutput = buildEyeMagExamOutputForReport($form_encounter, $pid);
+                                if (!empty($examOutput)) {
+                                    echo wordwrap($examOutput, 165, "</td></tr><tr><td class='blanco_left'>", true);
                                 }
                             }
                             ?>
