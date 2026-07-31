@@ -23,6 +23,8 @@ Este directorio versiona el contrato consolidado del programa de migracion Alta 
 
 `patient-v1` permanece **Draft**. La aprobacion actual es "revision con cambios", no autorizacion de implementacion ni piloto. No puede pasar a `Accepted` hasta completar los criterios del contrato consolidado.
 
+PR canonico activo: `#57` hacia `master`. PR `#56` queda superseded por `#57` porque `#57` contiene todo el contenido de `#56` mas las actualizaciones posteriores.
+
 1. Correccion P0 o aprobacion formal de la unicidad polimorfica de `core_external_aliases`.
 2. Preparacion formal de organizacion e instancias Alta Vision en Control Center.
 3. Fixtures sinteticos del piloto.
@@ -45,7 +47,9 @@ No se aceptan fixtures con datos reales ni muestras con PII.
 - No ejecutar migracion masiva desde este programa sin aprobacion de Jorge.
 - No modificar datos reales desde tareas de auditoria.
 - Toda decision clinica, cambio funcional o tratamiento de datos reales debe escalarse a Jorge.
-- `hc_number`, `pid`, `pubpid` y `form_id` son aliases externos o llaves legacy; no son identidad soberana de MedForge.
+- `patient_data.pid` de OpenEMR es alias tecnico obligatorio y deterministico; no es identidad soberana de MedForge.
+- `patient_data.pubpid` de OpenEMR equivale funcionalmente a `patient_data.hc_number` de MedForge: ambos representan cedula o numero de identificacion.
+- `form_id` es llave legacy de formulario/episodio, no identidad primaria de paciente.
 
 ## Artefactos vigentes
 

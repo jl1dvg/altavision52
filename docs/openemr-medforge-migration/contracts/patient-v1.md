@@ -17,8 +17,13 @@ Decisiones arquitectonicas aprobadas por Jorge:
 - `core_patients` no incorporara `organization_id` ni `instance_id`; el aislamiento clinico sera por despliegue/base de datos.
 - Control Center registrara organizacion, instancia, ambiente y servicios de Alta Vision.
 - `core_patients.id` sera la identidad clinica soberana.
-- `pid`, `pubpid`, `hc_number`, `form_id` y demas identificadores externos seran aliases o senales externas.
-- La cedula no sera restriccion `UNIQUE` directa en `core_patients`; sera senal fuerte de vinculacion solo cuando este normalizada y verificada.
+- `patient_data.pid` de OpenEMR es el identificador interno tecnico del paciente en OpenEMR y se conserva como alias externo obligatorio/deterministico asociado posteriormente a `core_patients.id`.
+- `patient_data.pubpid` de OpenEMR equivale funcionalmente a `patient_data.hc_number` de MedForge.
+- `pubpid`, `hc_number` y cedula representan el mismo concepto funcional: cedula o numero de identificacion del paciente.
+- `patient_data.lname2` se mapea directamente a `patient_data.lname2` de MedForge.
+- `patient_data.id` de MedForge seguira siendo identificador tecnico de tabla legacy, no identidad universal.
+- `form_id` y demas identificadores de formularios son aliases o llaves legacy de formularios/episodios, no identidad primaria de paciente.
+- La cedula/`pubpid`/`hc_number` no sera restriccion `UNIQUE` directa en `core_patients`; sera senal fuerte de vinculacion solo cuando este normalizada y verificada.
 - Coincidencias ambiguas quedan en revision manual; no se fusionan pacientes automaticamente.
 - OpenEMR/Patient V1 debe reutilizar y extender la arquitectura Provider existente. No se autoriza crear un mecanismo paralelo de resolucion de identidad.
 
@@ -45,11 +50,11 @@ Estado de verificacion estructural OpenEMR:
 
 Hallazgos Pacientes sin PII:
 
-- `patient_data.pid`: 22.653 distintos, 0 vacios, 0 duplicados. Alias deterministico principal `openemr_pid`.
+- `patient_data.pid`: 22.653 distintos, 0 vacios, 0 duplicados. Alias tecnico obligatorio y deterministico `openemr_pid`.
 - `patient_data.id`: 22.653 distintos, 0 vacios, 0 duplicados. Alias deterministico secundario `openemr_patient_data_id`.
-- `patient_data.pubpid`: 5 vacios, 30 grupos duplicados, 60 filas en grupos duplicados. No puede ser llave unica.
-- `patient_data.hc_number`: no existe.
-- `patient_data.ss`: existe pero esta vacio en todos los pacientes verificados; no permite validar cedula desde esta fuente.
+- `patient_data.pubpid`: equivale funcionalmente a `patient_data.hc_number` de MedForge; representa cedula/numero de identificacion. Tiene 5 vacios, 30 grupos duplicados y 60 filas en grupos duplicados; no puede producir fusion automatica.
+- `patient_data.hc_number`: no existe en OpenEMR; el campo equivalente en MedForge se alimentaria desde `patient_data.pubpid` cuando sea valido.
+- `patient_data.ss`: existe pero esta vacio en todos los pacientes verificados; no es fuente util para cedula/identificacion en Alta Vision.
 - `patient_data.lname2`: existe en base real y no esta en el `CREATE TABLE patient_data` base local; personalizacion/drift real.
 - `patient_data.hipaa_allowwhatsapp`: existe y esta versionado en `sql/6_0_0-to-whatsapp_allow-idempotent.sql`.
 - `DOB`: 32 vacios, 6 futuros, 10 anteriores a 1900; requiere normalizacion/revision.
@@ -78,8 +83,11 @@ Reglas de resolucion de identidad Patient V1:
 - Resolver primero aliases exactos existentes en `core_external_aliases` filtrando por `aliasable_type=Patient`.
 - Crear o vincular `core_patients.id` solo despues de una resolucion deterministica o revision aprobada.
 - `openemr_pid` y `openemr_patient_data_id` son deterministas dentro de `source_instance=altavision-openemr-production`.
-- `openemr_pubpid` es alias fuerte no deterministico por duplicados/vacios.
-- Cedula normalizada/verificada es senal fuerte; si hay ambiguedad, `manual_review_status=required`.
+- `openemr_pubpid` es el alias/fuente funcional de `hc_number`/cedula/identificacion.
+- `pubpid` valido: mapear a `patient_data.hc_number` en MedForge y registrar como senal fuerte.
+- `pubpid` vacio: marcar paciente como pendiente de politica de identificacion.
+- `pubpid` duplicado: marcar conflicto y `manual_review_status=required`.
+- Nunca fusionar pacientes automaticamente por coincidencia de `pubpid`/`hc_number`/cedula.
 - No fusionar pacientes automaticamente.
 - Todo lote debe usar `batch_id`, `source_instance`, conteos agregados, fingerprints y modo idempotente.
 - Reruns no deben duplicar pacientes ni aliases.
@@ -96,7 +104,9 @@ Decision de readiness Fase 1.3: Patient V1 permanece Draft.
 ## 1. Fuentes
 
 - OpenEMR/AltaVision: `altavision52`, rama documental limpia `codex/altavision-patient-v1-contract-clean`; rama Fase 1.3 `codex/altavision-phase-1-3-patient-readiness`.
-- PR OpenEMR/AltaVision vigente: `https://github.com/jl1dvg/altavision52/pull/56`. PR `#55` queda supersedido.
+- PR OpenEMR/AltaVision canonico vigente: `https://github.com/jl1dvg/altavision52/pull/57`, hacia `master`.
+- PR `#56` queda superseded porque `#57` contiene todo su contenido mas las actualizaciones posteriores.
+- PR `#55` queda supersedido por contaminacion historica de commits no relacionados.
 - MedForge: `origin/staging=08f85d29c9f011d3c139ab56e3a6f0082c7a6d4d`.
 - Revision Claude Code: `https://github.com/jl1dvg/MedForge/pull/1065`, recomendacion `APPROVE WITH CHANGES`.
 - Notion: Programa Alta Vision Migracion OpenEMR a MedForge, Operational Core, Control Center, ADR Provider.
@@ -123,7 +133,9 @@ Patient V1 sigue Draft por estos bloqueantes:
 - Patient V1 reutilizara y extendera la arquitectura Provider existente.
 - No se autoriza crear un subsistema paralelo de identidad de pacientes.
 - `core_patients.id` es la identidad soberana del paciente en MedForge.
-- `pid`, `pubpid`, `hc_number`, cedula y `form_id` son aliases o senales externas.
+- `patient_data.pid` de OpenEMR es alias tecnico obligatorio y deterministico.
+- `patient_data.pubpid`, `patient_data.hc_number` de MedForge y cedula son el mismo concepto funcional de identificacion del paciente.
+- `form_id` es alias/llave legacy de formulario o episodio, no identidad primaria de paciente.
 - `form_id` pertenece principalmente a formulario/episodio legacy; no debe ser identidad primaria de paciente.
 - La cedula no sera restriccion `UNIQUE` directa en `core_patients`; sera senal fuerte de vinculacion solo cuando este normalizada y verificada.
 - La preparacion de la instancia real de Alta Vision en Control Center esta autorizada; su ejecucion no.
@@ -154,7 +166,7 @@ Campos logicos del contrato:
 - `environment`: `production` o `staging`.
 - `source_system`: `openemr`.
 - `source_instance`: identificador logico de origen, por ejemplo `altavision-openemr-production`.
-- `external_type`: alias namespaced, por ejemplo `openemr_pid`, `openemr_pubpid`, `openemr_patient_data_id`, `hc_number`.
+- `external_type`: alias namespaced, por ejemplo `openemr_pid`, `openemr_pubpid`, `openemr_patient_data_id`. `openemr_pubpid` representa el valor funcional que MedForge expone como `patient_data.hc_number`.
 - `external_value`: valor normalizado; no se publica en Notion ni fixtures si contiene PII.
 
 ## 6. Regla de unicidad
@@ -180,18 +192,26 @@ Conclusion:
 
 | OpenEMR/AltaVision | MedForge propuesto | Estado |
 |---|---|---|
-| `patient_data.pid` | alias `openemr_pid` | Aceptado como alias externo |
-| `patient_data.id` | alias `openemr_patient_data_id` | Aceptado como alias externo |
-| `patient_data.pubpid` | alias `openemr_pubpid` | Aceptado como alias externo |
+| `patient_data.pid` | alias `openemr_pid` asociado a `core_patients.id` | Aceptado como alias tecnico obligatorio y deterministico |
+| `patient_data.id` | identificador tecnico legacy / alias `openemr_patient_data_id` si se necesita trazabilidad | Aceptado; no identidad universal |
+| `patient_data.pubpid` | `patient_data.hc_number` de MedForge + alias `openemr_pubpid` | Aceptado como cedula/numero de identificacion |
 | `patient_data.fname/mname/lname` | `core_patients.full_name` + datos demograficos de contrato | Draft |
-| `patient_data.lname2` | `core_patients.second_last_name` o componente de nombre | Personalizacion real verificada |
+| `patient_data.lname2` | `patient_data.lname2` de MedForge | Mapeo directo confirmado |
 | `patient_data.DOB` | `core_patients.birth_date` | Draft |
 | `patient_data.sex` | `core_patients.sex` | Pendiente catalogo Jorge |
 | `patient_data.phone_*`, `email` | perfil/contactos fuera de Core minimo | Draft |
 | `patient_data.pricelevel`, `financial`, `billing_note` | fuera de Patient V1; futuro `billing-v1` | Aceptado fuera de alcance |
 | `forms.form_id` | alias de formulario/episodio, no paciente | Aceptado |
-| `patient_data.hc_number` | alias `hc_number` | No existe en base real verificada |
+| `patient_data.hc_number` | no aplica en OpenEMR; equivalente funcional es `patient_data.pubpid` | Confirmado por Jorge |
 | `patient_data.hipaa_allowwhatsapp` | consentimiento/contactabilidad | Personalizacion real versionada |
+
+Reglas de `pubpid` / `hc_number` / cedula:
+
+- Valor valido: mapear `patient_data.pubpid` de OpenEMR a `patient_data.hc_number` de MedForge.
+- Valor vacio: paciente pendiente de politica de identificacion; no bloquear `openemr_pid`.
+- Valor duplicado: conflicto que requiere revision manual.
+- Nunca fusionar pacientes automaticamente por coincidencia de identificacion.
+- `core_patients.id` sigue siendo identidad soberana incluso cuando `hc_number` exista.
 
 ## 8. Verificacion OpenEMR
 
@@ -243,7 +263,7 @@ Cuando Jorge autorice implementacion:
 - Ejecutar dry-run por defecto.
 - Reportar conteos, fingerprints y razones de revision; nunca PII.
 - Bloquear duplicados de alias.
-- No cambiar lecturas legacy por `hc_number`.
+- No tratar `pubpid`, `hc_number` y cedula como conceptos distintos; son el mismo identificador funcional con nombres distintos por sistema.
 - No tocar Billing, Agenda, WhatsApp, Solicitudes, Cirugias ni Reporting en esta fase.
 
 Archivos probables MedForge:
@@ -292,7 +312,7 @@ Superficie MedForge verificada contra repo local:
 | Riesgo | Estado | Mitigacion |
 |---|---|---|
 | DB OpenEMR no verificada | Parcialmente cerrado | estructura y metricas agregadas verificadas por VPS, sin PII |
-| `pubpid` duplicado | Abierto | no usar como llave deterministica unica; alias fuerte con revision |
+| `pubpid`/`hc_number` duplicado | Abierto | conflicto de identificacion; revision manual; nunca merge automatico |
 | Fechas DOB inconsistentes | Abierto | normalizacion y reglas de rechazo/revision en piloto sintetico |
 | Contactos/email inconsistentes | Abierto | fuera de identidad soberana; limpiar en dominio contactos futuro |
 | PII en artefactos | Controlado | solo estructura/agregados; fixtures sinteticos |

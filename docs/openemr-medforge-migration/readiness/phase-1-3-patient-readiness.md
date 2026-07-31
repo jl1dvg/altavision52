@@ -72,7 +72,7 @@ Columnas relevantes:
 
 Hallazgos estructurales:
 
-- `hc_number` no existe en `patient_data`.
+- `hc_number` no existe como columna en OpenEMR `patient_data`; el equivalente funcional en MedForge es `patient_data.hc_number`, alimentado desde OpenEMR `patient_data.pubpid` cuando el valor sea valido.
 - `lname2` existe en la base real y no aparece en el `CREATE TABLE patient_data` base de `sql/database.sql`; se clasifica como personalizacion real o drift aplicado.
 - `hipaa_allowwhatsapp` existe y esta versionado en `sql/6_0_0-to-whatsapp_allow-idempotent.sql`.
 
@@ -83,9 +83,9 @@ Pacientes:
 - Total `patient_data`: 22.653.
 - `pid`: 22.653 distintos, 0 vacios, 0 duplicados.
 - `id`: 22.653 distintos, 0 vacios, 0 duplicados.
-- `pubpid`: 5 vacios, 22.618 distintos no vacios, 30 grupos duplicados, 60 filas en grupos duplicados.
+- `pubpid`: equivale funcionalmente a `hc_number`/cedula/numero de identificacion; 5 vacios, 22.618 distintos no vacios, 30 grupos duplicados, 60 filas en grupos duplicados.
 - `ss`: 22.653 vacios.
-- `hc_number`: no existe.
+- `hc_number`: no existe como columna OpenEMR; se deriva funcionalmente de `pubpid` hacia MedForge cuando sea valido.
 
 Calidad demografica/contacto:
 
@@ -111,9 +111,11 @@ Relaciones:
 
 - `openemr_pid` puede ser alias determinista principal.
 - `openemr_patient_data_id` puede ser alias determinista secundario.
-- `openemr_pubpid` no puede usarse como llave unica por duplicados y vacios.
-- Cedula no puede validarse desde `ss` en esta fuente porque esta vacia en todos los pacientes verificados.
-- `hc_number` no puede mapearse desde `patient_data` porque la columna no existe.
+- `openemr_pubpid` se mapea funcionalmente a `patient_data.hc_number` de MedForge cuando sea valido.
+- `pubpid` vacio deja al paciente pendiente de politica de identificacion.
+- `pubpid` duplicado es conflicto de identificacion y requiere revision manual.
+- Nunca se deben fusionar pacientes automaticamente por coincidencia de `pubpid`/`hc_number`/cedula.
+- Cedula no puede validarse desde `ss` en esta fuente porque esta vacia en todos los pacientes verificados; la fuente funcional confirmada es `pubpid`.
 - Datos de contacto y fechas requieren reglas de normalizacion y revision, no deben bloquear identidad soberana salvo criterios clinicos aprobados.
 - Billing existe con alto volumen, pero sigue fuera de `patient-v1`; se reserva para `billing-v1`.
 

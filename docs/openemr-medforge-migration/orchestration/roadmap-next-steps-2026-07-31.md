@@ -35,8 +35,8 @@ Aunque `pubpid` y `hc_number` tienen la misma semantica funcional, OpenEMR prese
 
 ### Alta Vision / OpenEMR
 
-- PR base limpio: #56, Patient V1 Draft contra `master`.
-- PR incremental de readiness: #57, limpio y acotado a documentacion.
+- PR superseded: #56, Patient V1 Draft inicial contra `master`.
+- PR canonico activo: #57, contiene el contenido de #56 mas readiness, handoff y roadmap; debe ser el unico PR activo hacia `master`.
 - `patient_data`: 22.653 pacientes.
 - `pid`: completo y unico.
 - `pubpid`: equivalente a cedula/identificacion, con vacios y duplicados que requieren politica de conflicto.
@@ -64,10 +64,10 @@ Actualizar `patient-v1.md` y `patient-v1.schema.json` para que quede explicito:
 - `patient_data.id` como ID tecnico legacy.
 - Manejo de `pubpid` vacio o duplicado sin merge automatico.
 
-Orden documental recomendado:
+Orden documental aplicado:
 
-1. Revisar y mergear PR #56.
-2. Retargetear PR #57 a `master` despues del merge de #56, o mergearlo como PR apilado inmediatamente despues de #56.
+1. Mantener PR #57 como canonico hacia `master`.
+2. Marcar y cerrar PR #56 como superseded sin merge.
 3. Mantener Patient V1 como Draft hasta completar los bloqueantes del destino.
 
 ### Paso 2 — Limpiar la revision MedForge

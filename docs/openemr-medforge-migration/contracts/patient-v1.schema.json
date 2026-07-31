@@ -113,27 +113,32 @@
     "identity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source_patient_pid"],
+      "required": ["source_patient_pid", "pubpid_status"],
       "properties": {
         "source_patient_pid": {
           "type": "string",
-          "description": "OpenEMR patient_data.pid. External alias only."
+          "description": "OpenEMR patient_data.pid. Mandatory deterministic technical alias from the source; later associated to core_patients.id."
         },
         "source_patient_id": {
           "type": ["string", "null"],
-          "description": "OpenEMR patient_data.id if available. External alias only."
+          "description": "OpenEMR patient_data.id if available. Technical legacy table identifier, not a universal patient identity."
         },
         "source_pubpid": {
           "type": ["string", "null"],
-          "description": "OpenEMR patient_data.pubpid. External alias only."
+          "description": "OpenEMR patient_data.pubpid. Functional equivalent of MedForge patient_data.hc_number; represents cedula or patient identification number."
         },
-        "legacy_hc_number": {
+        "target_hc_number": {
           "type": ["string", "null"],
-          "description": "Legacy hc_number when present in a source. External alias only. Not present in verified Alta Vision patient_data."
+          "description": "MedForge patient_data.hc_number derived from source_pubpid only when source_pubpid is valid. Null when pubpid is empty, invalid, or duplicated."
+        },
+        "pubpid_status": {
+          "type": "string",
+          "enum": ["valid", "empty", "duplicate", "invalid"],
+          "description": "valid maps to target_hc_number; empty requires identification policy; duplicate requires manual review; invalid is rejected or reviewed by policy."
         },
         "national_identifier_hash": {
           "type": ["string", "null"],
-          "description": "Optional salted hash for pilot dedupe. Never store raw cedula in pilot artifacts. Cedula is a strong signal only when normalized and verified; it is not UNIQUE on core_patients."
+          "description": "Optional salted hash of the same functional identifier represented by source_pubpid/target_hc_number. Never store raw cedula in pilot artifacts. Not UNIQUE on core_patients."
         }
       }
     },
@@ -195,8 +200,8 @@
           },
           "external_type": {
             "type": "string",
-            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number|cedula_hash)$",
-            "description": "Namespaced external type. Avoid generic values such as pid or id."
+            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number)$",
+            "description": "Namespaced external type. openemr_pubpid and hc_number are the same functional patient identification concept across systems; avoid generic values such as pid or id."
           },
           "external_id": {
             "type": "string",
@@ -218,7 +223,7 @@
       "required": [
         "strategy",
         "manual_review_status",
-        "cedula_policy",
+        "identification_policy",
         "idempotency_key"
       ],
       "properties": {
@@ -234,9 +239,9 @@
           "type": "array",
           "items": {"type": "string"}
         },
-        "cedula_policy": {
+        "identification_policy": {
           "type": "string",
-          "enum": ["not_available", "strong_signal_verified", "ambiguous_manual_review", "ignored_invalid"]
+          "enum": ["pubpid_valid_maps_to_hc_number", "pubpid_empty_identification_policy_pending", "pubpid_duplicate_manual_review", "ignored_invalid"]
         },
         "idempotency_key": {
           "type": "string",

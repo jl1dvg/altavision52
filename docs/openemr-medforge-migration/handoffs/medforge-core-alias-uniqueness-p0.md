@@ -21,7 +21,9 @@ No incluir `aliasable_id` en la restriccion unique.
 - Alta Vision usara instancia clinica y DB independiente.
 - `core_patients` no tendra `organization_id` ni `instance_id`.
 - `core_patients.id` sera identidad clinica soberana.
-- `pid`, `pubpid`, `hc_number`, `form_id` y otros identificadores externos seran aliases.
+- `patient_data.pid` de OpenEMR sera alias tecnico obligatorio asociado a `core_patients.id`.
+- `patient_data.pubpid` de OpenEMR equivale funcionalmente a `patient_data.hc_number` de MedForge; ambos representan cedula o numero de identificacion.
+- `form_id` y otros identificadores de formularios seran aliases/llaves legacy del dominio correspondiente, no identidad primaria de paciente.
 - Patient V1 debe reutilizar arquitectura Provider, `ProviderIdentityResolver`, `AliasResolution` y `core_external_aliases`.
 - No se autoriza identidad paralela para pacientes.
 
