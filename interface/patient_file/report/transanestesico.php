@@ -149,15 +149,21 @@ if ($PDF_OUTPUT && !$embed) {
         <td class="verde_left_ta" colspan="3">CIE</td>
         <td class="blanco_ta" style="text-align: left" colspan="16">
             <?php
-            echo substr($prot_dxpre, 6);
-            if ($prot_dxpre2 !== null) {
-                echo ", " . substr($prot_dxpre2, 6);
-            }
+            $prot_dxpre1 = getDXCodeFromField($form_id, 'Prot_dxpre');
+            $prot_dxpre2 = getDXCodeFromField($form_id, 'Prot_dxpre2');
+            $prot_dxpre3 = getDXCodeFromField($form_id, 'Prot_dxpre3');
 
-            if ($prot_dxpre3 !== null) {
-                echo ", " . substr($prot_dxpre3, 6);
-            }
-            ?>
+            if (!empty($prot_dxpre1)) : ?>
+                <?php echo $prot_dxpre1; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($prot_dxpre2)) : ?>
+                <br><?php echo ', ' . $prot_dxpre2; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($prot_dxpre3)) : ?>
+                <br><?php echo ', ' . $prot_dxpre3; ?>
+            <?php endif; ?>
         </td>
         <td class="verde_left_ta" colspan="11">CIRUGÍA PROPUESTA</td>
         <td class="blanco_ta" style="text-align: left" colspan="38">
@@ -182,7 +188,7 @@ if ($PDF_OUTPUT && !$embed) {
     <tr style="height: 11px">
         <td class="verde_left_ta" colspan="13">DIAGNÓSTICO POSTOPERATORIO</td>
         <td class="blanco_left_ta" style="text-align: left" colspan="29"><?php
-            $prot_dxpost = (getFieldValue($formid, "Prot_dxpost"));
+            $prot_dxpost = getFieldValue($formid, "Prot_dxpost");
             $prot_dxpost2 = getFieldValue($formid, "Prot_dxpost2");
             $prot_dxpost3 = getFieldValue($formid, "Prot_dxpost3");
 
@@ -198,16 +204,23 @@ if ($PDF_OUTPUT && !$embed) {
             ?>
         </td>
         <td class="verde_left_ta" colspan="3">CIE</td>
-        <td class="blanco_left_ta" style="text-align: left" colspan="16"><?php
-            echo substr($prot_dxpost, 6);
-            if ($prot_dxpost2 !== null) {
-                echo ", " . substr($prot_dxpost2, 6);
-            }
+        <td class="blanco_left_ta" style="text-align: left" colspan="16">
+            <?php
+            $prot_dxpost = getDXCodeFromField($form_id, 'Prot_dxpost');
+            $prot_dxpost2 = getDXCodeFromField($form_id, 'Prot_dxpost2');
+            $prot_dxpost3 = getDXCodeFromField($form_id, 'Prot_dxpost3');
 
-            if ($prot_dxpost3 !== null) {
-                echo ", " . substr($prot_dxpost3, 6);
-            }
-            ?>
+            if (!empty($prot_dxpost)) : ?>
+                <?php echo $prot_dxpost; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($prot_dxpost2)) : ?>
+                <br><?php echo ', ' . $prot_dxpost2; ?>
+            <?php endif; ?>
+
+            <?php if (!empty($prot_dxpost3)) : ?>
+                <br><?php echo ', ' . $prot_dxpost3; ?>
+            <?php endif; ?>
         </td>
         <td class="verde_left_ta" colspan="11">CIRUGÍA REALIZADA</td>
         <td class="blanco_left_ta" style="text-align: left" colspan="38">

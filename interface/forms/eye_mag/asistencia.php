@@ -55,6 +55,7 @@ $fechaINGRESO = sqlQuery($queryform, array($pid, $encounter, $form_folder));
 
 $providerID = getProviderIdOfEncounter($encounter);
 $providerNAME = getProviderName($providerID);
+$providerRegistro = getProviderRegistro($providerID);
 
 // Procesar fecha en formato
 $dated = new DateTime($encounter_date);
@@ -198,10 +199,25 @@ ob_start();
 
 <P class="texto">Este certificado se expide a petición del interesado para los fines que estime convenientes.</P>
 <P class="texto">Atentamente,</P>
-<P class="texto"><br><br></P>
+<P class="texto"><BR><BR>
+</P>
 <br>
-<P><B><?php echo htmlspecialchars($providerNAME); ?><br><?php echo htmlspecialchars($facility['name']); ?><br>Guayaquil
-        &ndash; Ecuador</B></P>
+<P>
+    <B>
+        <?php
+        echo getProviderName($providerID);
+        ?>
+        <br>
+        <?php
+        echo getProviderEspecialidad($providerID);
+        ?>
+        <br>
+        <?php
+        echo 'CI ' . getProviderIdentification($providerID);
+        ?>
+        Centro Oftalmol&oacute;gico AltaVisi&oacute;n
+        <br>
+        Guayaquil &ndash; Ecuador</B></P>
 </BODY>
 </HTML>
 <?php

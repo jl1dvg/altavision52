@@ -6638,6 +6638,7 @@ CREATE TABLE `users` (
   `fname` varchar(255) default NULL,
   `mname` varchar(255) default NULL,
   `lname` varchar(255) default NULL,
+  `lname2` varchar(255) default NULL,
   `suffix` varchar(255) default NULL,
   `federaltaxid` varchar(255) default NULL,
   `federaldrugid` varchar(255) default NULL,

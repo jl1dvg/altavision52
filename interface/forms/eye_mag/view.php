@@ -1955,7 +1955,7 @@ $input_echo = menu_overhaul_top($pid, $encounter);
                             <div id="LayerVision_CR"
                                  class="refraction autoref borderShadow <?php echo $display_Cyclo; ?>">
                                 <i title="<?php echo xla('Dispense this Rx'); ?>" class="closeButton_2 fa fa-print"
-                                   onclick="top.restoreSession();doscript('AR',<?php echo attr($pid); ?>,<?php echo attr($encounter); ?>);return false;"></i>
+                                   onclick="top.restoreSession();doscript('LM',<?php echo attr($pid); ?>,<?php echo attr($encounter); ?>);return false;"></i>
                                 <span
                                     title="<?php echo xla('Close this panel and make this a Preference to stay closed'); ?>"
                                     class="closeButton fa  fa-close" id="Close_CR" name="Close_CR"></span>

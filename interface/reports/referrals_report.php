@@ -309,6 +309,9 @@ $form_requested_service = isset($_POST['form_requested_service']) ? trim((string
 $form_refer_state = isset($_POST['form_refer_state']) ? trim((string)$_POST['form_refer_state']) : '';
 $form_operation_state = isset($_POST['form_operation_state']) ? trim((string)$_POST['form_operation_state']) : '';
 $form_patient_type = isset($_POST['form_patient_type']) ? trim((string)$_POST['form_patient_type']) : '';
+$form_pricelevel = isset($_POST['form_pricelevel']) ? trim((string)$_POST['form_pricelevel']) : '';
+$form_insurance_type = isset($_POST['form_insurance_type']) ? trim((string)$_POST['form_insurance_type']) : '';
+$form_pubpid = isset($_POST['form_pubpid']) ? trim((string)$_POST['form_pubpid']) : '';
 
 if (!isValidIsoDate($form_from_date)) {
     $form_from_date = date('Y-01-01');
@@ -363,10 +366,75 @@ if (strlen($form_refer_state) > 128) {
     $form_refer_state = '';
 }
 
+if (strlen($form_pricelevel) > 128) {
+    $form_pricelevel = '';
+}
+
+if (strlen($form_insurance_type) > 128) {
+    $form_insurance_type = '';
+}
+
+if (strlen($form_pubpid) > 64) {
+    $form_pubpid = substr($form_pubpid, 0, 64);
+}
+
 $providerOptions = array();
 $providerRes = sqlStatement("SELECT id, fname, lname FROM users WHERE active = 1 ORDER BY lname, fname");
 while ($prow = sqlFetchArray($providerRes)) {
     $providerOptions[] = $prow;
+}
+
+$pricelevelOptions = array();
+$pricelevelRes = sqlStatement("SELECT option_id, title FROM list_options WHERE list_id = 'pricelevel' AND activity = 1 ORDER BY seq, title");
+while ($priceRow = sqlFetchArray($pricelevelRes)) {
+    $priceValue = trim((string)($priceRow['option_id'] ?? ''));
+    if ($priceValue === '') {
+        continue;
+    }
+
+    $pricelevelOptions[$priceValue] = !empty($priceRow['title']) ? $priceRow['title'] : $priceValue;
+}
+if ($form_pricelevel !== '' && !isset($pricelevelOptions[$form_pricelevel])) {
+    $pricelevelOptions[$form_pricelevel] = $form_pricelevel;
+}
+
+$insuranceTypeOptions = array();
+$insuranceTypeQuery = "SELECT DISTINCT p.genericval1 AS insurance_type " .
+    "FROM transactions AS t " .
+    "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
+    "JOIN lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
+    "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
+    "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
+    "WHERE t.title = 'LBTref' " .
+    "AND p.genericval1 != '' " .
+    "AND d1.field_value >= ? AND d1.field_value <= ? ";
+$insuranceTypeParams = array($form_from_date, $form_to_date);
+if ($form_facility !== '') {
+    if ($form_facility === '0') {
+        $insuranceTypeQuery .= "AND (uf.facility_id IS NULL OR uf.facility_id = 0) ";
+    } else {
+        $insuranceTypeQuery .= "AND uf.facility_id = ? ";
+        $insuranceTypeParams[] = (int)$form_facility;
+    }
+}
+if ($form_pubpid !== '') {
+    $insuranceTypeQuery .= "AND p.pubpid LIKE ? ";
+    $insuranceTypeParams[] = '%' . $form_pubpid . '%';
+}
+if ($form_pricelevel !== '') {
+    $insuranceTypeQuery .= "AND p.pricelevel = ? ";
+    $insuranceTypeParams[] = $form_pricelevel;
+}
+$insuranceTypeQuery .= "ORDER BY p.genericval1";
+$insuranceTypeRes = sqlStatement($insuranceTypeQuery, $insuranceTypeParams);
+while ($insuranceTypeRow = sqlFetchArray($insuranceTypeRes)) {
+    $insuranceTypeValue = trim((string)($insuranceTypeRow['insurance_type'] ?? ''));
+    if ($insuranceTypeValue !== '') {
+        $insuranceTypeOptions[$insuranceTypeValue] = $insuranceTypeValue;
+    }
+}
+if ($form_insurance_type !== '' && !isset($insuranceTypeOptions[$form_insurance_type])) {
+    $insuranceTypeOptions[$form_insurance_type] = $form_insurance_type;
 }
 
 $referStateListId = '';
@@ -378,6 +446,7 @@ if (!empty($referStateLayout['list_id'])) {
 $referStateOptions = array();
 $referStateQuery = "SELECT DISTINCT ds.field_value AS refer_state " .
     "FROM transactions AS t " .
+    "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
     "JOIN lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
     "JOIN lbt_data AS ds ON ds.form_id = t.id AND ds.field_id = 'refer_state' " .
     "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
@@ -393,6 +462,18 @@ if ($form_facility !== '') {
         $referStateQuery .= "AND uf.facility_id = ? ";
         $referStateParams[] = (int)$form_facility;
     }
+}
+if ($form_pubpid !== '') {
+    $referStateQuery .= "AND p.pubpid LIKE ? ";
+    $referStateParams[] = '%' . $form_pubpid . '%';
+}
+if ($form_pricelevel !== '') {
+    $referStateQuery .= "AND p.pricelevel = ? ";
+    $referStateParams[] = $form_pricelevel;
+}
+if ($form_insurance_type !== '') {
+    $referStateQuery .= "AND p.genericval1 = ? ";
+    $referStateParams[] = $form_insurance_type;
 }
 $referStateQuery .= "ORDER BY ds.field_value";
 $referStateRes = sqlStatement($referStateQuery, $referStateParams);
@@ -410,6 +491,7 @@ $requestedServiceOptions = array();
 $requestedServiceValues = array();
 $serviceQuery = "SELECT DISTINCT d.field_value AS requested_service " .
     "FROM transactions AS t " .
+    "LEFT JOIN patient_data AS p ON p.pid = t.pid " .
     "JOIN lbt_data AS d ON d.form_id = t.id AND d.field_id = 'refer_related_code' " .
     "JOIN lbt_data AS d1 ON d1.form_id = t.id AND d1.field_id = 'refer_date' " .
     "LEFT JOIN lbt_data AS d8 ON d8.form_id = t.id AND d8.field_id = 'refer_from' " .
@@ -425,6 +507,18 @@ if ($form_facility !== '') {
         $serviceQuery .= "AND uf.facility_id = ? ";
         $serviceParams[] = (int)$form_facility;
     }
+}
+if ($form_pubpid !== '') {
+    $serviceQuery .= "AND p.pubpid LIKE ? ";
+    $serviceParams[] = '%' . $form_pubpid . '%';
+}
+if ($form_pricelevel !== '') {
+    $serviceQuery .= "AND p.pricelevel = ? ";
+    $serviceParams[] = $form_pricelevel;
+}
+if ($form_insurance_type !== '') {
+    $serviceQuery .= "AND p.genericval1 = ? ";
+    $serviceParams[] = $form_insurance_type;
 }
 $serviceQuery .= "ORDER BY d.field_value";
 $serviceRes = sqlStatement(
@@ -911,6 +1005,42 @@ $requestedServiceDescriptions = getReferralRequestedServiceDescriptions($request
                                 </tr>
                                 <tr>
                                     <td class='control-label'>
+                                        <?php echo xlt('Cédula'); ?>:
+                                    </td>
+                                    <td>
+                                        <input type='text' name='form_pubpid' id='form_pubpid'
+                                               value='<?php echo attr($form_pubpid); ?>'
+                                               class='form-control'>
+                                    </td>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Afiliación'); ?>:
+                                    </td>
+                                    <td>
+                                        <select name='form_pricelevel' id='form_pricelevel' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('IESS'); ?> --</option>
+                                            <?php foreach ($pricelevelOptions as $priceValue => $priceLabel) { ?>
+                                                <option value='<?php echo attr($priceValue); ?>'<?php echo ($form_pricelevel === (string)$priceValue) ? ' selected' : ''; ?>>
+                                                    <?php echo text($priceLabel); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                    </td>
+                                    <td class='control-label'>
+                                        <?php echo xlt('Tipo de seguro'); ?>:
+                                    </td>
+                                    <td>
+                                        <select name='form_insurance_type' id='form_insurance_type' class='form-control'>
+                                            <option value=''>-- <?php echo xlt('Todos'); ?> --</option>
+                                            <?php foreach ($insuranceTypeOptions as $insuranceTypeValue => $insuranceTypeLabel) { ?>
+                                                <option value='<?php echo attr($insuranceTypeValue); ?>'<?php echo ($form_insurance_type === (string)$insuranceTypeValue) ? ' selected' : ''; ?>>
+                                                    <?php echo text($insuranceTypeLabel); ?>
+                                                </option>
+                                            <?php } ?>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class='control-label'>
                                         <?php echo xlt('Servicio solicitado'); ?>:
                                     </td>
                                     <td colspan='5'>
@@ -1020,7 +1150,8 @@ $requestedServiceDescriptions = getReferralRequestedServiceDescriptions($request
                 "d9.field_value AS assigned_provider_id, " .
                 "d10.field_value AS refer_related_code, " .
                 "d11.field_value AS refer_state, " .
-                "ut.organization, uf.facility_id, p.pubpid, " .
+                "ut.organization, uf.facility_id, p.pubpid, p.pricelevel, p.genericval1, " .
+                "COALESCE(NULLIF(loprice.title, ''), NULLIF(p.pricelevel, ''), '') AS pricelevel_title, " .
                 "CONCAT(uf.fname,' ', uf.lname) AS referer_name, " .
                 "CONCAT(ut.fname,' ', ut.lname) AS referer_to, " .
                 "CONCAT(ua.fname,' ', ua.lname) AS assigned_provider_name, " .
@@ -1039,6 +1170,7 @@ $requestedServiceDescriptions = getReferralRequestedServiceDescriptions($request
                 "LEFT JOIN users AS ut ON ut.id = d7.field_value " .
                 "LEFT JOIN users AS uf ON uf.id = d8.field_value " .
                 "LEFT JOIN users AS ua ON ua.id = d9.field_value " .
+                "LEFT JOIN list_options AS loprice ON loprice.list_id = 'pricelevel' AND loprice.option_id = p.pricelevel AND loprice.activity = 1 " .
                 "WHERE t.title = 'LBTref' AND " .
                 "d1.field_value >= ? AND d1.field_value <= ? ";
 
@@ -1051,6 +1183,21 @@ $requestedServiceDescriptions = getReferralRequestedServiceDescriptions($request
                     $query .= "AND uf.facility_id = ? ";
                     $queryParams[] = (int)$form_facility;
                 }
+            }
+
+            if ($form_pubpid !== '') {
+                $query .= "AND p.pubpid LIKE ? ";
+                $queryParams[] = '%' . $form_pubpid . '%';
+            }
+
+            if ($form_pricelevel !== '') {
+                $query .= "AND p.pricelevel = ? ";
+                $queryParams[] = $form_pricelevel;
+            }
+
+            if ($form_insurance_type !== '') {
+                $query .= "AND p.genericval1 = ? ";
+                $queryParams[] = $form_insurance_type;
             }
 
             $query .= "ORDER BY ut.organization, d1.field_value, t.id";

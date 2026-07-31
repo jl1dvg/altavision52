@@ -141,7 +141,7 @@ function submitform() {
     for(i=0;i<f.length;i++){
       if(f[i].type=='text' && f[i].value)
       {
-        if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname')
+        if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname' || f[i].name == 'lname2')
         {
           alertMsg += checkLength(f[i].name,f[i].value,35);
           alertMsg += checkUsername(f[i].name,f[i].value);
@@ -328,6 +328,10 @@ if ($password_exp != "0000-00-00") {
 
 <TR>
 <td><span class=text><?php echo xlt('Last Name'); ?>: </span></td><td><input type=entry name=lname id=lname style="width:150px;"  class="form-control" value="<?php echo attr($iter["lname"]); ?>"><span class="mandatory"></span></td>
+<td><span class=text><?php echo xlt('Second Last Name'); ?>: </span></td><td><input type=entry name=lname2 style="width:150px;" value="<?php echo attr($iter["lname2"]); ?>"></td>
+</TR>
+
+<TR>
 <td><span class=text><?php echo xlt('Default Facility'); ?>: </span></td><td><select name=facility_id style="width:150px;" class="form-control">
 <?php
 $fres = $facilityService->getAllBillingLocations();

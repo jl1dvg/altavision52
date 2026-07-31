@@ -260,20 +260,10 @@ $MedicoProcedimiento = $CarePlanSQL['care_plan_type'];
 <P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
     <BR>
 </P>
-<P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
-    <FONT FACE="Times New Roman, serif"><FONT SIZE=3><SPAN >Atentamente,</SPAN></FONT></FONT></P>
-<P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
-    <BR>
+<P class="texto">Atentamente,</P>
+<P class="texto"><BR><BR>
 </P>
-<P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
-    <BR>
-</P>
-<P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
-    <BR>
-</P>
-<P  ALIGN=JUSTIFY STYLE="margin-bottom: 0in; line-height: 100%">
-    <BR>
-</P>
+<br>
 <P>
     <B>
         <?php
@@ -284,6 +274,9 @@ $MedicoProcedimiento = $CarePlanSQL['care_plan_type'];
         echo getProviderEspecialidad($providerID);
         ?>
         <br>
+        <?php
+        echo 'CI ' . getProviderIdentification($providerID);
+        ?>
         Centro Oftalmol&oacute;gico AltaVisi&oacute;n
         <br>
         Guayaquil &ndash; Ecuador</B></P>

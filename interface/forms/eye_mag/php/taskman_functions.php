@@ -18,6 +18,8 @@
 use Mpdf\Mpdf;
 use OpenEMR\Services\FacilityService;
 
+require_once($GLOBALS['srcdir'] . "/patient.inc");
+
 $facilityService = new FacilityService();
 
 /**
@@ -175,11 +177,11 @@ function deliver_document($task)
     $patientData    =  sqlQuery($query, array($task['PATIENT_ID']));
 
     $from_fax   = preg_replace("/[^0-9]/", "", $facility_data['fax']);
-    $from_name  = $from_data['fname']." ".$from_data['lname'];
+    $from_name  = formatProviderNameFromRow($from_data);
     $from_fac   = $from_facility['name'];
     $to_fax     = preg_replace("/[^0-9]/", "", $to_data['fax']);
 
-    $to_name    = $to_data['fname']." ".$to_data['lname'];
+    $to_name    = formatProviderNameFromRow($to_data);
     $pt_name    = $patientData['fname'].' '.$patientData['lname'];
 
     $encounter = $task['ENC_ID'];
@@ -243,17 +245,11 @@ function make_document($task)
     $patientData    =  sqlQuery($query, array($task['PATIENT_ID']));
 
     $from_fax   = preg_replace("/[^0-9]/", "", $facility_data['fax']);
-    $from_name  = $from_data['fname']." ".$from_data['lname'];
-    if ($from_data['suffix']) {
-        $from_name .=", ".$from_data['suffix'];
-    }
+    $from_name  = formatProviderNameFromRow($from_data);
 
     $from_fac   = $from_facility['name'];
     $to_fax     = preg_replace("/[^0-9]/", "", $to_data['fax']);
-    $to_name    = $to_data['fname']." ".$to_data['lname'];
-    if ($to_data['suffix']) {
-        $to_name .=", ".$to_data['suffix'];
-    }
+    $to_name    = formatProviderNameFromRow($to_data);
 
     $pt_name    = $patientData['fname'].' '.$patientData['lname'];
     $encounter = $task['ENC_ID'];

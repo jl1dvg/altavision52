@@ -1,6 +1,7 @@
 <?php
 require_once("common_vars.php");
 include("common_header.php");
+
 ?>
 <!--[PREANESTESICO A]-->
 <TABLE>
@@ -81,9 +82,9 @@ include("common_header.php");
         <td class="verde" colspan="3">CIE</td>
         <td class="blanco_left" colspan="5">
             <?php
-            $prot_dxpre1 = substr(getFieldValue($form_id, "Prot_dxpre"), 6);
-            $prot_dxpre2 = substr(getFieldValue($form_id, "Prot_dxpre2"), 6);
-            $prot_dxpre3 = substr(getFieldValue($form_id, "Prot_dxpre3"), 6);
+            $prot_dxpre1 = getDXCodeFromField($form_id, 'Prot_dxpre');
+            $prot_dxpre2 = getDXCodeFromField($form_id, 'Prot_dxpre2');
+            $prot_dxpre3 = getDXCodeFromField($form_id, 'Prot_dxpre3');
             ?>
 
             <?php if (!empty($prot_dxpre1)) : ?>
@@ -710,9 +711,14 @@ include("common_header.php");
                 <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
             </td>
             <td colspan="7" class="blanco" style="height: 15px;"></td>
-            <td colspan="21" class="blanco" style="height: 15px;">María Patricia</td>
-            <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
-            <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
+            <?php
+            $anestesiologoId = getFieldValue($form_id, "Prot_anestesiologo");
+            $anestesiologo = getProviderNameParts($anestesiologoId) ?: array();
+            ?>
+            <td colspan="21" class="blanco"
+                style="height: 15px;"><?php echo trim(($anestesiologo['fname'] ?? '') . ' ' . ($anestesiologo['mname'] ?? '')); ?></td>
+            <td colspan="19" class="blanco" style="height: 15px;"><?php echo $anestesiologo['apellido_1'] ?? ''; ?></td>
+            <td colspan="16" class="blanco" style="height: 15px;"><?php echo $anestesiologo['apellido_2'] ?? ''; ?></td>
         </tr>
         <tr>
             <td colspan="15" class="verde" style="height: 15px;">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>
@@ -720,7 +726,7 @@ include("common_header.php");
             <td colspan="30" class="verde" style="height: 15px;">SELLO</td>
         </tr>
         <tr>
-            <td colspan="15" class="blanco" style="height: 40px">0963691662</td>
+            <td colspan="15" class="blanco" style="height: 40px"><?php echo getProviderIdentification($anestesiologoId); ?></td>
             <td colspan="26" class="blanco" style="height: 15px;">&nbsp;</td>
             <td colspan="30" class="blanco" style="height: 15px;">&nbsp;</td>
         </tr>

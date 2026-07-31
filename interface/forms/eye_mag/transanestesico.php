@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <?php
 require_once("../../globals.php");
+require_once("$srcdir/iess.inc.php");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");

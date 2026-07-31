@@ -22,7 +22,8 @@ require_once("$fileroot/interface/drugs/drugs.inc.php");
 use OpenEMR\Common\Csrf\CsrfUtils;
 
 //verify csrf
-if (!CsrfUtils::verifyCsrfToken($_GET["csrf_token_form"])) {
+$csrf_token_form = isset($_REQUEST["csrf_token_form"]) ? $_REQUEST["csrf_token_form"] : '';
+if (!CsrfUtils::verifyCsrfToken($csrf_token_form)) {
     CsrfUtils::csrfNotVerified();
 }
 
@@ -103,11 +104,11 @@ function write_code_info($codetype, $code, $selector, $pricelevel)
     js_escape($wh) . ");";
 }
 
-$pricelevel = isset($_GET['pricelevel']) ? $_GET['pricelevel'] : '';
+$pricelevel = isset($_REQUEST['pricelevel']) ? $_REQUEST['pricelevel'] : '';
 
-if (!empty($_GET['list'])) {
+if (!empty($_REQUEST['list'])) {
   // This case supports packages of codes.
-    $arrcodes = explode('~', $_GET['list']);
+    $arrcodes = explode('~', $_REQUEST['list']);
     foreach ($arrcodes as $codestring) {
         if ($codestring === '') {
             continue;
@@ -120,8 +121,8 @@ if (!empty($_GET['list'])) {
     }
 } else {
   // This is the normal case of adding a single code.
-    $codetype   = isset($_GET['codetype'  ]) ? $_GET['codetype'  ] : '';
-    $code       = isset($_GET['code'      ]) ? $_GET['code'      ] : '';
-    $selector   = isset($_GET['selector'  ]) ? $_GET['selector'  ] : '';
+    $codetype   = isset($_REQUEST['codetype'  ]) ? $_REQUEST['codetype'  ] : '';
+    $code       = isset($_REQUEST['code'      ]) ? $_REQUEST['code'      ] : '';
+    $selector   = isset($_REQUEST['selector'  ]) ? $_REQUEST['selector'  ] : '';
     write_code_info($codetype, $code, $selector, $pricelevel);
 }

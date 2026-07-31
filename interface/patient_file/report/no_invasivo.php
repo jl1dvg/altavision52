@@ -221,17 +221,24 @@ if ($proced_id == '65855') {
         </td>
         <td colspan="44" class="blanco_left">
             <?php
-            foreach ($resultadoDX as $resultado) {
-                echo $resultado['codedesc'] . "<br>";
+            foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
+                $description = lookup_code_short_descriptions(getFieldValue($form_id, $dxField));
+                if (!empty($description)) {
+                    echo $description . "<br>";
+                }
             }
             ?>
         </td>
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
             <?php
-            foreach ($resultadoDX as $resultado) {
-                echo $resultado['code'] . "<br>";
-            } ?>
+            foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
+                $dxCode = getDXCodeFromField($form_id, $dxField);
+                if (!empty($dxCode)) {
+                    echo $dxCode . "<br>";
+                }
+            }
+            ?>
         </td>
     </tr>
     <tr>
@@ -737,20 +744,23 @@ generatePageHeader($facilityService, $web_root);
     ?>
 </p>
 <br>
-<p style="text-align: justify">
-    Atentamente,
-</p>
-<br><br><br><br><br>
-<P style="text-align: justify">
+<P class="texto">Atentamente,</P>
+<P class="texto"><BR><BR>
+</P>
+<br>
+<P>
     <B>
         <?php
-        echo getProviderNameConcat($providerID);
+        echo getProviderName($providerID);
         ?>
         <br>
         <?php
         echo getProviderEspecialidad($providerID);
         ?>
         <br>
+        <?php
+        echo 'CI ' . getProviderIdentification($providerID);
+        ?>
         Centro Oftalmol&oacute;gico AltaVisi&oacute;n
         <br>
         Guayaquil &ndash; Ecuador</B></P>

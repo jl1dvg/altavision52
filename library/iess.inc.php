@@ -42,6 +42,103 @@ function getFieldValue($form_id, $field_id)
     }
 }
 
+if (!function_exists('lookup_code_short_descriptions')) {
+    function lookup_code_short_descriptions($codes)
+    {
+        $codes = trim((string)$codes);
+        if ($codes === '') {
+            return '';
+        }
+
+        if (strpos($codes, ':') !== false) {
+            $description = lookup_code_descriptions($codes, "code_text_short");
+            if (!empty($description)) {
+                return $description;
+            }
+        }
+
+        $formattedCode = $codes;
+        if (strpos($formattedCode, 'ICD10:') === 0) {
+            $formattedCode = substr($formattedCode, 6);
+        }
+
+        $dxCode = str_replace('.', '', $formattedCode);
+        $icd = sqlQuery(
+            "SELECT short_desc, long_desc
+             FROM icd10_dx_order_code
+             WHERE formatted_dx_code = ?
+                OR dx_code = ?
+             ORDER BY active DESC, valid_for_coding DESC, revision DESC
+             LIMIT 1",
+            array($formattedCode, $dxCode)
+        );
+
+        if ($icd) {
+            if (!empty($icd['short_desc'])) {
+                return $icd['short_desc'];
+            }
+            if (!empty($icd['long_desc'])) {
+                return $icd['long_desc'];
+            }
+        }
+
+        return '';
+    }
+}
+
+function iessGetDXCodeFromCodeValue($codeValue)
+{
+    $codeValue = trim((string)$codeValue);
+    if ($codeValue === '') {
+        return '';
+    }
+
+    if (strpos($codeValue, 'ICD10:') === 0) {
+        $codeValue = substr($codeValue, 6);
+    }
+
+    $dxCode = str_replace('.', '', $codeValue);
+    $icd = sqlQuery(
+        "SELECT dx_code
+         FROM icd10_dx_order_code
+         WHERE formatted_dx_code = ?
+            OR dx_code = ?
+         ORDER BY active DESC, valid_for_coding DESC, revision DESC
+         LIMIT 1",
+        array($codeValue, $dxCode)
+    );
+
+    if ($icd && !empty($icd['dx_code'])) {
+        return $icd['dx_code'];
+    }
+
+    return $dxCode;
+}
+
+function getDXCodeFromField($form_id, $field_id)
+{
+    $row = sqlQuery(
+        "SELECT field_value
+         FROM lbf_data
+         WHERE form_id = ?
+         AND field_id = ?",
+        array($form_id, $field_id)
+    );
+
+    if (!$row || empty($row['field_value'])) {
+        return '';
+    }
+
+    $fieldValue = $row['field_value'];
+
+    // Ejemplo: ICD10:H35.3
+    if (strpos($fieldValue, 'ICD10:') === 0) {
+        return iessGetDXCodeFromCodeValue($fieldValue);
+    }
+
+    return $fieldValue;
+}
+
 function obtenerIntervencionesPropuestas($cirugia)
 {
     $intervenciones = '';
@@ -685,21 +782,54 @@ function obtenerCodigosImpPlan($pid, $encounter)
     // Obtener el form_id más alto para el paciente
     $query = "SELECT MAX(form_id) AS max_form_id FROM forms WHERE pid = ? AND formdir = 'eye_mag' AND encounter <= ? AND deleted = 0";
     $result = sqlFetchArray(sqlStatement($query, array($pid, $encounter)));
-    $max_form_id = $result['max_form_id'];
+    $max_form_id = $result['max_form_id'] ?? null;
+
+    if (empty($max_form_id)) {
+        return array();
+    }
 
     // Obtener los datos asociados al form_id más alto
-    $query = "SELECT * FROM form_eye_mag_impplan WHERE pid=? AND form_id=?";
+    // Si codetype = ICD10, reemplaza form_eye_mag_impplan.code por icd10_dx_order_code.dx_code
+    $query = "
+        SELECT
+            imp.*,
+            icd.dx_code AS icd10_dx_code
+        FROM form_eye_mag_impplan AS imp
+        LEFT JOIN icd10_dx_order_code AS icd
+            ON imp.codetype = 'ICD10'
+            AND imp.code = icd.formatted_dx_code
+        WHERE imp.pid = ?
+          AND imp.form_id = ?
+        ORDER BY imp.IMPPLAN_order ASC
+    ";
+
     $result = sqlStatement($query, array($pid, $max_form_id));
     $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
     $replace = "<br />";
     $codigosImpPlan = array();
 
     while ($ip_list = sqlFetchArray($result)) {
+
+        $code = $ip_list['code'];
+
+        // Evita devolver el texto falso del botón "Code"
+        if (preg_match('/Code/', $code)) {
+            $code = '';
+        }
+
+        // Si es ICD10 y existe dx_code, usar dx_code en vez de formatted_dx_code
+        if (
+            $ip_list['codetype'] === 'ICD10'
+            && !empty($ip_list['icd10_dx_code'])
+        ) {
+            $code = $ip_list['icd10_dx_code'];
+        }
+
         $newdata = array(
             'form_id' => $ip_list['form_id'],
             'pid' => $ip_list['pid'],
             'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
+            'code' => $code,
             'codetype' => $ip_list['codetype'],
             'codetext' => $ip_list['codetext'],
             'codedesc' => $ip_list['codedesc'],
@@ -707,12 +837,7 @@ function obtenerCodigosImpPlan($pid, $encounter)
             'IMPPLAN_order' => $ip_list['IMPPLAN_order']
         );
 
-        $pattern = '/Code/';
-        if (preg_match($pattern, $newdata['code'])) {
-            $newdata['code'] = '';
-        }
-
-        if ($newdata['codetext'] > '') {
+        if (!empty($newdata['codetext'])) {
             $codigosImpPlan[] = $newdata;
         }
     }
@@ -1009,42 +1134,49 @@ function getDXcodedesc($form_id, $pid)
 
 function getDXoftalmoCIE10($form_id, $pid, $dxnum)
 {
-    $query = "select * from form_eye_mag_impplan
-              where codetype = 'ICD10' and form_id=? and pid=? and IMPPLAN_order = ?
-              order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
+    $query = "
+        SELECT
+            codetype,
+            code
+        FROM form_eye_mag_impplan imp
+        WHERE imp.form_id = ?
+          AND imp.pid = ?
+          AND imp.IMPPLAN_order = ?
+        LIMIT 1
+    ";
+
+    $row = sqlQuery($query, array($form_id, $pid, $dxnum));
+
+    if (!$row) {
+        return '';
+    }
+
+    if (trim($row['codetype'] ?? '') !== 'ICD10') {
+        return $row['code'] ?? '';
+    }
+
+    $codes = array_map('trim', explode(',', $row['code'] ?? ''));
+    $cie10Codes = array();
+
+    foreach ($codes as $code) {
+        if ($code === '') {
+            continue;
+        }
+
+        $formattedCode = preg_replace('/^ICD10:/i', '', $code);
+
+        $icd = sqlQuery(
+            "SELECT dx_code
+             FROM icd10_dx_order_code
+             WHERE formatted_dx_code = ?
+             LIMIT 1",
+            array($formattedCode)
         );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
+
+        $cie10Codes[] = !empty($icd['dx_code']) ? $icd['dx_code'] : str_replace('.', '', $formattedCode);
     }
 
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['code'] . ". ";
-        }
-
-    }
+    return implode(', ', $cie10Codes);
 }
 
 function ExamOftal($form_encounter, $CC1, $RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEXA, $LADNEXA, $EXT_COMMENTS,

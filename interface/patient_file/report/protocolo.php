@@ -360,9 +360,9 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
             <?php
-            $prot_dxpre1 = substr(getFieldValue($form_id, "Prot_dxpre"), 6);
-            $prot_dxpre2 = substr(getFieldValue($form_id, "Prot_dxpre2"), 6);
-            $prot_dxpre3 = substr(getFieldValue($form_id, "Prot_dxpre3"), 6);
+            $prot_dxpre1 = getDXCodeFromField($form_id, 'Prot_dxpre');
+            $prot_dxpre2 = getDXCodeFromField($form_id, 'Prot_dxpre2');
+            $prot_dxpre3 = getDXCodeFromField($form_id, 'Prot_dxpre3');
             ?>
 
             <?php if (!empty($prot_dxpre1)) : ?>
@@ -930,7 +930,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre")); ?>
             </td>
             <td class="blanco" width="20%"
-                colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre"), 6); ?></td>
+                colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpre'); ?></td>
         </tr>
         <tr>
             <td class="verde_leftpro" width="2%">2.</td>
@@ -938,7 +938,7 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre2")); ?>
             </td>
             <td class="blanco" width="20%"
-                colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre2"), 6); ?></td>
+                colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpre2'); ?></td>
         </tr>
         <tr>
             <td class="verde_leftpro" width="2%">3.</td>
@@ -946,26 +946,26 @@ $resultadoDX = obtenerCodigosImpPlan($pid, $form_encounter);
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre3")); ?>
             </td>
             <td class="blanco" width="20%"
-                colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpre3"), 6); ?></td>
+                colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpre3'); ?></td>
         </tr>
         <tr>
             <td colspan="2" rowspan="3" class="verde_leftpro">Post Operatorio:</td>
             <td class="verde_leftpro">1.</td>
             <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost")); ?></td>
-            <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost"), 6); ?></td>
+            <td class="blanco" colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpost'); ?></td>
         </tr>
         <tr>
             <td class="verde_leftpro">2.</td>
             <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost2")); ?></td>
-            <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost2"), 6); ?></td>
+            <td class="blanco" colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpost2'); ?></td>
         </tr>
         <tr>
             <td class="verde_leftpro">3.</td>
             <td class="blanco_leftpro"
                 colspan="7"><?php echo lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpost3")); ?></td>
-            <td class="blanco" colspan="2"><?php echo substr(getFieldValue($form_id, "Prot_dxpost3"), 6); ?></td>
+            <td class="blanco" colspan="2"><?php echo getDXCodeFromField($form_id, 'Prot_dxpost3'); ?></td>
         </tr>
     </table>
     <table>

@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <?php
 require_once("../../globals.php");
+require_once("$srcdir/iess.inc.php");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
@@ -245,81 +246,6 @@ function ExamOftal($RBROW, $LBROW, $RUL, $LUL, $RLL, $LLL, $RMCT, $LMCT, $RADNEX
     return $ExamOFT;
 }
 
-function getDXoftalmo($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['codedesc'] . ". ";
-        }
-
-    }
-}
-
-function getDXoftalmoCIE10($form_id, $pid, $dxnum)
-{
-    $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-    $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-    $i = '0';
-    $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-    $replace = "<br />";
-    // echo '<ol>';
-    while ($ip_list = sqlFetchArray($result)) {
-        $newdata = array(
-            'form_id' => $ip_list['form_id'],
-            'pid' => $ip_list['pid'],
-            'title' => $ip_list['title'],
-            'code' => $ip_list['code'],
-            'codetype' => $ip_list['codetype'],
-            'codetext' => $ip_list['codetext'],
-            'codedesc' => $ip_list['codedesc'],
-            'plan' => str_replace($order, $replace, $ip_list['plan']),
-            'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-        );
-        $IMPPLAN_items[$i] = $newdata;
-        $i++;
-    }
-
-    //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-    foreach ($IMPPLAN_items as $item) {
-        $pattern = '/Code/';
-        if (preg_match($pattern, $item['code'])) {
-            $item['code'] = '';
-        }
-
-        if ($item['codetext'] > '') {
-            return $item['code'] . ". ";
-        }
-
-    }
-}
 
 function extractItemsFromQuery($form_id, $pid)
 {

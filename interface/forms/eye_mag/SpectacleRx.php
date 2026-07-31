@@ -136,6 +136,10 @@ if ($_REQUEST['REFTYPE']) {
         $RXTYPE = "Bifocal";
     }
 
+    if ($REFTYPE == "LM") {
+        $RXTYPE = "Bifocal";
+    }
+
     if ($REFTYPE == "CTL") {
         $RXTYPE = "Bifocal";
     }
@@ -193,6 +197,18 @@ if ($_REQUEST['REFTYPE']) {
         $COMMENTS = $data['CRCOMMENTS'];
         $ODADD2 = $data['ARODADD'];
         $OSADD2 = $data['AROSADD'];
+        $Bifocal = "checked='checked'";
+    } elseif ($REFTYPE == "LM") {
+        $ODSPH = $data['LMODSPH'];
+        $ODAXIS = $data['LMODAXIS'];
+        $ODCYL = $data['LMODCYL'];
+        $ODPRISM = $data['LMODPRISM'];
+        $OSSPH = $data['LMOSSPH'];
+        $OSCYL = $data['LMOSCYL'];
+        $OSAXIS = $data['LMOSAXIS'];
+        $OSPRISM = $data['LMOSPRISM'];
+        $ODADD2 = $data['LMODADD'];
+        $OSADD2 = $data['LMOSADD'];
         $Bifocal = "checked='checked'";
     } elseif ($REFTYPE == "MR") {
         $ODSPH = $data['MRODSPH'];
@@ -486,6 +502,8 @@ if ($_REQUEST['dispensed']) {
                                 echo xlt('Manifest (Dry) Refraction');
                             } elseif ($row['REFTYPE'] == "AR") {
                                 echo xlt('Auto-Refraction');
+                            } elseif ($row['REFTYPE'] == "LM") {
+                                echo xlt('Lensometry');
                             } elseif ($row['REFTYPE'] == "CTL") {
                                 echo xlt('Contact Lens');
                             } else {
@@ -1326,10 +1344,7 @@ $expir_date = oeFormatShortDate($expir);
                     } ?>
 
                     <?php echo xlt('Provider'); ?>
-                    : <?php echo text($prov_data['fname']); ?> <?php echo text($prov_data['lname']);
-                    if ($prov_data['suffix']) {
-                        echo ", " . $prov_data['suffix'];
-                    } ?><br/>
+                    : <?php echo text(formatProviderNameFromRow($prov_data)); ?><br/>
                     <small><?php echo xlt('e-signed'); ?> <input type="checkbox" checked="checked"></small>
                 </td>
             </tr>

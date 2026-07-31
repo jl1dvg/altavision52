@@ -7,6 +7,49 @@ require_once("$srcdir/patient.inc");
 require_once("$srcdir/report.inc");
 require_once(__DIR__ . "/php/eye_mag_functions.php");
 
+function eyeMagPlanOrdersCleanText($value)
+{
+    return trim(preg_replace('/\s+/', ' ', (string)$value));
+}
+
+function eyeMagPlanOrdersCodeList($value)
+{
+    $codes = array();
+    foreach (explode(',', (string)$value) as $code) {
+        $code = trim(preg_replace('/^ICD10:/i', 'CIE10:', (string)$code));
+        if ($code === '' || stripos($code, 'Code') !== false) {
+            continue;
+        }
+        $codes[] = $code;
+    }
+
+    return array_values(array_unique($codes));
+}
+
+function eyeMagPlanOrdersDiagnosisLines($code, $codedesc)
+{
+    $codes = eyeMagPlanOrdersCodeList($code);
+    $descriptions = preg_split('/\r\n|\r|\n/', (string) $codedesc);
+    $descriptions = array_values(array_filter(array_map('eyeMagPlanOrdersCleanText', $descriptions), 'strlen'));
+    $lines = array();
+
+    if (count($codes) > 1 && count($descriptions) >= count($codes)) {
+        foreach ($codes as $index => $singleCode) {
+            $lines[] = trim($singleCode . ' ' . $descriptions[$index]);
+        }
+        return $lines;
+    }
+
+    $description = eyeMagPlanOrdersCleanText($codedesc);
+    $codeText = implode(', ', $codes);
+    $line = trim(($codeText !== '' ? $codeText . ' ' : '') . $description);
+    if ($line !== '') {
+        $lines[] = $line;
+    }
+
+    return $lines;
+}
+
 $pid = $_POST['pid'] ?? $_GET['pid'] ?? null;
 $encounter = $_POST['encounter'] ?? $_GET['encounter'] ?? null;
 $formId = $_POST['form_id'] ?? $_GET['form_id'] ?? null;
@@ -48,6 +91,19 @@ $prov_data = array(
 );
 if ($providerId && $postedProviderName === '') {
     $prov_data = sqlQuery("SELECT * FROM users WHERE id = ?", array($providerId));
+}
+
+$diagnosisLines = array();
+if (!empty($formId)) {
+    $result = sqlStatement(
+        "SELECT code, codedesc FROM form_" . $form_folder . "_impplan WHERE form_id=? AND pid=? ORDER BY IMPPLAN_order ASC",
+        array($formId, $pid)
+    );
+    while ($ipList = sqlFetchArray($result)) {
+        foreach (eyeMagPlanOrdersDiagnosisLines($ipList['code'], $ipList['codedesc']) as $diagnosisLine) {
+            $diagnosisLines[] = $diagnosisLine;
+        }
+    }
 }
 
 $groupedPlans = array();
@@ -101,6 +157,16 @@ foreach ($planTitles as $index => $planTitle) {
             padding-bottom: 4px;
         }
 
+        ol.diagnosis-list {
+            margin: 0;
+            padding-left: 22px;
+        }
+
+        ol.diagnosis-list li {
+            margin: 0 0 6px;
+            line-height: 1.35;
+        }
+
         ul.plan-list {
             margin: 0;
             padding-left: 22px;
@@ -150,6 +216,15 @@ foreach ($planTitles as $index => $planTitle) {
 
 <div class="document-title"><?php echo xlt('Solicitud de exámenes y autorizaciones'); ?></div>
 
+<?php if (!empty($diagnosisLines)) { ?>
+    <div class="section-title"><?php echo xlt('Impresión diagnóstica'); ?></div>
+    <ol class="diagnosis-list">
+        <?php foreach ($diagnosisLines as $diagnosisLine) { ?>
+            <li><?php echo text($diagnosisLine); ?></li>
+        <?php } ?>
+    </ol>
+<?php } ?>
+
 <?php if (empty($groupedPlans) && $freeText === '') { ?>
     <p><?php echo xlt('There are no selected exams to print.'); ?></p>
 <?php } ?>
@@ -193,8 +268,7 @@ foreach ($planTitles as $index => $planTitle) {
             <?php if (!empty($prov_data['suffix'])) {
                 echo text($prov_data['suffix'] . ' ');
             }
-            $providerDisplayName = trim(($prov_data['fname'] ?? '') . ' ' . ($prov_data['lname'] ?? ''));
-            echo text($providerDisplayName);
+            echo text(formatProviderNameFromRow($prov_data));
             ?>
         </b></div>
 </div>

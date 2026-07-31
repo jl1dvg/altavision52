@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <?php
 require_once("../../globals.php");
+require_once("$srcdir/iess.inc.php");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
@@ -816,84 +817,6 @@ ob_start();
         <TD STYLE="border-top: 5px solid #808080; border-bottom: 1px solid #808080; border-right: 5px solid #808080"
             width="3.5%" ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCCCFF"><B><FONT SIZE=1>DEF</FONT></B></TD>
     </TR>
-    <?php
-    function getDXoftalmo($form_id, $pid, $dxnum)
-    {
-        $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-        $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-        $i = '0';
-        $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-        $replace = "<br />";
-        // echo '<ol>';
-        while ($ip_list = sqlFetchArray($result)) {
-            $newdata = array(
-                'form_id' => $ip_list['form_id'],
-                'pid' => $ip_list['pid'],
-                'title' => $ip_list['title'],
-                'code' => $ip_list['code'],
-                'codetype' => $ip_list['codetype'],
-                'codetext' => $ip_list['codetext'],
-                'codedesc' => $ip_list['codedesc'],
-                'plan' => str_replace($order, $replace, $ip_list['plan']),
-                'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-            );
-            $IMPPLAN_items[$i] = $newdata;
-            $i++;
-        }
-
-        //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-        foreach ($IMPPLAN_items as $item) {
-            $pattern = '/Code/';
-            if (preg_match($pattern, $item['code'])) {
-                $item['code'] = '';
-            }
-
-            if ($item['codetext'] > '') {
-                return $item['codedesc'] . ". ";
-            }
-
-        }
-    }
-
-    function getDXoftalmoCIE10($form_id, $pid, $dxnum)
-    {
-        $query = "select * from form_eye_mag_impplan where form_id=? and pid=? AND IMPPLAN_order = ? order by IMPPLAN_order ASC LIMIT 1";
-        $result = sqlStatement($query, array($form_id, $pid, $dxnum));
-        $i = '0';
-        $order = array("\r\n", "\n", "\r", "\v", "\f", "\x85", "\u2028", "\u2029");
-        $replace = "<br />";
-        // echo '<ol>';
-        while ($ip_list = sqlFetchArray($result)) {
-            $newdata = array(
-                'form_id' => $ip_list['form_id'],
-                'pid' => $ip_list['pid'],
-                'title' => $ip_list['title'],
-                'code' => $ip_list['code'],
-                'codetype' => $ip_list['codetype'],
-                'codetext' => $ip_list['codetext'],
-                'codedesc' => $ip_list['codedesc'],
-                'plan' => str_replace($order, $replace, $ip_list['plan']),
-                'IMPPLAN_order' => $ip_list['IMPPLAN_order']
-            );
-            $IMPPLAN_items[$i] = $newdata;
-            $i++;
-        }
-
-        //for ($i=0; $i < count($IMPPLAN_item); $i++) {
-        foreach ($IMPPLAN_items as $item) {
-            $pattern = '/Code/';
-            if (preg_match($pattern, $item['code'])) {
-                $item['code'] = '';
-            }
-
-            if ($item['codetext'] > '') {
-                return $item['code'] . ". ";
-            }
-
-        }
-    }
-
-    ?>
     <TR>
         <TD STYLE="border-top: 1px solid #808080; border-bottom: 1px solid #808080; border-left: 5px solid #808080; border-right: 1px solid #808080"
             HEIGHT=30 ALIGN=CENTER VALIGN=MIDDLE BGCOLOR="#CCFFCC" SDVAL="1" SDNUM="1033;"><B><FONT SIZE=1>1</FONT></B>

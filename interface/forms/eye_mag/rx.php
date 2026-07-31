@@ -1319,10 +1319,7 @@ $expir_date = oeFormatShortDate($expir);
                     } ?>
 
                     <?php echo xlt('Provider'); ?>
-                    : <?php echo text($prov_data['fname']); ?> <?php echo text($prov_data['lname']);
-                    if ($prov_data['suffix']) {
-                        echo ", " . $prov_data['suffix'];
-                    } ?><br/>
+                    : <?php echo text(formatProviderNameFromRow($prov_data)); ?><br/>
                     <small><?php echo xlt('e-signed'); ?> <input type="checkbox" checked="checked"></small>
                 </td>
             </tr>

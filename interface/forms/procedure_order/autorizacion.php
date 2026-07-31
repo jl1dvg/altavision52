@@ -283,9 +283,7 @@ ob_start();
             agradecimiento y compromiso permanente por la atenci&oacute;n con
             celeridad, calidad esmerada y eficiente a los afiliados del IESS.</FONT></FONT></P>
 
-<P ALIGN=JUSTIFY STYLE="margin-bottom: 0.14in"><FONT COLOR="#000000"><FONT SIZE=2
-                                                                           STYLE="font-size: 9pt">Atentamente,</FONT></FONT>
-</P>
+<P class="texto">Atentamente,</P>
 <P class="texto"><BR><BR>
 </P>
 <br>
@@ -297,11 +295,11 @@ ob_start();
         <br>
         <?php
         echo getProviderEspecialidad($providerID);
-        ?><br>
+        ?>
+        <br>
         <?php
         echo 'CI ' . getProviderIdentification($providerID);
         ?>
-        <br>
         Centro Oftalmol&oacute;gico AltaVisi&oacute;n
         <br>
         Guayaquil &ndash; Ecuador</B></P>

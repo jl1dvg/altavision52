@@ -13,6 +13,7 @@
 
 
 require_once('../../globals.php');
+require_once("$srcdir/patient.inc");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 
@@ -75,9 +76,9 @@ $query = sqlStatement("select * from users u
                                 left join forms f on u.id = f.authorized
                                 WHERE f.encounter = ?", array($_SESSION['authUserID']));
 if ($result = sqlFetchArray($query)) {
-    $physician_name =  $result['title'] . ' ' . $result['fname'] . ' ' . $result['lname'];
+    $physician_name =  trim($result['title'] . ' ' . formatProviderNameFromRow($result));
     $practice_fname = $result['fname'];
-    $practice_lname = $result['lname'];
+    $practice_lname = trim($result['lname'] . ' ' . ($result['lname2'] ?? ''));
     $practice_title = $result['title'];
     $practice_address = $result['street'];
     $practice_city = $result['city'];

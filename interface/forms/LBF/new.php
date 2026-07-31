@@ -706,10 +706,16 @@ if (!empty($_POST['bn_save']) || !empty($_POST['bn_save_print']) || !empty($_POS
             var f = sel.form;
             // The option value is an encoded string of code types and codes.
             if (sel.value) {
-                $.getScript('<?php echo $GLOBALS['web_root'] ?>/library/ajax/code_attributes_ajax.php' +
-                    '?list=' + encodeURIComponent(sel.value) +
-                    '&pricelevel=' + encodeURIComponent(f.form_fs_pricelevel ? f.form_fs_pricelevel.value : "") +
-                    '&csrf_token_form=' + <?php echo js_url(CsrfUtils::collectCsrfToken()); ?>);
+                $.ajax({
+                    url: '<?php echo $GLOBALS['web_root'] ?>/library/ajax/code_attributes_ajax.php',
+                    type: 'POST',
+                    dataType: 'script',
+                    data: {
+                        list: sel.value,
+                        pricelevel: f.form_fs_pricelevel ? f.form_fs_pricelevel.value : "",
+                        csrf_token_form: <?php echo js_escape(CsrfUtils::collectCsrfToken()); ?>
+                    }
+                });
             }
             sel.selectedIndex = 0;
         }

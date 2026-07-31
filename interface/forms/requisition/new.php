@@ -224,7 +224,7 @@ table, th, td {
                         <?php echo xlt('NPI') ?>:         </br>
                         <?php echo xlt('UPIN') ?>:        </br>
                        </div>
-                     <div class="pFill"><?php echo text($provider['fname']) ." ". text($provider['lname']); ?></br>
+                     <div class="pFill"><?php echo text(formatProviderNameFromRow($provider)); ?></br>
                         <?php echo text($npi[0]); ?></br>
                         <?php echo text($npi[1]); ?></br>
 
@@ -375,4 +375,3 @@ function printDiv(divname)
 </script>
 </body>
 </html>
-

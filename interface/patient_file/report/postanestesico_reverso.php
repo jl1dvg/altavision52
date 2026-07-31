@@ -297,9 +297,11 @@ include("common_header.php");
             <?php echo date('d/m/Y', strtotime(fetchDateByEncounter($encounter))); ?>
         </td>
         <td colspan="7" class="blanco" style="height: 15px;"></td>
-        <td colspan="21" class="blanco" style="height: 15px;">María Patricia</td>
-        <td colspan="19" class="blanco" style="height: 15px;">Jiménez</td>
-        <td colspan="16" class="blanco" style="height: 15px;">Coronado</td>
+        <td colspan="21" class="blanco"
+            style="height: 15px;"><?php $anestesiologo = getProviderNameParts(getFieldValue($form_id, "Prot_anestesiologo"));
+            echo $anestesiologo['fname'] . " " . $anestesiologo['mname']; ?></td>
+        <td colspan="19" class="blanco" style="height: 15px;"><?php echo $anestesiologo['apellido_1']; ?></td>
+        <td colspan="16" class="blanco" style="height: 15px;"><?php echo $anestesiologo['apellido_2']; ?></td>
     </tr>
     <tr>
         <td colspan="15" class="verde" style="height: 15px;">NÚMERO DE DOCUMENTO DE IDENTIFICACIÓN</td>

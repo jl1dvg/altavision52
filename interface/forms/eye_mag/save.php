@@ -524,10 +524,7 @@ if ($requestMode == "new") {
             //return PCP's data to end user to update their form
             $query = "SELECT * FROM users WHERE id =?";
             $DOC1 = sqlQuery($query, array($_REQUEST['pcp']));
-            $DOCS['pcp']['name'] = $DOC1['fname'] . " " . $DOC1['lname'];
-            if ($DOC1['suffix']) {
-                $DOCS['pcp']['name'] .= ", " . $DOC1['suffix'];
-            }
+            $DOCS['pcp']['name'] = formatProviderNameFromRow($DOC1);
             $DOCS['pcp']['address'] = $DOC1['organization'] . "<br />" . $DOC1['street'] . "<br />" . $DOC1['city'] . ", " . $DOC1['state'] . "  " . $DOC1['zip'] . "<br />";
             $DOCS['pcp']['fax'] = $DOC1['fax'];
             $DOCS['pcp']['phone'] = $DOC1['phonew1'];
@@ -557,10 +554,7 @@ if ($requestMode == "new") {
             //return referring Doc's data to end user to update their form
             $query = "SELECT * FROM users WHERE id =?";
             $DOC2 = sqlQuery($query, array($_REQUEST['rDOC']));
-            $DOCS['ref']['name'] = $DOC2['fname'] . " " . $DOC2['lname'];
-            if ($DOC2['suffix']) {
-                $DOCS['ref']['name'] .= ", " . $DOC2['suffix'];
-            }
+            $DOCS['ref']['name'] = formatProviderNameFromRow($DOC2);
             if ($DOCS['ref']['address'] > '') {
                 $DOCS['ref']['address'] = $DOC2['organization'] . "<br />";
             }
