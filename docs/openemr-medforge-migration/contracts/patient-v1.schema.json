@@ -32,6 +32,7 @@
         "instance_id",
         "organization_slug",
         "instance_slug",
+        "environment",
         "source_system",
         "source_instance"
       ],
@@ -52,7 +53,12 @@
         "instance_slug": {
           "type": "string",
           "minLength": 1,
-          "examples": ["altavision-production"]
+          "examples": ["alta-vision-production"],
+          "description": "Must match a real Control Center instance before any write is allowed."
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["production", "staging"]
         },
         "source_system": {
           "type": "string",
@@ -68,7 +74,7 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["system", "instance_slug"],
+      "required": ["system", "instance_slug", "environment"],
       "properties": {
         "system": {
           "const": "openemr-altavision"
@@ -76,7 +82,11 @@
         "instance_slug": {
           "type": "string",
           "minLength": 1,
-          "examples": ["altavision-production"]
+          "examples": ["alta-vision-production"]
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["production", "staging"]
         },
         "extracted_at": {
           "type": "string",
@@ -147,6 +157,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "$comment": "Coverage fields are accepted as source context only. Billing/coverage persistence is out of scope for patient-v1 and belongs to a future billing-v1 contract.",
         "financial": {"type": ["string", "null"]},
         "pricelevel": {"type": ["string", "null"]},
         "affiliation": {"type": ["string", "null"]},
@@ -162,8 +173,15 @@
         "properties": {
           "source_system": {"type": "string"},
           "source_instance": {"type": "string"},
-          "provider": {"type": "string"},
-          "external_type": {"type": "string"},
+          "provider": {
+            "type": "string",
+            "description": "Compatibility field for existing core_external_aliases.provider. Do not use as a separate patient identity subsystem."
+          },
+          "external_type": {
+            "type": "string",
+            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number)$",
+            "description": "Namespaced external type. Avoid generic values such as pid or id."
+          },
           "external_id": {
             "type": "string",
             "description": "Deprecated compatibility alias for external_value. Do not use in new payloads."
@@ -190,7 +208,7 @@
       "properties": {
         "record_status": {
           "type": "string",
-          "enum": ["candidate", "accepted_for_pilot", "rejected", "requires_review"]
+          "enum": ["candidate", "accepted_for_pilot", "merged_into_existing", "rejected", "requires_review"]
         },
         "review_required": {"type": "boolean"},
         "review_reasons": {"type": "array", "items": {"type": "string"}},
