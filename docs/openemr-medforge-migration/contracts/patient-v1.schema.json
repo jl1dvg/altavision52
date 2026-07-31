@@ -6,6 +6,8 @@
   "additionalProperties": false,
   "required": [
     "contract_version",
+    "contract_status",
+    "governance",
     "source",
     "identity",
     "demographics",
@@ -16,6 +18,52 @@
   "properties": {
     "contract_version": {
       "const": "patient-v1"
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": ["Draft", "Accepted", "Deprecated"],
+      "default": "Draft"
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organization_id",
+        "instance_id",
+        "organization_slug",
+        "instance_slug",
+        "source_system",
+        "source_instance"
+      ],
+      "properties": {
+        "organization_id": {
+          "type": ["integer", "null"],
+          "description": "MedForge control_center_organizations.id when known. Null allowed only before Control Center registration."
+        },
+        "instance_id": {
+          "type": ["integer", "null"],
+          "description": "MedForge control_center_instances.id when known. Null allowed only before Control Center registration."
+        },
+        "organization_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision"]
+        },
+        "instance_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision-production"]
+        },
+        "source_system": {
+          "type": "string",
+          "const": "openemr"
+        },
+        "source_instance": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision-openemr-production"]
+        }
+      }
     },
     "source": {
       "type": "object",
@@ -110,11 +158,17 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["provider", "external_type", "external_id"],
+        "required": ["source_system", "source_instance", "external_type", "external_value"],
         "properties": {
+          "source_system": {"type": "string"},
+          "source_instance": {"type": "string"},
           "provider": {"type": "string"},
           "external_type": {"type": "string"},
-          "external_id": {"type": "string"},
+          "external_id": {
+            "type": "string",
+            "description": "Deprecated compatibility alias for external_value. Do not use in new payloads."
+          },
+          "external_value": {"type": "string"},
           "confidence": {"type": "string", "enum": ["exact", "inferred", "requires_review"]}
         }
       }

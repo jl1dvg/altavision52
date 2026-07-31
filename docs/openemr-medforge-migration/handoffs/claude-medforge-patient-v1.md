@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Implementar en MedForge soporte de validacion/import dry-run para el contrato `patient-v1`, sin migracion masiva y sin escribir datos reales por defecto.
+Revisar tecnicamente el contrato `patient-v1` y, solo despues de aprobacion explicita futura, implementar en MedForge soporte de validacion/import dry-run. En esta fase Claude Code debe entregar informe de impacto y no codigo.
 
 ## Fuente de contrato
 
@@ -27,19 +27,27 @@ Claude debe ubicar los equivalentes en `laravel-app` y proponer cambios minimos.
 
 ## Comportamiento esperado
 
-1. Validar JSON `patient-v1` contra el schema.
-2. Resolver aliases sin escribir por defecto:
+1. Revisar si el contrato encaja con `control_center_organizations`, `control_center_instances`, `core_patients` y `core_external_aliases`.
+2. Confirmar o corregir los campos obligatorios:
+   - `organization_id`
+   - `instance_id`
+   - `source_system`
+   - `source_instance`
+   - `external_type`
+   - `external_value`
+3. Validar JSON `patient-v1` contra el schema.
+4. Resolver aliases sin escribir por defecto:
    - `openemr_pid`
    - `openemr_pubpid`
    - `openemr_patient_data_id`
    - `hc_number`
-3. En modo dry-run, reportar:
+5. En modo dry-run, reportar:
    - paciente nuevo candidato;
    - alias ya existente;
    - conflicto alias -> paciente distinto;
    - dato incompleto que requiere revision.
-4. En modo write, que debe quedar deshabilitado por default y protegido por flag explicito, crear `core_patients` y `core_external_aliases` solo en ambiente controlado.
-5. No tratar `hc_number`, `pid`, `pubpid` ni `form_id` como identidad soberana.
+6. En modo write, que debe quedar deshabilitado por default y protegido por flag explicito, crear `core_patients` y `core_external_aliases` solo en ambiente controlado.
+7. No tratar `hc_number`, `pid`, `pubpid` ni `form_id` como identidad soberana.
 
 ## Restricciones
 
@@ -49,6 +57,8 @@ Claude debe ubicar los equivalentes en `laravel-app` y proponer cambios minimos.
 - Fixtures deben usar datos sinteticos.
 - Todo modo write requiere confirmacion humana previa de Jorge y flag explicito.
 - No promover supuestos CIVE/SigCenter a Altavision.
+- No iniciar implementacion hasta que `patient-v1` pase de Draft a Accepted o Jorge autorice un spike tecnico separado.
+- No usar `provider` como sustituto ambiguo de `source_system/source_instance`.
 
 ## Criterios de aceptacion
 
@@ -57,6 +67,19 @@ Claude debe ubicar los equivalentes en `laravel-app` y proponer cambios minimos.
 - `core_external_aliases` se usa con `instance_slug`.
 - El contrato permite piloto de 20 pacientes anonimizados sin tocar datos reales.
 - Documentacion de comando incluye advertencia de PHI y no-mass-migration.
+
+## Informe de impacto requerido antes de implementar
+
+Claude Code debe responder con:
+
+- Archivos MedForge que se verian afectados.
+- Migraciones necesarias o confirmacion de que no son necesarias.
+- Riesgos de compatibilidad con CIVE/SigCenter.
+- Efecto sobre Control Center y multiinstancia.
+- Validacion de reglas de unicidad de alias.
+- Estrategia de rollback.
+- Pruebas requeridas.
+- Preguntas bloqueantes para Jorge.
 
 ## Pruebas sugeridas
 
