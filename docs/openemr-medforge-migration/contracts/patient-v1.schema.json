@@ -13,6 +13,8 @@
     "demographics",
     "contacts",
     "clinical_aliases",
+    "identity_resolution",
+    "batch",
     "audit"
   ],
   "properties": {
@@ -48,13 +50,13 @@
         "organization_slug": {
           "type": "string",
           "minLength": 1,
-          "examples": ["altavision"]
+          "examples": ["alta-vision"]
         },
         "instance_slug": {
           "type": "string",
           "minLength": 1,
-          "examples": ["alta-vision-production"],
-          "description": "Must match a real Control Center instance before any write is allowed."
+          "examples": ["altavision-production"],
+          "description": "MedForge/Control Center instance slug. Must match a real Control Center instance before any write is allowed. Not persisted in core_patients."
         },
         "environment": {
           "type": "string",
@@ -74,15 +76,29 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["system", "instance_slug", "environment"],
+      "required": ["system", "source_system", "source_instance", "medforge_instance_slug", "environment"],
       "properties": {
         "system": {
           "const": "openemr-altavision"
         },
+        "source_system": {
+          "const": "openemr"
+        },
+        "source_instance": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision-openemr-production"]
+        },
+        "medforge_instance_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision-production"]
+        },
         "instance_slug": {
           "type": "string",
           "minLength": 1,
-          "examples": ["alta-vision-production"]
+          "deprecated": true,
+          "description": "Deprecated ambiguous field. Use medforge_instance_slug and source_instance."
         },
         "environment": {
           "type": "string",
@@ -113,11 +129,11 @@
         },
         "legacy_hc_number": {
           "type": ["string", "null"],
-          "description": "MedForge legacy hc_number or cedula-style identifier when present. External alias only."
+          "description": "Legacy hc_number when present in a source. External alias only. Not present in verified Alta Vision patient_data."
         },
         "national_identifier_hash": {
           "type": ["string", "null"],
-          "description": "Optional salted hash for pilot dedupe. Never store raw cedula in pilot artifacts."
+          "description": "Optional salted hash for pilot dedupe. Never store raw cedula in pilot artifacts. Cedula is a strong signal only when normalized and verified; it is not UNIQUE on core_patients."
         }
       }
     },
@@ -179,7 +195,7 @@
           },
           "external_type": {
             "type": "string",
-            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number)$",
+            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number|cedula_hash)$",
             "description": "Namespaced external type. Avoid generic values such as pid or id."
           },
           "external_id": {
@@ -187,8 +203,57 @@
             "description": "Deprecated compatibility alias for external_value. Do not use in new payloads."
           },
           "external_value": {"type": "string"},
+          "aliasable_type": {
+            "type": "string",
+            "const": "Patient",
+            "description": "Logical aliasable type for Patient V1. Implementation must map to the MedForge Patient model class and filter aliases by aliasable_type."
+          },
           "confidence": {"type": "string", "enum": ["exact", "inferred", "requires_review"]}
         }
+      }
+    },
+    "identity_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "manual_review_status",
+        "cedula_policy",
+        "idempotency_key"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "const": "provider_alias_resolution"
+        },
+        "manual_review_status": {
+          "type": "string",
+          "enum": ["not_required", "required", "approved", "rejected"]
+        },
+        "review_reasons": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "cedula_policy": {
+          "type": "string",
+          "enum": ["not_available", "strong_signal_verified", "ambiguous_manual_review", "ignored_invalid"]
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable key built from source_instance plus deterministic source aliases/fingerprint."
+        }
+      }
+    },
+    "batch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["batch_id", "mode", "source_fingerprint"],
+      "properties": {
+        "batch_id": {"type": "string", "minLength": 1},
+        "mode": {"type": "string", "enum": ["dry_run", "staging_write", "production_write"]},
+        "source_fingerprint": {"type": "string", "minLength": 1},
+        "created_at": {"type": "string", "format": "date-time"}
       }
     },
     "legacy_links": {
@@ -208,11 +273,19 @@
       "properties": {
         "record_status": {
           "type": "string",
-          "enum": ["candidate", "accepted_for_pilot", "merged_into_existing", "rejected", "requires_review"]
+          "enum": ["candidate", "accepted_for_pilot", "matched_existing", "merged_into_existing", "manual_review_required", "rejected", "requires_review", "unchanged"]
         },
         "review_required": {"type": "boolean"},
         "review_reasons": {"type": "array", "items": {"type": "string"}},
-        "source_fingerprint": {"type": ["string", "null"]}
+        "source_fingerprint": {"type": ["string", "null"]},
+        "rollback_strategy": {
+          "type": "string",
+          "enum": ["discard_dry_run", "delete_batch_aliases_only", "delete_batch_records_if_unlinked", "manual_reconciliation_required"]
+        },
+        "reconciliation_status": {
+          "type": "string",
+          "enum": ["not_started", "idempotent_rerun_ok", "differences_detected", "manual_review_required"]
+        }
       }
     }
   }
