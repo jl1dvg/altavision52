@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jl1dvg/altavision52/docs/openemr-medforge-migration/contracts/patient-v1.schema.json",
+  "title": "AltaVision OpenEMR to MedForge Patient Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "contract_status",
+    "governance",
+    "source",
+    "identity",
+    "demographics",
+    "contacts",
+    "clinical_aliases",
+    "audit"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "patient-v1"
+    },
+    "contract_status": {
+      "type": "string",
+      "enum": ["Draft", "Accepted", "Deprecated"],
+      "default": "Draft"
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "organization_id",
+        "instance_id",
+        "organization_slug",
+        "instance_slug",
+        "environment",
+        "source_system",
+        "source_instance"
+      ],
+      "properties": {
+        "organization_id": {
+          "type": ["integer", "null"],
+          "description": "MedForge control_center_organizations.id when known. Null allowed only before Control Center registration."
+        },
+        "instance_id": {
+          "type": ["integer", "null"],
+          "description": "MedForge control_center_instances.id when known. Null allowed only before Control Center registration."
+        },
+        "organization_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision"]
+        },
+        "instance_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["alta-vision-production"],
+          "description": "Must match a real Control Center instance before any write is allowed."
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["production", "staging"]
+        },
+        "source_system": {
+          "type": "string",
+          "const": "openemr"
+        },
+        "source_instance": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["altavision-openemr-production"]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "instance_slug", "environment"],
+      "properties": {
+        "system": {
+          "const": "openemr-altavision"
+        },
+        "instance_slug": {
+          "type": "string",
+          "minLength": 1,
+          "examples": ["alta-vision-production"]
+        },
+        "environment": {
+          "type": "string",
+          "enum": ["production", "staging"]
+        },
+        "extracted_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_patient_pid"],
+      "properties": {
+        "source_patient_pid": {
+          "type": "string",
+          "description": "OpenEMR patient_data.pid. External alias only."
+        },
+        "source_patient_id": {
+          "type": ["string", "null"],
+          "description": "OpenEMR patient_data.id if available. External alias only."
+        },
+        "source_pubpid": {
+          "type": ["string", "null"],
+          "description": "OpenEMR patient_data.pubpid. External alias only."
+        },
+        "legacy_hc_number": {
+          "type": ["string", "null"],
+          "description": "MedForge legacy hc_number or cedula-style identifier when present. External alias only."
+        },
+        "national_identifier_hash": {
+          "type": ["string", "null"],
+          "description": "Optional salted hash for pilot dedupe. Never store raw cedula in pilot artifacts."
+        }
+      }
+    },
+    "demographics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["full_name"],
+      "properties": {
+        "title": {"type": ["string", "null"]},
+        "first_name": {"type": ["string", "null"]},
+        "middle_name": {"type": ["string", "null"]},
+        "last_name": {"type": ["string", "null"]},
+        "second_last_name": {"type": ["string", "null"]},
+        "full_name": {"type": "string", "minLength": 1},
+        "birth_date": {"type": ["string", "null"], "format": "date"},
+        "sex": {"type": ["string", "null"]},
+        "occupation": {"type": ["string", "null"]},
+        "language": {"type": ["string", "null"]}
+      }
+    },
+    "contacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "phone_home": {"type": ["string", "null"]},
+        "phone_work": {"type": ["string", "null"]},
+        "phone_cell": {"type": ["string", "null"]},
+        "email": {"type": ["string", "null"]},
+        "street": {"type": ["string", "null"]},
+        "city": {"type": ["string", "null"]},
+        "state": {"type": ["string", "null"]},
+        "country_code": {"type": ["string", "null"]},
+        "postal_code": {"type": ["string", "null"]}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$comment": "Coverage fields are accepted as source context only. Billing/coverage persistence is out of scope for patient-v1 and belongs to a future billing-v1 contract.",
+        "financial": {"type": ["string", "null"]},
+        "pricelevel": {"type": ["string", "null"]},
+        "affiliation": {"type": ["string", "null"]},
+        "billing_note_present": {"type": "boolean"}
+      }
+    },
+    "clinical_aliases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_system", "source_instance", "external_type", "external_value"],
+        "properties": {
+          "source_system": {"type": "string"},
+          "source_instance": {"type": "string"},
+          "provider": {
+            "type": "string",
+            "description": "Compatibility field for existing core_external_aliases.provider. Do not use as a separate patient identity subsystem."
+          },
+          "external_type": {
+            "type": "string",
+            "pattern": "^(openemr_pid|openemr_pubpid|openemr_patient_data_id|hc_number)$",
+            "description": "Namespaced external type. Avoid generic values such as pid or id."
+          },
+          "external_id": {
+            "type": "string",
+            "description": "Deprecated compatibility alias for external_value. Do not use in new payloads."
+          },
+          "external_value": {"type": "string"},
+          "confidence": {"type": "string", "enum": ["exact", "inferred", "requires_review"]}
+        }
+      }
+    },
+    "legacy_links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "form_ids": {"type": "array", "items": {"type": "string"}},
+        "consulta_data_keys": {"type": "array", "items": {"type": "string"}},
+        "procedimiento_proyectado_keys": {"type": "array", "items": {"type": "string"}},
+        "protocolo_data_keys": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_status", "review_required"],
+      "properties": {
+        "record_status": {
+          "type": "string",
+          "enum": ["candidate", "accepted_for_pilot", "merged_into_existing", "rejected", "requires_review"]
+        },
+        "review_required": {"type": "boolean"},
+        "review_reasons": {"type": "array", "items": {"type": "string"}},
+        "source_fingerprint": {"type": ["string", "null"]}
+      }
+    }
+  }
+}
