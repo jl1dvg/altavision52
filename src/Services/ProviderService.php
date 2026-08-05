@@ -27,6 +27,7 @@ class ProviderService
         $sql = "SELECT id,
                        fname,
                        lname,
+                       lname2,
                        mname,
                        username
                 FROM  users
@@ -47,6 +48,7 @@ class ProviderService
         $sql = "SELECT id,
                        fname,
                        lname,
+                       lname2,
                        mname,
                        username
                 FROM  users

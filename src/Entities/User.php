@@ -307,6 +307,11 @@ class User
     private $lname;
 
     /**
+     * @Column(name="lname2", type="string")
+     */
+    private $lname2;
+
+    /**
      * @Column(name="mname", type="string")
      */
     private $mname;
@@ -424,6 +429,16 @@ class User
     public function setLname($value)
     {
         $this->lname = $value;
+    }
+
+    public function getLname2()
+    {
+        return $this->lname2;
+    }
+
+    public function setLname2($value)
+    {
+        $this->lname2 = $value;
     }
 
     public function getSuffix()
@@ -942,6 +957,7 @@ class User
                "fname: '" . $this->getFname() . "' " .
                "mname: '" . $this->getMname() . "' " .
                "lname: '" . $this->getLname() . "' " .
+               "lname2: '" . $this->getLname2() . "' " .
                "suffix: '" . $this->getSuffix() . "' " .
                "federalTaxId: '" . $this->getFederalTaxId() . "' " .
                "federalDrugId: '" . $this->getFederalDrugId() . "' " .

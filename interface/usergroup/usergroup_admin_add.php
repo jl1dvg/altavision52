@@ -122,7 +122,7 @@ function submitform() {
             alertMsg += checkLength(f[i].name,f[i].value,35);
             alertMsg += checkUsername(f[i].name,f[i].value);
          }
-         else if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname')
+         else if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname' || f[i].name == 'lname2')
          {
             alertMsg += checkLength(f[i].name,f[i].value,35);
             alertMsg += checkUsername(f[i].name,f[i].value);
@@ -242,7 +242,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 }
 
 foreach ($result2 as $iter) {
-    print "<option value='" . attr($iter{"name"}). "'>" . text($iter{"name"}) . "</option>\n";
+    print "<option value='" . attr($iter["name"]). "'>" . text($iter["name"]) . "</option>\n";
 }
 ?>
 </select></td>
@@ -258,6 +258,9 @@ foreach ($result2 as $iter) {
 </tr>
 <tr>
 <td><span class="text"><?php echo xlt('Last Name'); ?>: </span></td><td><input type=entry name='lname' id='lname' style="width:120px;" class="form-control"><span class="mandatory"></span></td>
+<td><span class="text"><?php echo xlt('Second Last Name'); ?>: </span></td><td><input type=entry name='lname2' style="width:120px;" class="form-control"></td>
+</tr>
+<tr>
 <td><span class="text"><?php echo xlt('Default Facility'); ?>: </span></td><td><select style="width:120px;" name=facility_id class="form-control">
 <?php
 $fres = $facilityService->getAllServiceLocations();
@@ -268,7 +271,7 @@ if ($fres) {
 
     foreach ($result as $iter) {
         ?>
-    <option value="<?php echo attr($iter{'id'}); ?>"><?php echo text($iter{'name'}); ?></option>
+    <option value="<?php echo attr($iter['id']); ?>"><?php echo text($iter['name']); ?></option>
         <?php
     }
 }
@@ -423,7 +426,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 }
 
 foreach ($result as $iter) {
-    print "<option value='" . attr($iter{"username"}) . "'>" . text($iter{"username"}) . "</option>\n";
+    print "<option value='" . attr($iter["username"]) . "'>" . text($iter["username"]) . "</option>\n";
 }
 ?>
 </select>
@@ -454,7 +457,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 }
 
 foreach ($result3 as $iter) {
-    print "<option value='" . attr($iter{"username"}) . "'>" . text($iter{"username"}) . "</option>\n";
+    print "<option value='" . attr($iter["username"]) . "'>" . text($iter["username"]) . "</option>\n";
 }
 ?>
 </select>
@@ -469,7 +472,7 @@ for ($iter = 0; $row = sqlFetchArray($res); $iter++) {
 }
 
 foreach ($result2 as $iter) {
-    print "<option value='" . attr($iter{"name"}) . "'>" . text($iter{"name"}) . "</option>\n";
+    print "<option value='" . attr($iter["name"]) . "'>" . text($iter["name"]) . "</option>\n";
 }
 ?>
 </select>
@@ -489,9 +492,9 @@ if (empty($GLOBALS['disable_non_default_groups'])) {
     }
 
     foreach ($result5 as $iter) {
-        $grouplist{$iter{"name"}} .= $iter{"user"} .
+        $grouplist[$iter["name"]] .= $iter["user"] .
         "(<a class='link_submit' href='usergroup_admin.php?mode=delete_group&id=" .
-        attr_url($iter{"id"}) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) . "' onclick='top.restoreSession()'>" . xlt("Remove") . "</a>), ";
+        attr_url($iter["id"]) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) . "' onclick='top.restoreSession()'>" . xlt("Remove") . "</a>), ";
     }
 
     foreach ($grouplist as $groupname => $list) {

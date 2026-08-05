@@ -15,6 +15,7 @@
 require_once("../globals.php");
 require_once("../../library/acl.inc");
 require_once("$srcdir/auth.inc");
+require_once("$srcdir/patient.inc");
 
 use OpenEMR\Common\Csrf\CsrfUtils;
 use OpenEMR\Core\Header;
@@ -118,15 +119,19 @@ if (isset($_POST["privatemode"]) && $_POST["privatemode"] =="user_admin") {
             sqlStatement("update users set taxonomy = ? where id= ? ", array($_POST["taxonomy"], $_POST["id"]));
         }
 
-        if ($_POST["lname"]) {
+        if (isset($_POST["lname"])) {
             sqlStatement("update users set lname=? where id= ? ", array($_POST["lname"], $_POST["id"]));
+        }
+
+        if (isset($_POST["lname2"])) {
+            sqlStatement("update users set lname2=? where id= ? ", array($_POST["lname2"], $_POST["id"]));
         }
 
         if ($_POST["job"]) {
             sqlStatement("update users set specialty=? where id= ? ", array($_POST["job"], $_POST["id"]));
         }
 
-        if ($_POST["mname"]) {
+        if (isset($_POST["mname"])) {
             sqlStatement("update users set mname=? where id= ? ", array($_POST["mname"], $_POST["id"]));
         }
 
@@ -150,7 +155,7 @@ if (isset($_POST["privatemode"]) && $_POST["privatemode"] =="user_admin") {
             }
         }
 
-        if ($_POST["fname"]) {
+        if (isset($_POST["fname"])) {
             sqlStatement("update users set fname=? where id= ? ", array($_POST["fname"], $_POST["id"]));
         }
 
@@ -271,6 +276,7 @@ if (isset($_POST["mode"])) {
             "', fname = '"         . add_escape_custom(trim((isset($_POST['fname']) ? $_POST['fname'] : ''))) .
             "', mname = '"         . add_escape_custom(trim((isset($_POST['mname']) ? $_POST['mname'] : ''))) .
             "', lname = '"         . add_escape_custom(trim((isset($_POST['lname']) ? $_POST['lname'] : ''))) .
+            "', lname2 = '"        . add_escape_custom(trim((isset($_POST['lname2']) ? $_POST['lname2'] : ''))) .
             "', federaltaxid = '"  . add_escape_custom(trim((isset($_POST['federaltaxid']) ? $_POST['federaltaxid'] : ''))) .
             "', state_license_number = '"  . add_escape_custom(trim((isset($_POST['state_license_number']) ? $_POST['state_license_number'] : ''))) .
             "', newcrop_user_role = '"  . add_escape_custom(trim((isset($_POST['erxrole']) ? $_POST['erxrole'] : ''))) .
@@ -359,7 +365,7 @@ if (isset($_POST["mode"])) {
 
         $doit = 1;
         foreach ($result as $iter) {
-            if ($doit == 1 && $iter{"name"} == (trim((isset($_POST['groupname']) ? $_POST['groupname'] : ''))) && $iter{"user"} == (trim((isset($_POST['rumple']) ? $_POST['rumple'] : '')))) {
+            if ($doit == 1 && $iter["name"] == (trim((isset($_POST['groupname']) ? $_POST['groupname'] : ''))) && $iter["user"] == (trim((isset($_POST['rumple']) ? $_POST['rumple'] : '')))) {
                 $doit--;
             }
         }
@@ -394,7 +400,7 @@ if (isset($_GET["mode"])) {
     // reference users to make sure this user is not referenced!
 
     foreach($result as $iter) {
-      sqlStatement("delete from `groups` where user = '" . $iter{"username"} . "'");
+      sqlStatement("delete from `groups` where user = '" . $iter["username"] . "'");
     }
     sqlStatement("delete from users where id = '" . $_GET["id"] . "'");
   }
@@ -407,7 +413,7 @@ if (isset($_GET["mode"])) {
         }
 
         foreach ($result as $iter) {
-            $un = $iter{"user"};
+            $un = $iter["user"];
         }
 
         $res = sqlStatement("select name, user from `groups` where user = ? " .
@@ -527,10 +533,10 @@ function authorized_clicked() {
                         }
 
                         foreach ($result4 as $iter) {
-                            if ($iter{"authorized"}) {
-                                $iter{"authorized"} = xl('yes');
+                            if ($iter["authorized"]) {
+                                $iter["authorized"] = xl('yes');
                             } else {
-                                $iter{"authorized"} = xl('no');
+                                $iter["authorized"] = xl('no');
                             }
 
                             $mfa = sqlQuery(
@@ -545,11 +551,11 @@ function authorized_clicked() {
                             }
 
                             print "<tr>
-                                <td><b><a href='user_admin.php?id=" . attr_url($iter{"id"}) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) .
-                                "' class='medium_modal' onclick='top.restoreSession()'>" . text($iter{"username"}) . "</a></b>" ."&nbsp;</td>
-                                <td>" . text($iter{"fname"}) . ' ' . text($iter{"lname"}) ."&nbsp;</td>
-                                <td>" . text($iter{"info"}) . "&nbsp;</td>
-                                <td align='left'><span>" .text($iter{"authorized"}) . "</td>
+                                <td><b><a href='user_admin.php?id=" . attr_url($iter["id"]) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) .
+                                "' class='medium_modal' onclick='top.restoreSession()'>" . text($iter["username"]) . "</a></b>" ."&nbsp;</td>
+                                <td>" . text(formatProviderNameFromRow($iter)) ."&nbsp;</td>
+                                <td>" . text($iter["info"]) . "&nbsp;</td>
+                                <td align='left'><span>" .text($iter["authorized"]) . "</td>
                                 <td align='left'><span>" .text($isMfa) . "</td>";
                             print "</tr>\n";
                         }
@@ -565,9 +571,9 @@ function authorized_clicked() {
                 }
 
                 foreach ($result5 as $iter) {
-                    $grouplist{$iter{"name"}} .= text($iter{"user"}) .
+                    $grouplist[$iter["name"]] .= text($iter["user"]) .
                         "(<a class='link_submit' href='usergroup_admin.php?mode=delete_group&id=" .
-                        attr_url($iter{"id"}) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) ."' onclick='top.restoreSession()'>" . xlt('Remove') . "</a>), ";
+                        attr_url($iter["id"]) . "&csrf_token_form=" . attr_url(CsrfUtils::collectCsrfToken()) ."' onclick='top.restoreSession()'>" . xlt('Remove') . "</a>), ";
                 }
 
                 foreach ($grouplist as $groupname => $list) {

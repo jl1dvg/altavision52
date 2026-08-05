@@ -125,6 +125,7 @@ if ($_POST['form_save']) {
         $form_title = invalue('form_director_title');
         $form_fname = invalue('form_director_fname');
         $form_lname = invalue('form_director_lname');
+        $form_lname2 = invalue('form_director_lname2');
         $form_mname = invalue('form_director_mname');
         $form_suffix = invalue('form_director_suffix');
     } else {
@@ -132,6 +133,7 @@ if ($_POST['form_save']) {
         $form_title = invalue('form_title');
         $form_fname = invalue('form_fname');
         $form_lname = invalue('form_lname');
+        $form_lname2 = invalue('form_lname2');
         $form_mname = invalue('form_mname');
         $form_suffix = invalue('form_suffix');
     }
@@ -142,6 +144,7 @@ if ($_POST['form_save']) {
         "title = "        . $form_title                  . ", " .
         "fname = "        . $form_fname                  . ", " .
         "lname = "        . $form_lname                  . ", " .
+        "lname2 = "       . $form_lname2                 . ", " .
         "mname = "        . $form_mname                  . ", " .
         "suffix = "       . $form_suffix                 . ", " .
         "specialty = "    . invalue('form_specialty')    . ", " .
@@ -177,7 +180,7 @@ if ($_POST['form_save']) {
     } else {
         $userid = sqlInsert("INSERT INTO users ( " .
         "username, password, authorized, info, source, " .
-        "title, fname, lname, mname, suffix, " .
+        "title, fname, lname, lname2, mname, suffix, " .
         "federaltaxid, federaldrugid, upin, facility, see_auth, active, npi, taxonomy, cpoe, " .
         "specialty, organization, valedictory, assistant, billname, email, email_direct, url, " .
         "street, streetb, city, state, zip, " .
@@ -192,6 +195,7 @@ if ($_POST['form_save']) {
         $form_title                   . ", " .
         $form_fname                   . ", " .
         $form_lname                   . ", " .
+        $form_lname2                  . ", " .
         $form_mname                   . ", " .
         $form_suffix                  . ", " .
         invalue('form_federaltaxid')  . ", " .
@@ -296,6 +300,8 @@ if ($type) { // note this only happens when its new
 ?>
    <div style="display: inline-block"><b><?php echo xlt('Last'); ?>:</b><input type='text' size='10' name='form_lname' class='inputtext'
                                                                                maxlength='50' value='<?php echo attr($row['lname']); ?>'/></div>
+   <div style="display: inline-block"><b><?php echo xlt('Second Last'); ?>:</b><input type='text' size='10' name='form_lname2' class='inputtext'
+                                                                               maxlength='50' value='<?php echo attr($row['lname2']); ?>'/></div>
    <div style="display: inline-block"><b><?php echo xlt('First'); ?>:</b> <input type='text' size='10' name='form_fname' class='inputtext'
                                                                                  maxlength='50' value='<?php echo attr($row['fname']); ?>' />&nbsp;</div>
    <div style="display: inline-block"><b><?php echo xlt('Middle'); ?>:</b> <input type='text' size='4' name='form_mname' class='inputtext'
@@ -335,6 +341,8 @@ if ($type) { // note this only happens when its new
 ?>
    <b><?php echo xlt('Last'); ?>:</b><input type='text' size='10' name='form_director_lname' class='inputtext'
      maxlength='50' value='<?php echo attr($row['lname']); ?>'/>&nbsp;
+   <b><?php echo xlt('Second Last'); ?>:</b><input type='text' size='10' name='form_director_lname2' class='inputtext'
+     maxlength='50' value='<?php echo attr($row['lname2']); ?>'/>&nbsp;
    <b><?php echo xlt('First'); ?>:</b> <input type='text' size='10' name='form_director_fname' class='inputtext'
      maxlength='50' value='<?php echo attr($row['fname']); ?>' />&nbsp;
    <b><?php echo xlt('Middle'); ?>:</b> <input type='text' size='4' name='form_director_mname' class='inputtext'

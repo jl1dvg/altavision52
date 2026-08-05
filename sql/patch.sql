@@ -264,3 +264,7 @@ ALTER TABLE `form_eye_neuro` MODIFY `ODCOINS` text;
 #IfNotColumnType form_eye_neuro OSCOINS text
 ALTER TABLE `form_eye_neuro` MODIFY `OSCOINS` text;
 #EndIf
+
+#IfMissingColumn users lname2
+ALTER TABLE `users` ADD COLUMN `lname2` varchar(255) default NULL AFTER `lname`;
+#EndIf
