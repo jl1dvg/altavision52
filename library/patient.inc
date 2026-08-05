@@ -428,12 +428,22 @@ function getCalendarProviderInfo($providerID = "%", $providers_only = true)
 
 function getProviderName($providerID, $provider_only = 'any')
 {
-    return getProviderFullName($providerID, 'clinical');
+    $pi = getProviderInfo($providerID, 'any');
+    if (empty($pi[0])) {
+        return "";
+    }
+
+    return formatProviderNameFromRow($pi[0], 'legacy_name');
 }
 
 function getProviderNameConcat($providerID, $provider_only = 'any')
 {
-    return getProviderFullName($providerID, 'clinical');
+    $pi = getProviderInfo($providerID, 'any');
+    if (empty($pi[0])) {
+        return "";
+    }
+
+    return formatProviderNameFromRow($pi[0], 'legacy_concat');
 }
 
 function getProviderFullName($providerID, $format = 'clinical')
@@ -452,21 +462,12 @@ function formatProviderNameFromRow($row, $format = 'clinical')
         return "";
     }
 
-    return formatProviderNameParts([
-        'fname' => $row['fname'] ?? '',
-        'mname' => $row['mname'] ?? '',
-        'lname' => $row['lname'] ?? '',
-        'lname2' => $row['lname2'] ?? '',
-        'suffix' => $row['suffix'] ?? '',
-        'apellido_1' => $row['lname'] ?? '',
-        'apellido_2' => $row['lname2'] ?? ''
-    ], $format);
+    return formatProviderNameParts(providerNamePartsFromRow($row), $format);
 }
 
 function formatProviderNameParts($parts, $format = 'clinical')
 {
     $firstNames = providerNameJoinParts([
-        $parts['suffix'] ?? '',
         $parts['fname'] ?? '',
         $parts['mname'] ?? ''
     ]);
@@ -486,7 +487,48 @@ function formatProviderNameParts($parts, $format = 'clinical')
         ]);
     }
 
+    if ($format === 'legacy_name') {
+        return providerNameFormatLegacyName($parts);
+    }
+
+    if ($format === 'legacy_concat') {
+        return providerNameJoinParts([
+            $parts['fname'] ?? '',
+            $parts['mname'] ?? '',
+            $lastNames
+        ]);
+    }
+
+    if ($format === 'admin') {
+        return providerNameJoinParts([
+            $parts['fname'] ?? '',
+            $lastNames
+        ]);
+    }
+
     return providerNameJoinParts([$firstNames, $lastNames]);
+}
+
+function providerNameFormatLegacyName($parts)
+{
+    $fname = trim((string)($parts['fname'] ?? ''));
+    if ($fname === '') {
+        return "";
+    }
+
+    $lastNames = providerNameJoinParts([
+        $parts['apellido_1'] ?? $parts['lname'] ?? '',
+        $parts['apellido_2'] ?? $parts['lname2'] ?? ''
+    ]);
+    $nameParts = [];
+    if ($lastNames !== '') {
+        $nameParts[] = $parts['suffix'] ?? '';
+    }
+
+    $nameParts[] = $fname;
+    $nameParts[] = $lastNames;
+
+    return providerNameJoinParts($nameParts);
 }
 
 function providerNameJoinParts($parts)
@@ -510,11 +552,17 @@ function getProviderNameParts($providerID)
         return null;
     }
 
-    $fname = trim($pi[0]['fname'] ?? '');
-    $mname = trim($pi[0]['mname'] ?? '');
-    $lname = trim($pi[0]['lname'] ?? '');
-    $lname2 = trim($pi[0]['lname2'] ?? '');
-    $suffix = trim($pi[0]['suffix'] ?? '');
+    return providerNamePartsFromRow($pi[0]);
+}
+
+function providerNamePartsFromRow($row)
+{
+    $fname = trim($row['fname'] ?? '');
+    $mname = trim($row['mname'] ?? '');
+    $lname = trim($row['lname'] ?? '');
+    $lname2 = trim($row['lname2'] ?? '');
+    $suffix = trim($row['suffix'] ?? '');
+    $apellidos = providerNameLastNameParts($lname, $lname2);
 
     return [
         'fname'       => $fname,
@@ -522,19 +570,58 @@ function getProviderNameParts($providerID)
         'lname'       => $lname,
         'lname2'      => $lname2,
         'suffix'      => $suffix,
-        'apellido_1'  => $lname,
-        'apellido_2'  => $lname2,
-        'apellidos'   => providerNameJoinParts([$lname, $lname2]),
+        'apellido_1'  => $apellidos[0] ?? '',
+        'apellido_2'  => $apellidos[1] ?? '',
+        'apellidos'   => providerNameJoinParts($apellidos),
         'full_name'   => formatProviderNameParts([
             'fname' => $fname,
             'mname' => $mname,
             'lname' => $lname,
             'lname2' => $lname2,
             'suffix' => $suffix,
-            'apellido_1' => $lname,
-            'apellido_2' => $lname2
+            'apellido_1' => $apellidos[0] ?? '',
+            'apellido_2' => $apellidos[1] ?? ''
         ])
     ];
+}
+
+function providerNameLastNameParts($lname, $lname2 = '')
+{
+    $lname = trim((string)$lname);
+    $lname2 = trim((string)$lname2);
+    if ($lname2 !== '') {
+        return [$lname, $lname2];
+    }
+
+    $tokens = preg_split('/\s+/', $lname, -1, PREG_SPLIT_NO_EMPTY);
+    $apellidos = [];
+
+    $i = 0;
+    while ($i < count($tokens)) {
+        $token = strtolower($tokens[$i]);
+
+        if ($token === 'de') {
+            $compuesto = $tokens[$i];
+
+            if (isset($tokens[$i + 1]) && in_array(strtolower($tokens[$i + 1]), ['la', 'los', 'las'])) {
+                $compuesto .= ' ' . $tokens[$i + 1];
+                $i++;
+            }
+
+            if (isset($tokens[$i + 1])) {
+                $compuesto .= ' ' . $tokens[$i + 1];
+                $i++;
+            }
+
+            $apellidos[] = $compuesto;
+        } else {
+            $apellidos[] = $tokens[$i];
+        }
+
+        $i++;
+    }
+
+    return $apellidos;
 }
 
 function getResponsableName($providerID)
@@ -761,11 +848,11 @@ function getPatientLnames($term = "%", $given = "pid, id, lname, fname, mname, p
     }
 
     if (!empty($GLOBALS['pt_restrict_field'])) {
-        if ($_SESSION["authUser"] != 'admin' || $GLOBALS['pt_restrict_admin']) {
+        if ($_SESSION{"authUser"} != 'admin' || $GLOBALS['pt_restrict_admin']) {
             $where .= " AND ( patient_data." . add_escape_custom($GLOBALS['pt_restrict_field']) .
                 " = ( SELECT facility_id FROM users WHERE username = ?) OR patient_data." .
                 add_escape_custom($GLOBALS['pt_restrict_field']) . " = '' ) ";
-            array_push($sqlBindArray, $_SESSION["authUser"]);
+            array_push($sqlBindArray, $_SESSION{"authUser"});
         }
     }
 
@@ -840,11 +927,11 @@ function getPatientId($pid = "%", $given = "pid, id, lname, fname, mname, provid
     $where = "pubpid LIKE ? ";
     array_push($sqlBindArray, $pid . "%");
     if (!empty($GLOBALS['pt_restrict_field']) && $GLOBALS['pt_restrict_by_id']) {
-        if ($_SESSION["authUser"] != 'admin' || $GLOBALS['pt_restrict_admin']) {
+        if ($_SESSION{"authUser"} != 'admin' || $GLOBALS['pt_restrict_admin']) {
             $where .= "AND ( patient_data." . add_escape_custom($GLOBALS['pt_restrict_field']) .
                 " = ( SELECT facility_id FROM users WHERE username = ?) OR patient_data." .
                 add_escape_custom($GLOBALS['pt_restrict_field']) . " = '' ) ";
-            array_push($sqlBindArray, $_SESSION["authUser"]);
+            array_push($sqlBindArray, $_SESSION{"authUser"});
         }
     }
 
@@ -1057,11 +1144,11 @@ function getPatientDOB($DOB = "%", $given = "pid, id, lname, fname, mname", $ord
     $where = "DOB like ? ";
     array_push($sqlBindArray, $DOB . "%");
     if (!empty($GLOBALS['pt_restrict_field'])) {
-        if ($_SESSION["authUser"] != 'admin' || $GLOBALS['pt_restrict_admin']) {
+        if ($_SESSION{"authUser"} != 'admin' || $GLOBALS['pt_restrict_admin']) {
             $where .= "AND ( patient_data." . add_escape_custom($GLOBALS['pt_restrict_field']) .
                 " = ( SELECT facility_id FROM users WHERE username = ?) OR patient_data." .
                 add_escape_custom($GLOBALS['pt_restrict_field']) . " = '' ) ";
-            array_push($sqlBindArray, $_SESSION["authUser"]);
+            array_push($sqlBindArray, $_SESSION{"authUser"});
         }
     }
 
