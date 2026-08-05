@@ -220,25 +220,11 @@ if ($proced_id == '65855') {
             class="verde">DIAGNÓSTICO:
         </td>
         <td colspan="44" class="blanco_left">
-            <?php
-            foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                $description = lookup_code_short_descriptions(getFieldValue($form_id, $dxField));
-                if (!empty($description)) {
-                    echo $description . "<br>";
-                }
-            }
-            ?>
+            <?php imprimirCIE10ReferDiagVigente($pid); ?>
         </td>
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
-            <?php
-            foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                $dxCode = getDXCodeFromField($form_id, $dxField);
-                if (!empty($dxCode)) {
-                    echo $dxCode . "<br>";
-                }
-            }
-            ?>
+            <?php imprimirCodigosCIE10ReferDiagVigente($pid); ?>
         </td>
     </tr>
     <tr>

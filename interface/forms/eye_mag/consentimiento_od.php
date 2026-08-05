@@ -24,7 +24,6 @@ if ($pid && $encounter && $proced_id) {
     $providerNAME = getProviderNameConcat($providerID);
     $titleres = getPatientData($pid, "pubpid,fname,mname,lname,lname2,sex,pricelevel, providerID,DATE_FORMAT(DOB,'%Y/%m/%d') as DOB_TS");
 
-    $codigos = obtenerCIE10issue($pid);
     $resultado = obtenerCodigosImpPlan($pid, $encounter);
 
     $config_mpdf = array(
@@ -218,49 +217,11 @@ if ($pid && $encounter && $proced_id) {
     <tr>
         <td colspan="8" class="verde">DIAGNÓSTICO:</td>
         <td colspan="44" class="blanco_left">
-            <?php
-            if (!empty($form_id)) {
-                foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                    $description = lookup_code_short_descriptions(getFieldValue($form_id, $dxField));
-                    if (!empty($description)) {
-                        echo $description . "<br>";
-                    }
-                }
-            } else {
-                $diagnosisRows = !empty($resultado) ? array_filter($resultado, function ($data) {
-                    return ($data['codetype'] ?? '') === 'ICD10';
-                }) : $codigos;
-                foreach ($diagnosisRows as $data) {
-                    $codeValue = !empty($data['code']) ? $data['code'] : ($data['diagnosis'] ?? '');
-                    $description = lookup_code_short_descriptions($codeValue);
-                    echo (!empty($description) ? $description : ($data['codedesc'] ?? $data['title'] ?? '')) . "<br>";
-                }
-            }
-            ?>
+            <?php imprimirCIE10ReferDiagVigente($pid); ?>
         </td>
         <td colspan="4" class="verde">CIE 10:</td>
         <td colspan="11" class="blanco_left">
-            <?php
-            if (!empty($form_id)) {
-                foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                    $dxCode = getDXCodeFromField($form_id, $dxField);
-                    if (!empty($dxCode)) {
-                        echo $dxCode . "<br>";
-                    }
-                }
-            } else {
-                $diagnosisRows = !empty($resultado) ? array_filter($resultado, function ($data) {
-                    return ($data['codetype'] ?? '') === 'ICD10';
-                }) : $codigos;
-                foreach ($diagnosisRows as $data) {
-                    $codeValue = !empty($data['code']) ? $data['code'] : ($data['diagnosis'] ?? '');
-                    $dxCode = iessGetDXCodeFromCodeValue($codeValue);
-                    if (!empty($dxCode)) {
-                        echo $dxCode . "<br>";
-                    }
-                }
-            }
-            ?>
+            <?php imprimirCodigosCIE10ReferDiagVigente($pid); ?>
         </td>
     </tr>
     <tr>
@@ -815,49 +776,11 @@ if ($cat_id == 15) {
             <tr>
                 <td class="verde" colspan="11">DIAGNÓSTICOS</td>
                 <td class="blanco_left" colspan="48">
-                    <?php
-                    if (!empty($form_id)) {
-                        foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                            $description = lookup_code_short_descriptions(getFieldValue($form_id, $dxField));
-                            if (!empty($description)) {
-                                echo $description . "<br>";
-                            }
-                        }
-                    } else {
-                        $diagnosisRows = !empty($resultado) ? array_filter($resultado, function ($data) {
-                            return ($data['codetype'] ?? '') === 'ICD10';
-                        }) : $codigos;
-                        foreach ($diagnosisRows as $data) {
-                            $codeValue = !empty($data['code']) ? $data['code'] : ($data['diagnosis'] ?? '');
-                            $description = lookup_code_short_descriptions($codeValue);
-                            echo (!empty($description) ? $description : ($data['codedesc'] ?? $data['title'] ?? '')) . "<br>";
-                        }
-                    }
-                    ?>
+                    <?php imprimirCIE10ReferDiagVigente($pid); ?>
                 </td>
                 <td class="verde" colspan="3">CIE</td>
                 <td class="blanco_left" colspan="5">
-                    <?php
-                    if (!empty($form_id)) {
-                        foreach (array('Prot_dxpre', 'Prot_dxpre2', 'Prot_dxpre3') as $dxField) {
-                            $dxCode = getDXCodeFromField($form_id, $dxField);
-                            if (!empty($dxCode)) {
-                                echo $dxCode . "<br>";
-                            }
-                        }
-                    } else {
-                        $diagnosisRows = !empty($resultado) ? array_filter($resultado, function ($data) {
-                            return ($data['codetype'] ?? '') === 'ICD10';
-                        }) : $codigos;
-                        foreach ($diagnosisRows as $data) {
-                            $codeValue = !empty($data['code']) ? $data['code'] : ($data['diagnosis'] ?? '');
-                            $dxCode = iessGetDXCodeFromCodeValue($codeValue);
-                            if (!empty($dxCode)) {
-                                echo $dxCode . "<br>";
-                            }
-                        }
-                    }
-                    ?>
+                    <?php imprimirCodigosCIE10ReferDiagVigente($pid); ?>
                 </td>
             </tr>
             <tr>

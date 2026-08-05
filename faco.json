@@ -3,50 +3,80 @@
         "formdir": "LBFprotocolo",
         "pricelevel": "IESS",
         "date_from": "2026-01-01",
-        "date_to": "2026-05-16"
+        "date_to": "2026-05-29"
     },
     "rules": [
         {
-            "label": "faco_iess",
+            "label": "faco",
             "package": "1Faco - IESS",
             "field_id": "Prot_opr",
             "field_value": "faco"
         },
         {
-            "label": "faco2_iess",
-            "package": "2Faco66984 - IESS",
-            "field_id": "Prot_opr",
-            "field_value": "faco66984"
-        },
-        {
-            "label": "avastin_iess",
+            "label": "avastin",
             "package": "1Avastin-IESS",
             "field_id": "Prot_opr",
             "field_value": "avastin"
         },
         {
-            "label": "faco_vpp_simple_iess",
+            "label": "pteri",
+            "package": "1Pterigion-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "pteri"
+        },
+        {
+            "label": "faco_vpp_endolaser",
             "package": "1Faco + LIO + VPP IESS",
             "field_id": "Prot_opr",
             "field_value": "facovpp|endolaser"
         },
         {
-            "label": "vpp_simple_iess",
+            "label": "vpp_endolaser",
             "package": "1VPP - Simple - IESS",
             "field_id": "Prot_opr",
             "field_value": "vpp|endolaser"
         },
         {
-            "label": "vpp_aceite_iess",
+            "label": "faco66984",
+            "package": "2Faco66984 - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "faco66984"
+        },
+        {
+            "label": "vpp_endolaser_silicon",
             "package": "5VPP + Silicon - IESS",
             "field_id": "Prot_opr",
             "field_value": "vpp|endolaser|silicon"
         },
         {
-            "label": "vpp_gas",
+            "label": "faco_vpp_silicon",
+            "package": "4Faco + LIO + VPP + SILICON IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovpp|endolaser|silicon"
+        },
+        {
+            "label": "vpp_endolaser_gas",
             "package": "7VPP + GAS -IESS",
             "field_id": "Prot_opr",
             "field_value": "vpp|endolaser|gas"
+        },
+        {
+            "label": "facovpp_endolaser_gas",
+            "package": "3Faco + LIO + VPP + GAS IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovpp|endolaser|gas"
+        },
+        {
+            "label": "extumor",
+            "package": "5Extirpacion de tumor palpebral",
+            "field_id": "Prot_opr",
+            "field_value": "extumor"
+        },
+        {
+            "label": "faco_trabe_iess",
+            "package": "2Faco + LIO + Trabe",
+            "field_id": "Prot_opr",
+            "field_value": "faco|trabe"
         },
         {
             "label": "vpp_retiro_aceite_iess",
@@ -55,10 +85,94 @@
             "field_value": "vpp|endolaser|retsil"
         },
         {
-            "label": "pterigion_iess",
-            "package": "1Pterigion-IESS",
+            "label": "estra",
+            "package": "1Estrabismo - IESS",
             "field_id": "Prot_opr",
-            "field_value": "pteri"
+            "field_value": "estra"
+        },
+        {
+            "label": "simblefaron",
+            "package": "2Simblefaron-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "simblefaron"
+        },
+        {
+            "label": "vpp_implantesecu_endolaser",
+            "package": "9VPP + Implante de LIO secundario",
+            "field_id": "Prot_opr",
+            "field_value": "vpp_implantesecu_endolaser"
+        },
+        {
+            "label": "blefaroplastia",
+            "package": "1Blefaroplastia-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "blefaroplastia"
+        },
+        {
+            "label": "trabe",
+            "package": "2Faco + LIO + Trabe",
+            "field_id": "Prot_opr",
+            "field_value": "trabe"
+        },
+        {
+            "label": "facosin",
+            "package": "3Faco sin LIO - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facosin"
+        },
+        {
+            "label": "valvula",
+            "package": "1Impante Valvular IESS",
+            "field_id": "Prot_opr",
+            "field_value": "valvula"
+        },
+        {
+            "label": "suspension",
+            "package": "8Ptosis-IESS",
+            "field_id": "Prot_opr",
+            "field_value": "suspension"
+        },
+        {
+            "label": "extaceite_endolaser",
+            "package": "8VPP + Retiro de Silicon - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "extaceite|endolaser"
+        },
+        {
+            "label": "chalazion",
+            "package": "2Chalazion",
+            "field_id": "Prot_opr",
+            "field_value": "chalazion"
+        },
+        {
+            "label": "ectropion",
+            "package": "7Entropion",
+            "field_id": "Prot_opr",
+            "field_value": "ectropion"
+        },
+        {
+            "label": "entropion",
+            "package": "7Entropion",
+            "field_id": "Prot_opr",
+            "field_value": "entropion"
+        },
+        {
+            "label": "facovppsinlio_endolaser",
+            "package": "6Faco Sin LIO + VPP IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovppsinlio|endolaser"
+        },
+        {
+            "label": "facovppsinlio_endolaser_silicon",
+            "package": "6Faco Sin LIO + VPP IESS",
+            "field_id": "Prot_opr",
+            "field_value": "facovppsinlio|endolaser|silicon"
+        },
+        {
+            "lablel": "vpp_repolio_endolaser",
+            "package": "10VPP + Reposición de LIO - IESS",
+            "field_id": "Prot_opr",
+            "field_value": "vpp_repolio|endolaser"
         }
     ]
 }

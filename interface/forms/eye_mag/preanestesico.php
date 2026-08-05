@@ -4,6 +4,7 @@ require_once("../../globals.php");
 require_once("$srcdir/forms.inc");
 require_once("$srcdir/acl.inc");
 require_once("$srcdir/options.inc.php");
+require_once("$srcdir/iess.inc.php");
 require_once("$srcdir/patient.inc");
 require_once($GLOBALS['fileroot'] . '/custom/code_types.inc.php');
 include_once($GLOBALS["srcdir"] . "/api.inc");
@@ -369,9 +370,9 @@ ob_start();
     </tr>
     <tr>
         <td class="verde" colspan="11" rowspan="2">DIAGNÓSTICOS</td>
-        <td class="blanco_left" colspan="48"></td>
+        <td class="blanco_left" colspan="48"><?php imprimirCIE10ReferDiagVigente($pid); ?></td>
         <td class="verde" colspan="3" rowspan="2">CIE</td>
-        <td class="blanco_left" colspan="5"></td>
+        <td class="blanco_left" colspan="5"><?php imprimirCodigosCIE10ReferDiagVigente($pid); ?></td>
     </tr>
     <tr>
         <td class="blanco_left" colspan="48"></td>

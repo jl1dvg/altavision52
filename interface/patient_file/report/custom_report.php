@@ -829,7 +829,7 @@ function contraPdfDebugHtml($title = 'DEBUG PDF')
                 $rowid = $res[2];
                 $irow = sqlQuery("SELECT type, title, comments, diagnosis " .
                     "FROM lists WHERE id = ?", array($rowid));
-                $diagnosis = $irow['diagnosis'];
+                $diagnoses = obtenerCIE10ReferDiagVigente($pid);
                 if ($prevIssueType != $irow['type']) {
                     // output a header for each Issue Type we encounter
                     $disptype = $ISSUE_TYPES[$irow['type']][0];
@@ -840,17 +840,17 @@ function contraPdfDebugHtml($title = 'DEBUG PDF')
                 echo "<div class='text issue'>";
                 echo "<span class='issue_title'>" . text($irow['title']) . ":</span>";
                 echo "<span class='issue_comments'> " . text($irow['comments']) . "</span>\n";
-                // Show issue's chief diagnosis and its description:
-                if ($diagnosis) {
+                // Show the current referral diagnosis instead of the issue diagnosis.
+                if (!empty($diagnoses)) {
                     echo "<div class='text issue_diag'>";
                     echo "<span class='bold'>[" . xlt('Diagnosis') . "]</span><br>";
-                    $dcodes = explode(";", $diagnosis);
-                    foreach ($dcodes as $dcode) {
-                        echo "<span class='italic'>" . text($dcode) . "</span>: ";
-                        echo text(lookup_code_descriptions($dcode)) . "<br>\n";
+                    foreach ($diagnoses as $diagnosis) {
+                        if (!empty($diagnosis['dx_code'])) {
+                            echo "<span class='italic'>" . text($diagnosis['dx_code']) . "</span>: ";
+                        }
+                        echo text($diagnosis['title']) . "<br>\n";
                     }
 
-                    //echo $diagnosis." -- ".lookup_code_descriptions($diagnosis)."\n";
                     echo "</div>";
                 }
 

@@ -63,41 +63,11 @@ include("common_header.php");
     <tr>
         <td class="verde" colspan="11">DIAGNÓSTICOS</td>
         <td class="blanco_left" colspan="48">
-            <?php
-            $prot_dxpre1 = lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre"));
-            $prot_dxpre2 = lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre2"));
-            $prot_dxpre3 = lookup_code_short_descriptions(getFieldValue($form_id, "Prot_dxpre3"));
-
-            $descriptions = $prot_dxpre1;
-            if (!empty($prot_dxpre2)) {
-                $descriptions .= "<br>" . $prot_dxpre2;
-            }
-            if (!empty($prot_dxpre3)) {
-                $descriptions .= "<br>" . $prot_dxpre3;
-            }
-
-            echo $descriptions;
-            ?>
+            <?php imprimirCIE10ReferDiagVigente($pid); ?>
         </td>
         <td class="verde" colspan="3">CIE</td>
         <td class="blanco_left" colspan="5">
-            <?php
-            $prot_dxpre1 = getDXCodeFromField($form_id, 'Prot_dxpre');
-            $prot_dxpre2 = getDXCodeFromField($form_id, 'Prot_dxpre2');
-            $prot_dxpre3 = getDXCodeFromField($form_id, 'Prot_dxpre3');
-            ?>
-
-            <?php if (!empty($prot_dxpre1)) : ?>
-                <?php echo $prot_dxpre1; ?>
-            <?php endif; ?>
-
-            <?php if (!empty($prot_dxpre2)) : ?>
-                <br><?php echo $prot_dxpre2; ?>
-            <?php endif; ?>
-
-            <?php if (!empty($prot_dxpre3)) : ?>
-                <br><?php echo $prot_dxpre3; ?>
-            <?php endif; ?>
+            <?php imprimirCodigosCIE10ReferDiagVigente($pid); ?>
         </td>
     </tr>
     <tr>

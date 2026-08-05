@@ -847,20 +847,193 @@ function obtenerCodigosImpPlan($pid, $encounter)
 
 function obtenerCIE10issue($pid)
 {
-    $query = "SELECT title, diagnosis FROM lists WHERE type = 'medical_problem' AND pid=?";
+    $query = "
+        SELECT title, diagnosis
+        FROM lists
+        WHERE type = 'medical_problem'
+          AND pid = ?
+          AND COALESCE(diagnosis, '') <> ''
+          AND (activity IS NULL OR activity = 1)
+          AND (
+              subtype = 'eye'
+              OR diagnosis REGEXP '(^|;)[[:space:]]*ICD10:H[0-9]'
+              OR EXISTS (
+                  SELECT 1
+                  FROM list_options lo
+                  WHERE lo.list_id = 'medical_problem_issue_list'
+                    AND lo.subtype = 'eye'
+                    AND lo.option_id = lists.list_option_id
+              )
+          )
+        ORDER BY date DESC, id DESC
+    ";
     $result = sqlStatement($query, array($pid));
     $codigosImpPlan = array();
+    $seenDxCodes = array();
 
     while ($ip_list = sqlFetchArray($result)) {
-        if (!empty($ip_list['title']) && !empty($ip_list['diagnosis'])) {
+        $diagnoses = explode(';', (string)$ip_list['diagnosis']);
+        foreach ($diagnoses as $diagnosis) {
+            $diagnosis = trim($diagnosis);
+            if ($diagnosis === '' || strpos($diagnosis, 'ICD10:') !== 0) {
+                continue;
+            }
+
+            $dxCode = iessGetDXCodeFromCodeValue($diagnosis);
+            if ($dxCode === '' || isset($seenDxCodes[$dxCode])) {
+                continue;
+            }
+
+            $seenDxCodes[$dxCode] = true;
+            $description = lookup_code_short_descriptions($diagnosis);
             $codigosImpPlan[] = array(
-                'title' => $ip_list['title'],
-                'diagnosis' => $ip_list['diagnosis'],
+                'title' => !empty($description) ? $description : $ip_list['title'],
+                'diagnosis' => $diagnosis,
+                'dx_code' => $dxCode,
             );
         }
     }
 
     return $codigosImpPlan;
+}
+
+function obtenerCIE10ReferDiagVigente($pid, $date = '')
+{
+    $date = trim((string)$date);
+    if ($date === '') {
+        $date = date('Y-m-d');
+    }
+
+    $row = iessObtenerReferralVigente($pid, $date);
+    if (empty($row['refer_diag'])) {
+        return array();
+    }
+
+    return iessNormalizarDiagnosticosCIE10($row['refer_diag']);
+}
+
+function iessObtenerReferralVigente($pid, $date)
+{
+    $sql = "SELECT t.id,
+                   MAX(CASE WHEN d.field_id = 'refer_diag' THEN d.field_value END) AS refer_diag,
+                   MAX(CASE WHEN d.field_id = 'refer_date' THEN d.field_value END) AS refer_date,
+                   MAX(CASE WHEN d.field_id = 'refer_end_date' THEN d.field_value END) AS refer_end_date,
+                   MAX(CASE WHEN d.field_id = 'refer_state' THEN d.field_value END) AS refer_state
+            FROM transactions AS t
+            LEFT JOIN lbt_data AS d ON d.form_id = t.id
+            WHERE t.title = 'LBTref'
+              AND t.pid = ?
+            GROUP BY t.id
+            HAVING COALESCE(refer_diag, '') <> ''
+               AND (refer_date IS NULL OR refer_date = '' OR refer_date <= ?)
+               AND (refer_end_date IS NULL OR refer_end_date = '' OR refer_end_date >= ?)
+            ORDER BY CASE WHEN MAX(CASE WHEN d.field_id = 'refer_state' THEN d.field_value END) = 'active' THEN 1 ELSE 0 END DESC,
+                     MAX(CASE WHEN d.field_id = 'refer_date' THEN d.field_value END) DESC,
+                     t.id DESC
+            LIMIT 1";
+
+    $row = sqlQuery($sql, array($pid, $date, $date));
+    if (!empty($row['id'])) {
+        return $row;
+    }
+
+    // Fallback para registros históricos que siguen marcados como activos aunque su fecha fin ya venció.
+    $sql = "SELECT t.id,
+                   MAX(CASE WHEN d.field_id = 'refer_diag' THEN d.field_value END) AS refer_diag,
+                   MAX(CASE WHEN d.field_id = 'refer_date' THEN d.field_value END) AS refer_date,
+                   MAX(CASE WHEN d.field_id = 'refer_end_date' THEN d.field_value END) AS refer_end_date,
+                   MAX(CASE WHEN d.field_id = 'refer_state' THEN d.field_value END) AS refer_state
+            FROM transactions AS t
+            LEFT JOIN lbt_data AS d ON d.form_id = t.id
+            WHERE t.title = 'LBTref'
+              AND t.pid = ?
+            GROUP BY t.id
+            HAVING COALESCE(refer_diag, '') <> ''
+               AND refer_state = 'active'
+            ORDER BY MAX(CASE WHEN d.field_id = 'refer_date' THEN d.field_value END) DESC,
+                     t.id DESC
+            LIMIT 1";
+
+    $row = sqlQuery($sql, array($pid));
+    return !empty($row['id']) ? $row : array();
+}
+
+function iessNormalizarDiagnosticosCIE10($diagnosisValue)
+{
+    $diagnoses = preg_split('/[;\r\n]+/', (string)$diagnosisValue);
+    $result = array();
+    $seen = array();
+
+    foreach ($diagnoses as $diagnosis) {
+        $diagnosis = trim($diagnosis);
+        if ($diagnosis === '') {
+            continue;
+        }
+
+        $dxCode = '';
+        $title = '';
+        if (strpos($diagnosis, 'ICD10:') === 0) {
+            $dxCode = iessGetDXCodeFromCodeValue($diagnosis);
+            $title = lookup_code_short_descriptions($diagnosis);
+        } elseif (preg_match('/^[A-Z][0-9][0-9](?:\.[A-Z0-9]+|[A-Z0-9]*)?$/i', $diagnosis)) {
+            $dxCode = iessGetDXCodeFromCodeValue($diagnosis);
+            $title = lookup_code_short_descriptions($diagnosis);
+        }
+
+        if ($title === '') {
+            $title = $diagnosis;
+        }
+
+        $key = $dxCode !== '' ? $dxCode : strtolower($title);
+        if (isset($seen[$key])) {
+            continue;
+        }
+
+        $seen[$key] = true;
+        $result[] = array(
+            'title' => $title,
+            'diagnosis' => $diagnosis,
+            'dx_code' => $dxCode,
+        );
+    }
+
+    return $result;
+}
+
+function imprimirCIE10ReferDiagVigente($pid, $date = '')
+{
+    foreach (obtenerCIE10ReferDiagVigente($pid, $date) as $diagnosis) {
+        if (!empty($diagnosis['title'])) {
+            echo $diagnosis['title'] . "<br>";
+        }
+    }
+}
+
+function imprimirCodigosCIE10ReferDiagVigente($pid, $date = '')
+{
+    foreach (obtenerCIE10ReferDiagVigente($pid, $date) as $diagnosis) {
+        if (!empty($diagnosis['dx_code'])) {
+            echo $diagnosis['dx_code'] . "<br>";
+        }
+    }
+}
+
+function imprimirCIE10IssuesOftalmologicos($pid)
+{
+    foreach (obtenerCIE10issue($pid) as $diagnosis) {
+        if (!empty($diagnosis['title'])) {
+            echo $diagnosis['title'] . "<br>";
+        }
+    }
+}
+
+function imprimirCodigosCIE10IssuesOftalmologicos($pid)
+{
+    foreach (obtenerCIE10issue($pid) as $diagnosis) {
+        if (!empty($diagnosis['dx_code'])) {
+            echo $diagnosis['dx_code'] . "<br>";
+        }
+    }
 }
 
 function extractItemsFromQuery($form_id, $pid, $encounter, $proced_id)
