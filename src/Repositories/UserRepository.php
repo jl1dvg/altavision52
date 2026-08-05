@@ -60,7 +60,7 @@ class UserRepository extends EntityRepository
         $criteria = Criteria::create();
         $criteria->where(Criteria::expr()->neq("username", ""));
         $criteria->andWhere(Criteria::expr()->eq("active", 1));
-        $criteria->orderBy(array("lname" => "ASC", "fname" => "ASC", "mname" => "ASC"));
+        $criteria->orderBy(array("lname" => "ASC", "lname2" => "ASC", "fname" => "ASC", "mname" => "ASC"));
         $results = $this->_em->getRepository($this->_entityName)->matching($criteria);
         return $results;
     }

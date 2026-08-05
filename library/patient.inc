@@ -339,7 +339,7 @@ function getProviderInfo($providerID = "%", $providers_only = true, $facility = 
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, federaltaxid, info " .
+    $query = "select distinct id, username, lname, lname2, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, federaltaxid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1 . $param2;
     // sort by last name -- JRM June 2008
@@ -378,7 +378,7 @@ function getResponsableInfo($providerID = "%", $providers_only = true, $facility
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
+    $query = "select distinct id, username, lname, lname2, mname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1 . $param2;
     // sort by last name -- JRM June 2008
@@ -414,7 +414,7 @@ function getCalendarProviderInfo($providerID = "%", $providers_only = true)
         $command = "like";
     }
 
-    $query = "select distinct id, username, lname, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
+    $query = "select distinct id, username, lname, lname2, fname, authorized, info, facility, suffix, specialty, federaldrugid, info " .
         "from users where username != '' and active = 1 and id $command '" .
         add_escape_custom($providerID) . "' " . $param1;
 
@@ -429,35 +429,119 @@ function getCalendarProviderInfo($providerID = "%", $providers_only = true)
 function getProviderName($providerID, $provider_only = 'any')
 {
     $pi = getProviderInfo($providerID, 'any');
-    if (strlen($pi[0]["fname"]) > 0) {
-        if (strlen($pi[0]["lname"]) > 0) {
-            $pi[0]["tname"] .= $pi[0]["suffix"] . " " . $pi[0]["fname"];
-        }
-
-        return $pi[0]['tname'] . " " . $pi[0]['lname'];
+    if (empty($pi[0])) {
+        return "";
     }
 
-    return "";
+    return formatProviderNameFromRow($pi[0], 'legacy_name');
 }
 
 function getProviderNameConcat($providerID, $provider_only = 'any')
 {
     $pi = getProviderInfo($providerID, 'any');
-
-    $fullName = '';
-    if (isset($pi[0]["fname"]) && strlen($pi[0]["fname"]) > 0) {
-        $fullName .= $pi[0]["fname"] . " ";
+    if (empty($pi[0])) {
+        return "";
     }
 
-    if (isset($pi[0]["mname"]) && strlen($pi[0]["mname"]) > 0) {
-        $fullName .= $pi[0]["mname"] . " ";
+    return formatProviderNameFromRow($pi[0], 'legacy_concat');
+}
+
+function getProviderFullName($providerID, $format = 'clinical')
+{
+    $parts = getProviderNameParts($providerID);
+    if (empty($parts)) {
+        return "";
     }
 
-    if (isset($pi[0]["lname"]) && strlen($pi[0]["lname"]) > 0) {
-        $fullName .= $pi[0]["lname"] . " ";
+    return formatProviderNameParts($parts, $format);
+}
+
+function formatProviderNameFromRow($row, $format = 'clinical')
+{
+    if (empty($row) || !is_array($row)) {
+        return "";
     }
 
-    return trim($fullName);
+    return formatProviderNameParts(providerNamePartsFromRow($row), $format);
+}
+
+function formatProviderNameParts($parts, $format = 'clinical')
+{
+    $firstNames = providerNameJoinParts([
+        $parts['fname'] ?? '',
+        $parts['mname'] ?? ''
+    ]);
+    $lastNames = providerNameJoinParts([
+        $parts['apellido_1'] ?? $parts['lname'] ?? '',
+        $parts['apellido_2'] ?? $parts['lname2'] ?? ''
+    ]);
+
+    if ($format === 'list') {
+        return trim($lastNames . (($lastNames !== '' && $firstNames !== '') ? ', ' : '') . $firstNames);
+    }
+
+    if ($format === 'short') {
+        return providerNameJoinParts([
+            $parts['fname'] ?? '',
+            $parts['apellido_1'] ?? $parts['lname'] ?? ''
+        ]);
+    }
+
+    if ($format === 'legacy_name') {
+        return providerNameFormatLegacyName($parts);
+    }
+
+    if ($format === 'legacy_concat') {
+        return providerNameJoinParts([
+            $parts['fname'] ?? '',
+            $parts['mname'] ?? '',
+            $lastNames
+        ]);
+    }
+
+    if ($format === 'admin') {
+        return providerNameJoinParts([
+            $parts['fname'] ?? '',
+            $lastNames
+        ]);
+    }
+
+    return providerNameJoinParts([$firstNames, $lastNames]);
+}
+
+function providerNameFormatLegacyName($parts)
+{
+    $fname = trim((string)($parts['fname'] ?? ''));
+    if ($fname === '') {
+        return "";
+    }
+
+    $lastNames = providerNameJoinParts([
+        $parts['apellido_1'] ?? $parts['lname'] ?? '',
+        $parts['apellido_2'] ?? $parts['lname2'] ?? ''
+    ]);
+    $nameParts = [];
+    if ($lastNames !== '') {
+        $nameParts[] = $parts['suffix'] ?? '';
+    }
+
+    $nameParts[] = $fname;
+    $nameParts[] = $lastNames;
+
+    return providerNameJoinParts($nameParts);
+}
+
+function providerNameJoinParts($parts)
+{
+    $normalizedParts = [];
+    foreach ($parts as $part) {
+        $part = trim((string) $part);
+        if ($part !== '') {
+            $normalizedParts[] = $part;
+        }
+    }
+
+    return implode(' ', $normalizedParts);
 }
 
 function getProviderNameParts($providerID)
@@ -468,30 +552,62 @@ function getProviderNameParts($providerID)
         return null;
     }
 
-    $fname = trim($pi[0]['fname'] ?? '');
-    $mname = trim($pi[0]['mname'] ?? '');
-    $lname = trim($pi[0]['lname'] ?? '');
+    return providerNamePartsFromRow($pi[0]);
+}
 
-    $tokens = preg_split('/\s+/', $lname);
+function providerNamePartsFromRow($row)
+{
+    $fname = trim($row['fname'] ?? '');
+    $mname = trim($row['mname'] ?? '');
+    $lname = trim($row['lname'] ?? '');
+    $lname2 = trim($row['lname2'] ?? '');
+    $suffix = trim($row['suffix'] ?? '');
+    $apellidos = providerNameLastNameParts($lname, $lname2);
 
-    $prefijos = ['de', 'del', 'la', 'los', 'las'];
+    return [
+        'fname'       => $fname,
+        'mname'       => $mname,
+        'lname'       => $lname,
+        'lname2'      => $lname2,
+        'suffix'      => $suffix,
+        'apellido_1'  => $apellidos[0] ?? '',
+        'apellido_2'  => $apellidos[1] ?? '',
+        'apellidos'   => providerNameJoinParts($apellidos),
+        'full_name'   => formatProviderNameParts([
+            'fname' => $fname,
+            'mname' => $mname,
+            'lname' => $lname,
+            'lname2' => $lname2,
+            'suffix' => $suffix,
+            'apellido_1' => $apellidos[0] ?? '',
+            'apellido_2' => $apellidos[1] ?? ''
+        ])
+    ];
+}
+
+function providerNameLastNameParts($lname, $lname2 = '')
+{
+    $lname = trim((string)$lname);
+    $lname2 = trim((string)$lname2);
+    if ($lname2 !== '') {
+        return [$lname, $lname2];
+    }
+
+    $tokens = preg_split('/\s+/', $lname, -1, PREG_SPLIT_NO_EMPTY);
     $apellidos = [];
 
     $i = 0;
     while ($i < count($tokens)) {
         $token = strtolower($tokens[$i]);
 
-        // Prefijos tipo: de, del, de la, de los, etc.
         if ($token === 'de') {
             $compuesto = $tokens[$i];
 
-            // de + la / los / las
             if (isset($tokens[$i + 1]) && in_array(strtolower($tokens[$i + 1]), ['la', 'los', 'las'])) {
                 $compuesto .= ' ' . $tokens[$i + 1];
                 $i++;
             }
 
-            // agregar la siguiente palabra (apellido real)
             if (isset($tokens[$i + 1])) {
                 $compuesto .= ' ' . $tokens[$i + 1];
                 $i++;
@@ -505,14 +621,7 @@ function getProviderNameParts($providerID)
         $i++;
     }
 
-    return [
-        'fname'       => $fname,
-        'mname'       => $mname,
-        'apellido_1'  => $apellidos[0] ?? '',
-        'apellido_2'  => $apellidos[1] ?? '',
-        'apellidos'   => implode(' ', $apellidos),
-        'full_name'   => trim("$fname $mname " . implode(' ', $apellidos))
-    ];
+    return $apellidos;
 }
 
 function getResponsableName($providerID)

@@ -122,7 +122,7 @@ function submitform() {
             alertMsg += checkLength(f[i].name,f[i].value,35);
             alertMsg += checkUsername(f[i].name,f[i].value);
          }
-         else if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname')
+         else if(f[i].name == 'fname' || f[i].name == 'mname' || f[i].name == 'lname' || f[i].name == 'lname2')
          {
             alertMsg += checkLength(f[i].name,f[i].value,35);
             alertMsg += checkUsername(f[i].name,f[i].value);
@@ -258,6 +258,9 @@ foreach ($result2 as $iter) {
 </tr>
 <tr>
 <td><span class="text"><?php echo xlt('Last Name'); ?>: </span></td><td><input type=entry name='lname' id='lname' style="width:120px;" class="form-control"><span class="mandatory"></span></td>
+<td><span class="text"><?php echo xlt('Second Last Name'); ?>: </span></td><td><input type=entry name='lname2' style="width:120px;" class="form-control"></td>
+</tr>
+<tr>
 <td><span class="text"><?php echo xlt('Default Facility'); ?>: </span></td><td><select style="width:120px;" name=facility_id class="form-control">
 <?php
 $fres = $facilityService->getAllServiceLocations();
